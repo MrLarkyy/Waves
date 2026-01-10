@@ -67,7 +67,7 @@ abstract class Configurable<A: Configurable<A>> {
 
         return ListEditorValue(
             key, initial.map(wrapSimple).toMutableList(),
-            onAdd = { player -> onAdd(player)?.let(wrapSimple) },
+            addButtonClick = { player -> onAdd(player)?.let(wrapSimple) },
             iconFactory = listIcon, openListGui = guiHandler,
             visibleIf = visibleIf, elementFactory = elementFactory
         ).also { _editorValues.add(it) }

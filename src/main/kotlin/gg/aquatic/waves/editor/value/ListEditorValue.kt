@@ -12,7 +12,7 @@ import org.bukkit.inventory.ItemStack
 class ListEditorValue<T>(
     override val key: String,
     override var value: MutableList<EditorValue<T>>,
-    val onAdd: (Player) -> EditorValue<T>?,
+    val addButtonClick: (Player, accept: (EditorValue<T>?) -> Unit) -> Unit,
     private val iconFactory: (MutableList<EditorValue<T>>) -> ItemStack,
     private val openListGui: ListGuiHandler<T>,
     override val visibleIf: () -> Boolean = { true },
@@ -31,7 +31,7 @@ class ListEditorValue<T>(
     override fun clone(): ListEditorValue<T> {
         return ListEditorValue(
             key, value.map { it.clone() }.toMutableList(),
-            onAdd, iconFactory, openListGui,
+            addButtonClick, iconFactory, openListGui,
             visibleIf, defaultValue, elementFactory
         )
     }

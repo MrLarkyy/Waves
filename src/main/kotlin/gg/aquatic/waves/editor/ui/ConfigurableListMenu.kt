@@ -68,16 +68,22 @@ class ConfigurableListMenu<T> private constructor(
                     1, 10, null,
                     textUpdater = menu.placeholderContext
                 ) {
-                    val newEditorValue = editor.onAdd(player) ?: return@Button
-                    editor.value.add(newEditorValue)
-                    onUpdate()
-                    // Update entries list to include the new one
-                    menu.entries = editor.value.map { /* same mapping as above */
-                        Entry(it.value, { it.getDisplayItem() }, menu.placeholderContext, { event ->
-                            // (Re-using logic from above mapping)
-                        })
+                    editor.addButtonClick(player) { newEditorValue ->
+                        KMenuCtx.launch { menu.open() }
+
+                        if (newEditorValue == null) return@addButtonClick
+
+                        editor.value.add(newEditorValue)
+                        onUpdate()
+                        // Update entries list to include the new one
+                        menu.entries = editor.value.map { /* same mapping as above */
+                            Entry(it.value, { it.getDisplayItem() }, menu.placeholderContext, { event ->
+                                // (Re-using logic from above mapping)
+                            })
+                        }
+                        menu.requestRefresh()
                     }
-                    menu.requestRefresh()
+
                 })
 
             menu.open()
