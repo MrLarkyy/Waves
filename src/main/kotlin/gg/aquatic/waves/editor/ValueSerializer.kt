@@ -1,6 +1,7 @@
 package gg.aquatic.waves.editor
 
 import gg.aquatic.waves.getSectionList
+import gg.aquatic.waves.toMMString
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Material
@@ -85,8 +86,11 @@ interface ValueSerializer<T> {
 }
 
 object Serializers {
-    val MATERIAL = ValueSerializer.Simple(Material.STONE, encode = { Material.matchMaterial(it.toString()) })
+    val MATERIAL = ValueSerializer.Simple(Material.STONE, encode = { Material.matchMaterial(it.toString()) }, decode = { it.toString() })
     val INT = ValueSerializer.Simple(1, encode = { it.toString().toIntOrNull() ?: 1 })
     val STRING = ValueSerializer.Simple("", encode = { it.toString() })
-    val COMPONENT = ValueSerializer.Simple(Component.empty(), { MiniMessage.miniMessage().deserialize(it.toString()) })
+    val COMPONENT = ValueSerializer.Simple(
+        Component.empty(),
+        { MiniMessage.miniMessage().deserialize(it.toString()) },
+        { it.toMMString() })
 }

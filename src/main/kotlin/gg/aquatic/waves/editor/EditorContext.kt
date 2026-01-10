@@ -1,30 +1,43 @@
 package gg.aquatic.waves.editor
 
+import gg.aquatic.execute.coroutine.BukkitCtx
+import kotlinx.coroutines.withContext
 import org.bukkit.entity.Player
 import java.util.*
 
 class EditorContext(val player: Player) {
-    private val history = Stack<suspend () -> Unit>()
+    private val path = Stack<suspend () -> Unit>()
 
     /**
-     * Opens a new menu and saves the current one to history.
-     * @param backLogic A lambda that re-opens the CURRENT menu.
-     * @param nextOpen A lambda that opens the NEW menu.
+     * Navigates to a new menu.
      */
-    suspend fun navigateTo(backLogic: suspend () -> Unit, nextOpen: suspend () -> Unit) {
-        history.push(backLogic)
-        nextOpen()
+    suspend fun navigate(openLogic: suspend () -> Unit) {
+        path.push(openLogic)
+        openLogic()
     }
 
     /**
-     * Returns to the previous menu in the stack.
+     * Returns to the previous menu.
      */
     suspend fun goBack() {
-        if (history.isNotEmpty()) {
-            val lastMenu = history.pop()
-            lastMenu()
+        if (path.size > 1) {
+            path.pop() // Remove current
+            val previous = path.peek()
+            previous() // Open previous
         } else {
-            player.closeInventory()
+            path.clear()
+            withContext(BukkitCtx) {
+                player.closeInventory()
+            }
+        }
+    }
+
+    /**
+     * Refreshes the current menu without affecting history.
+     */
+    suspend fun refresh() {
+        if (path.isNotEmpty()) {
+            path.peek().invoke()
         }
     }
 }

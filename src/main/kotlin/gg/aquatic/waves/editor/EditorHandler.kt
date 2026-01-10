@@ -26,18 +26,18 @@ object EditorHandler {
         val context = EditorContext(player)
         contexts[player] = context
 
-        // Work on a copy so 'cancel' logic is just closing the menu
         val workingCopy = configurable.copy()
 
         KMenuCtx.launch {
-            EditorMenuProvider.openValueEditor(
-                context = context,
-                title = title,
-                values = workingCopy.getEditorValues(),
-                onSave = {
-                    onSave(workingCopy)
-                }
-            )
+            // Use the new navigate system to set the root
+            context.navigate {
+                EditorMenuProvider.openValueEditor(
+                    context = context,
+                    title = title,
+                    values = workingCopy.getEditorValues(),
+                    onSave = { onSave(workingCopy) }
+                )
+            }
         }
     }
 

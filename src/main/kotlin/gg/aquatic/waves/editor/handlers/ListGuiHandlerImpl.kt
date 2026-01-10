@@ -10,10 +10,10 @@ import org.bukkit.entity.Player
 class ListGuiHandlerImpl<T>(private val context: EditorContext) : ListGuiHandler<T> {
 
     override fun open(player: Player, editor: ListEditorValue<T>, updateParent: () -> Unit) {
-        val menu = ConfigurableListMenu(context, editor, updateParent)
-        
         KMenuCtx.launch {
-            menu.open(player)
+            context.navigate {
+                ConfigurableListMenu(context, editor, updateParent).open(player)
+            }
         }
     }
 }

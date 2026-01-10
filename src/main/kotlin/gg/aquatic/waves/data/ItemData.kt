@@ -46,6 +46,8 @@ class ItemData(
             handler = ChatInputHandler.forComponent("Enter line:")
         ),
         addButtonClick = { player, accept ->
+            player.closeInventory()
+            player.sendMessage("Enter line:")
             ChatInput.createHandle(listOf("cancel")).await(player).thenAccept {
                 accept(it?.toMMComponent())
             }
