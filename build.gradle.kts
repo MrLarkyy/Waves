@@ -62,8 +62,8 @@ dependencies {
 
     implementation("org.reflections:reflections:0.10.2")
     implementation("net.kyori:adventure-text-minimessage:4.26.1")
-    implementation("net.kyori:adventure-text-serializer-gson:4.26.1")
-    implementation("net.kyori:adventure-text-serializer-plain:4.26.1")
+    compileOnly("net.kyori:adventure-text-serializer-gson:4.26.1")
+    compileOnly("net.kyori:adventure-text-serializer-plain:4.26.1")
 
     // Testing
     testImplementation("io.mockk:mockk:1.14.7")
@@ -80,14 +80,14 @@ tasks.test {
 }
 
 tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
-    dependsOn(":Pakket:shadowJar")
-
     archiveFileName.set("Waves-${project.version}.jar")
     archiveClassifier.set("")
 
-    exclude("kotlin/**")
-    exclude("org/intellij/**")
-    exclude("org/jetbrains/**")
+    dependencies {
+        exclude(dependency("org.jetbrains.kotlin:.*:.*"))
+        exclude(dependency("org.jetbrains.kotlinx:.*:.*"))
+        exclude(dependency("org.jetbrains:annotations:.*"))
+    }
 
     relocate("kotlinx", "gg.aquatic.waves.libs.kotlinx")
     relocate("org.jetbrains.kotlin", "gg.aquatic.waves.libs.kotlin")
