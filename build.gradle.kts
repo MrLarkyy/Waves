@@ -51,14 +51,14 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 
-    implementation(project(":KMenu"))
-    implementation(project(":Replace"))
-    implementation(project(":Stacked"))
-    implementation(project(":KRegistry"))
-    implementation(project(":KEvent"))
-    implementation(project(":Pakket"))
-    implementation(project(":Execute"))
-    implementation(project(":Kommand"))
+    implementation("gg.aquatic:KMenu:26.0.1")
+    implementation("gg.aquatic.replace:Replace:26.0.2")
+    implementation("gg.aquatic:Stacked:26.0.1")
+    implementation("gg.aquatic:KRegistry:25.0.1")
+    implementation("gg.aquatic:KEvent:1.0.4")
+    implementation("gg.aquatic:Pakket:26.1.0")
+    implementation("gg.aquatic.execute:Execute:26.0.1")
+    implementation("gg.aquatic:Kommand:26.0.2")
 
     implementation("org.reflections:reflections:0.10.2")
     implementation("net.kyori:adventure-text-minimessage:4.26.1")
@@ -96,14 +96,4 @@ tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
     //relocate("com.undefined", "gg.aquatic.waves.shadow.undefined")
 
     relocate("com.zaxxer.hikari", "gg.aquatic.waves.libs.hikari")
-}
-
-subprojects {
-    pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
-        if (project.buildTreePath in setOf(":Pakket", ":Pakket:API")) {
-            dependencies {
-                compileOnly(project(":KEvent"))
-            }
-        }
-    }
 }

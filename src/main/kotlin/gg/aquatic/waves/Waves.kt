@@ -11,6 +11,8 @@ object Waves : JavaPlugin() {
 
     override fun onEnable() {
         InputHandler.initialize()
+
+
     }
 
 }
