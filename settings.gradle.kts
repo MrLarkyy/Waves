@@ -10,6 +10,7 @@ include("KRegistry")
 include("Pakket")
 include("Execute")
 include("Kommand")
+include("KEvent")
 
 include("Pakket:API")
 include("Pakket:NMS_1_21_9")

@@ -55,6 +55,10 @@ dependencies {
     implementation(project(":Replace"))
     implementation(project(":Stacked"))
     implementation(project(":KRegistry"))
+    implementation(project(":KEvent"))
+    implementation(project(":Pakket"))
+    implementation(project(":Execute"))
+    implementation(project(":Kommand"))
 
     implementation("org.reflections:reflections:0.10.2")
     implementation("net.kyori:adventure-text-minimessage:4.26.1")

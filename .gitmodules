@@ -19,3 +19,6 @@
 [submodule "Kommand"]
 	path = Kommand
 	url = https://github.com/MrLarkyy/Kommand.git
+[submodule "KEvent"]
+	path = KEvent
+	url = https://github.com/MrLarkyy/KEvent.git
