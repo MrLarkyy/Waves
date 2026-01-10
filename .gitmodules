@@ -1,0 +1,9 @@
+[submodule "Replace"]
+	path = Replace
+	url = https://github.com/MrLarkyy/Replace.git
+[submodule "KMenu"]
+	path = KMenu
+	url = https://github.com/MrLarkyy/KMenu.git
+[submodule "Stacked"]
+	path = Stacked
+	url = https://github.com/MrLarkyy/Stacked.git
