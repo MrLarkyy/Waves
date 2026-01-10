@@ -10,3 +10,12 @@
 [submodule "KRegistry"]
 	path = KRegistry
 	url = https://github.com/MrLarkyy/KRegistry.git
+[submodule "Pakket"]
+	path = Pakket
+	url = https://github.com/MrLarkyy/Pakket.git
+[submodule "Execute"]
+	path = Execute
+	url = https://github.com/MrLarkyy/Execute.git
+[submodule "Kommand"]
+	path = Kommand
+	url = https://github.com/MrLarkyy/Kommand.git
