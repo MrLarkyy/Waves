@@ -4,14 +4,10 @@ import gg.aquatic.execute.coroutine.BukkitCtx
 import gg.aquatic.kmenu.coroutine.KMenuCtx
 import gg.aquatic.kmenu.inventory.InventoryType
 import gg.aquatic.kmenu.menu.createMenu
-import gg.aquatic.stacked.stackedItem
-import gg.aquatic.waves.editor.Configurable
 import gg.aquatic.waves.editor.EditorContext
 import gg.aquatic.waves.editor.value.EditorValue
-import gg.aquatic.waves.editor.value.ListEditorValue
 import kotlinx.coroutines.withContext
 import net.kyori.adventure.text.Component
-import org.bukkit.Material
 
 object EditorMenuProvider {
 
