@@ -3,6 +3,7 @@ plugins {
 }
 rootProject.name = "Waves"
 
+/*
 include("Replace")
 include("KMenu")
 include("Stacked")
@@ -14,3 +15,13 @@ include("KEvent")
 
 include("Pakket:API")
 include("Pakket:NMS_1_21_9")
+ */
+
+includeBuild("KEvent")
+includeBuild("KRegistry")
+includeBuild("Execute")
+includeBuild("Kommand")
+includeBuild("Pakket")
+includeBuild("Replace")
+includeBuild("Stacked")
+includeBuild("KMenu")
