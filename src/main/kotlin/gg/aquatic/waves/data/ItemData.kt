@@ -1,13 +1,15 @@
 package gg.aquatic.waves.data
 
-import gg.aquatic.kmenu.coroutine.KMenuCtx
 import gg.aquatic.waves.editor.Configurable
+import gg.aquatic.waves.editor.EditorHandler.getEditorContext
 import gg.aquatic.waves.editor.Serializers.COMPONENT
 import gg.aquatic.waves.editor.Serializers.INT
 import gg.aquatic.waves.editor.Serializers.MATERIAL
 import gg.aquatic.waves.editor.handlers.ChatInputHandler
-import gg.aquatic.waves.editor.ui.ConfigurableListMenu
+import gg.aquatic.waves.editor.handlers.ListGuiHandlerImpl
 import gg.aquatic.waves.editor.value.ElementBehavior
+import gg.aquatic.waves.input.impl.ChatInput
+import gg.aquatic.waves.toMMComponent
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
@@ -18,30 +20,40 @@ class ItemData(
     initialDisplayName: Optional<Component> = Optional.empty(),
     initialLore: List<Component> = emptyList(),
     initialAmount: Int = 1
-): Configurable<ItemData>() {
+) : Configurable<ItemData>() {
 
-    val material = edit("material", Material.STONE, MATERIAL,
+    val material = edit(
+        "material", Material.STONE, MATERIAL,
         icon = { mat -> ItemStack(mat).apply { editMeta { it.displayName(Component.text("§eMaterial: ${mat.name}")) } } },
         handler = ChatInputHandler("Enter Material:") { Material.matchMaterial(it) }
     )
 
-    val amount = edit("amount", 1, INT,
-        icon = { amt -> ItemStack(Material.PAPER).apply { amount = amt; editMeta { it.displayName(Component.text("§bAmount: $amt")) } } },
+    val amount = edit(
+        "amount", 1, INT,
+        icon = { amt ->
+            ItemStack(Material.PAPER).apply {
+                amount = amt; editMeta { it.displayName(Component.text("§bAmount: $amt")) }
+            }
+        },
         handler = ChatInputHandler.forInteger("Enter Amount:")
     )
 
     // A list of simple objects (Lore) using the new behavior pattern
-    val lore = editList("lore", emptyList(), COMPONENT,
+    val lore = editList(
+        "lore", emptyList(), COMPONENT,
         behavior = ElementBehavior(
             icon = { line -> ItemStack(Material.PAPER).apply { editMeta { it.displayName(line) } } },
             handler = ChatInputHandler.forComponent("Enter line:")
         ),
-        onAdd = { Component.empty() },
+        addButtonClick = { player, accept ->
+            ChatInput.createHandle(listOf("cancel")).await(player).thenAccept {
+                accept(it?.toMMComponent())
+            }
+        },
         listIcon = { list -> ItemStack(Material.BOOK).apply { editMeta { it.displayName(Component.text("§6Edit Lore (${list.size} lines)")) } } },
         guiHandler = { player, editor, update ->
-            KMenuCtx.launch {
-                ConfigurableListMenu.create(player, editor, Component.text("Lore Edit"), update).open(player)
-            }
+            val context = player.getEditorContext() ?: return@editList
+            ListGuiHandlerImpl<Component>(context).open(player, editor, update)
         }
     )
 

@@ -12,7 +12,7 @@ import org.bukkit.inventory.ItemStack
 class ListEditorValue<T>(
     override val key: String,
     override var value: MutableList<EditorValue<T>>,
-    val addButtonClick: (Player, accept: (EditorValue<T>?) -> Unit) -> Unit,
+    val addButtonClick: (player: Player, accept: (EditorValue<T>?) -> Unit) -> Unit,
     private val iconFactory: (MutableList<EditorValue<T>>) -> ItemStack,
     private val openListGui: ListGuiHandler<T>,
     override val visibleIf: () -> Boolean = { true },

@@ -4,7 +4,6 @@ import gg.aquatic.kmenu.inventory.ButtonType
 import gg.aquatic.waves.editor.EditorClickHandler
 import gg.aquatic.waves.input.impl.ChatInput
 import net.kyori.adventure.text.minimessage.MiniMessage
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.entity.Player
 import java.util.*
 
@@ -24,7 +23,7 @@ class ChatInputHandler<T>(
         update: (T?) -> Unit,
     ) {
         player.closeInventory()
-        player.sendMessage(LegacyComponentSerializer.legacyAmpersand().deserialize(prompt))
+        player.sendMessage(prompt)
 
         ChatInput.createHandle(listOf("cancel")).await(player).thenAccept {
             if (it != null) {

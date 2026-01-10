@@ -7,7 +7,7 @@ import org.bukkit.configuration.MemoryConfiguration
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
-abstract class Configurable<A: Configurable<A>> {
+abstract class Configurable<A : Configurable<A>> {
     private val _editorValues = mutableListOf<EditorValue<*>>()
 
     /**
@@ -47,13 +47,17 @@ abstract class Configurable<A: Configurable<A>> {
         initial: List<T> = emptyList(),
         serializer: ValueSerializer<T>,
         behavior: ElementBehavior<T>,
-        onAdd: (Player) -> T?,
+        addButtonClick: (player: Player, accept: (T?) -> Unit) -> Unit,
         listIcon: (List<EditorValue<T>>) -> ItemStack,
         guiHandler: ListGuiHandler<T>,
         visibleIf: () -> Boolean = { true }
     ): ListEditorValue<T> {
         val wrapSimple: (T) -> SimpleEditorValue<T> = { valData ->
             SimpleEditorValue("__value", valData, behavior.icon, behavior.handler, { it }, serializer)
+        }
+
+        val addButtonClickWrap: (player: Player, accept: (EditorValue<T>?) -> Unit) -> Unit = { p, accept ->
+            addButtonClick(p) { accept(it?.let(wrapSimple)) }
         }
 
         val elementFactory: (ConfigurationSection) -> EditorValue<T> = { section ->
@@ -67,7 +71,7 @@ abstract class Configurable<A: Configurable<A>> {
 
         return ListEditorValue(
             key, initial.map(wrapSimple).toMutableList(),
-            addButtonClick = { player -> onAdd(player)?.let(wrapSimple) },
+            addButtonClick = addButtonClickWrap,
             iconFactory = listIcon, openListGui = guiHandler,
             visibleIf = visibleIf, elementFactory = elementFactory
         ).also { _editorValues.add(it) }
@@ -80,13 +84,13 @@ abstract class Configurable<A: Configurable<A>> {
     protected fun <T> editList(
         key: String,
         elementFactory: (ConfigurationSection) -> EditorValue<T>,
-        onAdd: (Player) -> EditorValue<T>?,
+        addButtonClick: (player: Player, accept: (EditorValue<T>) -> Unit) -> Unit,
         listIcon: (List<EditorValue<T>>) -> ItemStack,
         guiHandler: ListGuiHandler<T>,
         visibleIf: () -> Boolean = { true }
     ): ListEditorValue<T> {
         return ListEditorValue(
-            key, mutableListOf(), onAdd, listIcon, guiHandler,
+            key, mutableListOf(), addButtonClick, listIcon, guiHandler,
             visibleIf, elementFactory = elementFactory
         ).also { _editorValues.add(it) }
     }
