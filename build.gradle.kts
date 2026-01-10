@@ -80,6 +80,8 @@ tasks.test {
 }
 
 tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
+    dependsOn(":Pakket:shadowJar")
+
     archiveFileName.set("Waves-${project.version}.jar")
     archiveClassifier.set("")
 
@@ -94,4 +96,14 @@ tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
     //relocate("com.undefined", "gg.aquatic.waves.shadow.undefined")
 
     relocate("com.zaxxer.hikari", "gg.aquatic.waves.libs.hikari")
+}
+
+subprojects {
+    pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
+        if (project.buildTreePath in setOf(":Pakket", ":Pakket:API")) {
+            dependencies {
+                compileOnly(project(":KEvent"))
+            }
+        }
+    }
 }
