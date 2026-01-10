@@ -87,6 +87,12 @@ tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
         exclude(dependency("org.jetbrains.kotlin:.*:.*"))
         exclude(dependency("org.jetbrains.kotlinx:.*:.*"))
         exclude(dependency("org.jetbrains:annotations:.*"))
+        exclude(dependency("net.kyori:adventure-api:.*"))
+
+        exclude(dependency("org.javassist:javassist:.*"))
+        exclude(dependency("javax.annotation:javax.annotation-api:.*"))
+        exclude(dependency("com.google.code.findbugs:jsr305:.*"))
+        exclude(dependency("org.slf4j:.*:.*"))
     }
 
     relocate("kotlinx", "gg.aquatic.waves.libs.kotlinx")
