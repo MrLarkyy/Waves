@@ -23,13 +23,13 @@ class ItemData(
 ) : Configurable<ItemData>() {
 
     val material = edit(
-        "material", Material.STONE, MATERIAL,
+        "material", initialMaterial, MATERIAL,
         icon = { mat -> ItemStack(mat).apply { editMeta { it.displayName(Component.text("§eMaterial: ${mat.name}")) } } },
         handler = ChatInputHandler("Enter Material:") { Material.matchMaterial(it) }
     )
 
     val amount = edit(
-        "amount", 1, INT,
+        "amount", initialAmount, INT,
         icon = { amt ->
             ItemStack(Material.PAPER).apply {
                 amount = amt; editMeta { it.displayName(Component.text("§bAmount: $amt")) }
@@ -40,7 +40,7 @@ class ItemData(
 
     // A list of simple objects (Lore) using the new behavior pattern
     val lore = editList(
-        "lore", emptyList(), COMPONENT,
+        "lore", initialLore, COMPONENT,
         behavior = ElementBehavior(
             icon = { line -> ItemStack(Material.PAPER).apply { editMeta { it.displayName(line) } } },
             handler = ChatInputHandler.forComponent("Enter line:")
