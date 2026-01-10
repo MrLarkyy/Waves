@@ -7,3 +7,6 @@
 [submodule "Stacked"]
 	path = Stacked
 	url = https://github.com/MrLarkyy/Stacked.git
+[submodule "KRegistry"]
+	path = KRegistry
+	url = https://github.com/MrLarkyy/KRegistry.git

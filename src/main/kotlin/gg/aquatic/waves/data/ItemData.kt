@@ -1,0 +1,49 @@
+package gg.aquatic.waves.data
+
+import gg.aquatic.waves.editor.Configurable
+import gg.aquatic.waves.editor.Serializers.COMPONENT
+import gg.aquatic.waves.editor.Serializers.INT
+import gg.aquatic.waves.editor.Serializers.MATERIAL
+import gg.aquatic.waves.editor.handlers.ChatInputHandler
+import gg.aquatic.waves.editor.value.ElementBehavior
+import net.kyori.adventure.text.Component
+import org.bukkit.Material
+import org.bukkit.inventory.ItemStack
+import java.util.*
+
+class ItemData(
+    initialMaterial: Material = Material.STONE,
+    initialDisplayName: Optional<Component> = Optional.empty(),
+    initialLore: List<Component> = emptyList(),
+    initialAmount: Int = 1
+): Configurable<ItemData>() {
+
+    val material = edit("material", Material.STONE, MATERIAL,
+        icon = { mat -> ItemStack(mat).apply { editMeta { it.displayName(Component.text("§eMaterial: ${mat.name}")) } } },
+        handler = ChatInputHandler("Enter Material:") { Material.matchMaterial(it) }
+    )
+
+    val amount = edit("amount", 1, INT,
+        icon = { amt -> ItemStack(Material.PAPER).apply { amount = amt; editMeta { it.displayName(Component.text("§bAmount: $amt")) } } },
+        handler = ChatInputHandler.forInteger("Enter Amount:")
+    )
+
+    // A list of simple objects (Lore) using the new behavior pattern
+    val lore = editList("lore", emptyList(), COMPONENT,
+        behavior = ElementBehavior(
+            icon = { line -> ItemStack(Material.PAPER).apply { editMeta { it.displayName(line) } } },
+            handler = ChatInputHandler.forComponent("Enter line:")
+        ),
+        onAdd = { Component.empty() },
+        listIcon = { list -> ItemStack(Material.BOOK).apply { editMeta { it.displayName(Component.text("§6Edit Lore (${list.size} lines)")) } } },
+        guiHandler = { player, editor, update -> /* Open Generic List GUI */ }
+    )
+
+    override fun copy(): ItemData {
+        return ItemData().also { copy ->
+            copy.material.value = this.material.value
+            copy.amount.value = this.amount.value
+            copy.lore.value = this.lore.value.map { it.clone() }.toMutableList()
+        }
+    }
+}

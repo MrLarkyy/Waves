@@ -6,3 +6,4 @@ rootProject.name = "Waves"
 include("Replace")
 include("KMenu")
 include("Stacked")
+include("KRegistry")

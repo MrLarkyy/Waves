@@ -51,6 +51,11 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 
+    implementation(project(":KMenu"))
+    implementation(project(":Replace"))
+    implementation(project(":Stacked"))
+    implementation(project(":KRegistry"))
+
     implementation("org.reflections:reflections:0.10.2")
     implementation("net.kyori:adventure-text-minimessage:4.26.1")
     implementation("net.kyori:adventure-text-serializer-gson:4.26.1")
