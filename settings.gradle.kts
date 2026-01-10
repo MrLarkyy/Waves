@@ -3,11 +3,21 @@ plugins {
 }
 rootProject.name = "Waves"
 
-includeBuild("KEvent")
-includeBuild("KRegistry")
-includeBuild("Execute")
-includeBuild("Kommand")
-includeBuild("Pakket")
-includeBuild("Replace")
-includeBuild("Stacked")
-includeBuild("KMenu")
+val submodules = listOf(
+    "KMenu" to "gg.aquatic:KMenu",
+    "KRegistry" to "gg.aquatic:KRegistry",
+    "KEvent" to "gg.aquatic:KEvent",
+    "Pakket" to "gg.aquatic:Pakket",
+    "Stacked" to "gg.aquatic:Stacked",
+    "Execute" to "gg.aquatic.execute:Execute",
+    "Replace" to "gg.aquatic.replace:Replace",
+    "Kommand" to "gg.aquatic:Kommand"
+)
+
+submodules.forEach { (folder, artifact) ->
+    includeBuild(folder) {
+        dependencySubstitution {
+            substitute(module(artifact)).using(project(":"))
+        }
+    }
+}

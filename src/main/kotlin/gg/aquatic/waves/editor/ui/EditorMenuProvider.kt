@@ -18,8 +18,6 @@ object EditorMenuProvider {
         onSave: () -> Unit
     ) {
         context.player.createMenu(title, InventoryType.GENERIC9X6) {
-            // Fill background or layout...
-
             // Map values to slots (simplistic example: 10-16, 19-25, etc.)
             val slots = (10..16) + (19..25) + (28..34)
 
