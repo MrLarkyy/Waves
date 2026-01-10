@@ -24,7 +24,7 @@ class ItemData(
 
     val material = edit(
         "material", initialMaterial, MATERIAL,
-        icon = { mat -> ItemStack(mat).apply { editMeta { it.displayName(Component.text("§eMaterial: ${mat.name}")) } } },
+        icon = { mat -> ItemStack(mat).apply { editMeta { it.displayName(Component.text("Material: ${mat.name}")) } } },
         handler = ChatInputHandler("Enter Material:") { Material.matchMaterial(it) }
     )
 
@@ -32,7 +32,7 @@ class ItemData(
         "amount", initialAmount, INT,
         icon = { amt ->
             ItemStack(Material.PAPER).apply {
-                amount = amt; editMeta { it.displayName(Component.text("§bAmount: $amt")) }
+                amount = amt; editMeta { it.displayName(Component.text("Amount: $amt")) }
             }
         },
         handler = ChatInputHandler.forInteger("Enter Amount:")
@@ -50,7 +50,7 @@ class ItemData(
                 accept(it?.toMMComponent())
             }
         },
-        listIcon = { list -> ItemStack(Material.BOOK).apply { editMeta { it.displayName(Component.text("§6Edit Lore (${list.size} lines)")) } } },
+        listIcon = { list -> ItemStack(Material.BOOK).apply { editMeta { it.displayName(Component.text("Edit Lore (${list.size} lines)")) } } },
         guiHandler = { player, editor, update ->
             val context = player.getEditorContext() ?: return@editList
             ListGuiHandlerImpl<Component>(context).open(player, editor, update)

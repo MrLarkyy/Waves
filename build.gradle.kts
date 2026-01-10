@@ -65,6 +65,9 @@ dependencies {
     compileOnly("net.kyori:adventure-text-serializer-gson:4.26.1")
     compileOnly("net.kyori:adventure-text-serializer-plain:4.26.1")
 
+    implementation("io.github.charlietap:cachemap:0.2.4")
+    implementation("io.github.charlietap:cachemap-suspend:0.2.4")
+
     // Testing
     testImplementation("io.mockk:mockk:1.14.7")
     testImplementation(kotlin("test"))
@@ -84,9 +87,12 @@ tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
     archiveClassifier.set("")
 
     dependencies {
+        /*
         exclude(dependency("org.jetbrains.kotlin:.*:.*"))
         exclude(dependency("org.jetbrains.kotlinx:.*:.*"))
         exclude(dependency("org.jetbrains:annotations:.*"))
+
+         */
         exclude(dependency("net.kyori:adventure-api:.*"))
 
         exclude(dependency("org.javassist:javassist:.*"))
