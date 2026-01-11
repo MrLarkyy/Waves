@@ -1,5 +1,6 @@
 package gg.aquatic.waves
 
+import gg.aquatic.common.event
 import gg.aquatic.execute.initExecute
 import gg.aquatic.kmenu.KMenu
 import gg.aquatic.kmenu.coroutine.KMenuCtx

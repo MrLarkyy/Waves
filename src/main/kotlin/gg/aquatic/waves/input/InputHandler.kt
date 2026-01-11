@@ -1,6 +1,6 @@
 package gg.aquatic.waves.input
 
-import gg.aquatic.waves.event
+import gg.aquatic.common.event
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.player.PlayerQuitEvent

@@ -1,7 +1,7 @@
 package gg.aquatic.waves.input.impl
 
-import gg.aquatic.waves.event
-import gg.aquatic.waves.unregister
+import gg.aquatic.common.event
+import gg.aquatic.common.unregister
 import gg.aquatic.waves.input.AwaitingInput
 import gg.aquatic.waves.input.Input
 import gg.aquatic.waves.input.InputHandle

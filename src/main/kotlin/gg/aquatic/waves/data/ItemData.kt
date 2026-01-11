@@ -1,5 +1,6 @@
 package gg.aquatic.waves.data
 
+import gg.aquatic.common.toMMComponent
 import gg.aquatic.stacked.StackedItem
 import gg.aquatic.stacked.stackedItem
 import gg.aquatic.waves.editor.Configurable
@@ -7,7 +8,6 @@ import gg.aquatic.waves.editor.Serializers.COMPONENT
 import gg.aquatic.waves.editor.handlers.ChatInputHandler
 import gg.aquatic.waves.editor.value.ElementBehavior
 import gg.aquatic.waves.input.impl.ChatInput
-import gg.aquatic.waves.toMMComponent
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack

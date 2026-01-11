@@ -1,8 +1,8 @@
 package gg.aquatic.waves.editor
 
+import gg.aquatic.common.event
 import gg.aquatic.kmenu.coroutine.KMenuCtx
 import gg.aquatic.waves.editor.ui.EditorMenuProvider
-import gg.aquatic.waves.event
 import net.kyori.adventure.text.Component
 import org.bukkit.entity.Player
 import org.bukkit.event.player.PlayerQuitEvent

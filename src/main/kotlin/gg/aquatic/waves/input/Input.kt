@@ -1,14 +1,13 @@
 package gg.aquatic.waves.input
 
+import gg.aquatic.common.toMMComponent
 import gg.aquatic.kregistry.FrozenRegistry
 import gg.aquatic.kregistry.Registry
 import gg.aquatic.kregistry.RegistryId
 import gg.aquatic.kregistry.RegistryKey
-import gg.aquatic.waves.toMMComponent
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import java.util.concurrent.CompletableFuture
-import kotlin.text.get
 
 interface Input {
 

@@ -1,9 +1,8 @@
 package gg.aquatic.waves.editor.value
 
+import gg.aquatic.common.createConfigurationSectionFromMap
 import gg.aquatic.kmenu.inventory.ButtonType
-import gg.aquatic.waves.createConfigurationSectionFromMap
 import gg.aquatic.waves.editor.EditorClickHandler
-import gg.aquatic.waves.editor.EditorContext
 import gg.aquatic.waves.editor.ValueSerializer
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.MemoryConfiguration

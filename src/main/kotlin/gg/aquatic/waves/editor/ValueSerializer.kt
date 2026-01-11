@@ -1,7 +1,7 @@
 package gg.aquatic.waves.editor
 
-import gg.aquatic.waves.getSectionList
-import gg.aquatic.waves.toMMString
+import gg.aquatic.common.getSectionList
+import gg.aquatic.common.toMMString
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Material
