@@ -43,14 +43,12 @@ class ConfigurableListMenu<T>(
                 onClick = { event ->
                     if (event.buttonType == ButtonType.RIGHT) {
                         listValue.value.remove(editor)
-                        KMenuCtx.launch {
-                            updateParent()
-                            context.refresh()
-                        }
+                        updateParent()
+                        context.refresh()
                         return@Entry
                     }
 
-                    withContext(BukkitCtx) {
+                    withContext(BukkitCtx.ofEntity(context.player)) {
                         editor.onClick(context.player, event.buttonType) {
                             KMenuCtx.launch {
                                 updateParent()
@@ -73,7 +71,7 @@ class ConfigurableListMenu<T>(
             updateEvery = -1,
             textUpdater = placeholderContext,
             onClick = {
-                withContext(BukkitCtx) {
+                withContext(BukkitCtx.ofEntity(player)) {
                     listValue.addButtonClick(player) { newValue ->
                         if (newValue != null) {
                             listValue.value.add(newValue)

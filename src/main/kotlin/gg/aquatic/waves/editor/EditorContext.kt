@@ -26,7 +26,7 @@ class EditorContext(val player: Player) {
             previous() // Open previous
         } else {
             path.clear()
-            withContext(BukkitCtx) {
+            withContext(BukkitCtx.ofEntity(player)) {
                 player.closeInventory()
             }
         }

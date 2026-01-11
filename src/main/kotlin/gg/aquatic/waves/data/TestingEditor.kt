@@ -3,6 +3,7 @@ package gg.aquatic.waves.data
 import gg.aquatic.kommand.command
 import gg.aquatic.waves.editor.EditorHandler
 import net.kyori.adventure.text.Component
+import org.bukkit.Bukkit
 import org.bukkit.configuration.MemoryConfiguration
 import org.bukkit.configuration.MemorySection
 import org.bukkit.configuration.file.YamlConfiguration
@@ -23,10 +24,10 @@ object TestingEditor {
                     sender.sendMessage("Saved: ${section.saveToString()}")
                 }
 
+                Bukkit.getGlobalRegionScheduler()
+
                 true
             }
         }
-
     }
-
 }

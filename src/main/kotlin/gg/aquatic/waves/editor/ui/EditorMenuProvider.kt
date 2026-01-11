@@ -27,7 +27,7 @@ object EditorMenuProvider {
                 button("val_${editorValue.key}", slots[index]) {
                     item = editorValue.getDisplayItem()
                     onClick { event ->
-                        withContext(BukkitCtx) {
+                        withContext(BukkitCtx.ofEntity(context.player)) {
                             editorValue.onClick(context.player, event.buttonType) {
                                 // Refresh the current screen
                                 KMenuCtx.launch { context.refresh() }
