@@ -23,7 +23,6 @@ class ItemData(
     val material = editMaterial("material", initialMaterial, "Enter Material Name:")
     val amount = editInt("amount", initialAmount, "Enter Amount (1-64):")
 
-    // A list of simple objects (Lore) using the new behavior pattern
     val lore = editList(
         "lore", initialLore, COMPONENT,
         behavior = ElementBehavior(

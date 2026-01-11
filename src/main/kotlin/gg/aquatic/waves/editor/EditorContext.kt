@@ -1,6 +1,6 @@
 package gg.aquatic.waves.editor
 
-import gg.aquatic.execute.coroutine.BukkitCtx
+import gg.aquatic.common.coroutine.BukkitCtx
 import kotlinx.coroutines.withContext
 import org.bukkit.entity.Player
 import java.util.*

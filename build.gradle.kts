@@ -59,6 +59,7 @@ dependencies {
     implementation("gg.aquatic:Pakket:26.1.0")
     implementation("gg.aquatic.execute:Execute:26.0.1")
     implementation("gg.aquatic:Kommand:26.0.2")
+    implementation("gg.aquatic:Common:26.0.2")
 
     implementation("org.reflections:reflections:0.10.2")
     implementation("net.kyori:adventure-text-minimessage:4.26.1")

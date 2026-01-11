@@ -22,3 +22,6 @@
 [submodule "KEvent"]
 	path = KEvent
 	url = https://github.com/MrLarkyy/KEvent.git
+[submodule "AquaticCommon"]
+	path = AquaticCommon
+	url = https://github.com/MrLarkyy/AquaticCommon.git

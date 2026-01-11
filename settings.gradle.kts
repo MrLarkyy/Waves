@@ -11,7 +11,8 @@ val submodules = listOf(
     "Stacked" to "gg.aquatic:Stacked",
     "Execute" to "gg.aquatic.execute:Execute",
     "Replace" to "gg.aquatic.replace:Replace",
-    "Kommand" to "gg.aquatic:Kommand"
+    "Kommand" to "gg.aquatic:Kommand",
+    "AquaticCommon" to "gg.aquatic:Common"
 )
 
 submodules.forEach { (folder, artifact) ->

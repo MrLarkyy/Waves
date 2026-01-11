@@ -1,6 +1,6 @@
 package gg.aquatic.waves.editor.ui
 
-import gg.aquatic.execute.coroutine.BukkitCtx
+import gg.aquatic.common.coroutine.BukkitCtx
 import gg.aquatic.kmenu.coroutine.KMenuCtx
 import gg.aquatic.kmenu.inventory.InventoryType
 import gg.aquatic.kmenu.menu.createMenu
