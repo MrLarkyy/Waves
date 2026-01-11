@@ -12,7 +12,8 @@ class ListGuiHandlerImpl<T>(private val context: EditorContext) : ListGuiHandler
     override fun open(player: Player, editor: ListEditorValue<T>, updateParent: () -> Unit) {
         KMenuCtx.launch {
             context.navigate {
-                ConfigurableListMenu(context, editor, updateParent).open(player)
+                // Pass the addButtonClick from the editor instance
+                ConfigurableListMenu(context, editor, editor.addButtonClick, updateParent).open(player)
             }
         }
     }

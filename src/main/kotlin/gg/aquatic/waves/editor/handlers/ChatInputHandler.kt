@@ -4,6 +4,7 @@ import gg.aquatic.kmenu.inventory.ButtonType
 import gg.aquatic.waves.editor.EditorClickHandler
 import gg.aquatic.waves.input.impl.ChatInput
 import net.kyori.adventure.text.minimessage.MiniMessage
+import org.bukkit.Material
 import org.bukkit.entity.Player
 import java.util.*
 
@@ -57,5 +58,7 @@ class ChatInputHandler<T>(
                 val i = it.toIntOrNull()
                 i?.coerceIn(min, max)
             }
+
+        fun forMaterial(prompt: String) = ChatInputHandler(prompt) { Material.matchMaterial(it) }
     }
 }

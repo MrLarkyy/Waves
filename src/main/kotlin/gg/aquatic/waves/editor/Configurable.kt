@@ -1,7 +1,15 @@
 package gg.aquatic.waves.editor
 
+import gg.aquatic.kmenu.coroutine.KMenuCtx
 import gg.aquatic.kmenu.inventory.ButtonType
+import gg.aquatic.waves.editor.EditorHandler.getEditorContext
+import gg.aquatic.waves.editor.handlers.ChatInputHandler
+import gg.aquatic.waves.editor.handlers.ListGuiHandlerImpl
+import gg.aquatic.waves.editor.ui.ConfigurableListMenu
+import gg.aquatic.waves.editor.ui.EditorMenuProvider
 import gg.aquatic.waves.editor.value.*
+import net.kyori.adventure.text.Component
+import org.bukkit.Material
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.MemoryConfiguration
 import org.bukkit.entity.Player
@@ -14,6 +22,19 @@ abstract class Configurable<A : Configurable<A>> {
      * Returns all registered values in the order they were defined.
      */
     fun getEditorValues(): List<EditorValue<*>> = _editorValues
+
+    protected fun editString(key: String, initial: String, prompt: String) =
+        edit(key, initial, Serializers.STRING,
+            { ItemStack(Material.PAPER).apply { editMeta { m -> m.displayName(Component.text(it)) } } },
+            ChatInputHandler.forString(prompt))
+
+    protected fun editInt(key: String, initial: Int, prompt: String) =
+        edit(key, initial, Serializers.INT,
+            { ItemStack(Material.GOLD_NUGGET).apply { amount = it.coerceIn(1, 64) } },
+            ChatInputHandler.forInteger(prompt))
+
+    protected fun editMaterial(key: String, initial: Material, prompt: String) =
+        edit(key, initial, Serializers.MATERIAL, { ItemStack(it) }, ChatInputHandler.forMaterial(prompt))
 
     /**
      * Unified DSL for any simple value.
@@ -72,8 +93,17 @@ abstract class Configurable<A : Configurable<A>> {
         return ListEditorValue(
             key, initial.map(wrapSimple).toMutableList(),
             addButtonClick = addButtonClickWrap,
-            iconFactory = listIcon, openListGui = guiHandler,
-            visibleIf = visibleIf, elementFactory = elementFactory
+            iconFactory = listIcon,
+            openListGui = { player, editor, update ->
+                val context = player.getEditorContext() ?: return@ListEditorValue
+                KMenuCtx.launch {
+                    context.navigate {
+                        ConfigurableListMenu(context, editor, editor.addButtonClick, update).open(player)
+                    }
+                }
+            },
+            visibleIf = visibleIf,
+            elementFactory = elementFactory
         ).also { _editorValues.add(it) }
     }
 
@@ -95,6 +125,108 @@ abstract class Configurable<A : Configurable<A>> {
         ).also { _editorValues.add(it) }
     }
 
+    /**
+     * Specialized DSL for lists of Configurables.
+     * @param addButton Logic to create a NEW instance (e.g. via ChatInput).
+     * @param factory Logic to create an EMPTY instance (used during deserialization).
+     */
+    protected fun <T : Configurable<T>> editConfigurableList(
+        key: String,
+        initial: List<T> = emptyList(),
+        factory: () -> T,
+        addButton: (Player, (T?) -> Unit) -> Unit = { _, accept -> accept(factory()) },
+        listIcon: (List<T>) -> ItemStack,
+        itemIcon: (T) -> ItemStack,
+        visibleIf: () -> Boolean = { true }
+    ): ListEditorValue<T> {
+        val wrapConfigurable: (T) -> ConfigurableEditorValue<T> = { configurable ->
+            ConfigurableEditorValue(
+                key = "__value",
+                value = configurable,
+                iconFactory = { itemIcon(it) }
+            )
+        }
+
+        val elementFactory: (ConfigurationSection) -> EditorValue<T> = { section ->
+            val instance = factory()
+            instance.deserialize(section)
+            wrapConfigurable(instance)
+        }
+
+        return ListEditorValue(
+            key = key,
+            value = initial.map(wrapConfigurable).toMutableList(),
+            addButtonClick = { player, accept ->
+                addButton(player) { newInstance ->
+                    accept(newInstance?.let { wrapConfigurable(it) })
+                }
+            },
+            iconFactory = { list -> listIcon(list.map { it.value }) },
+            openListGui = { player, editor, update ->
+                val context = player.getEditorContext() ?: return@ListEditorValue
+                KMenuCtx.launch {
+                    context.navigate {
+                        ConfigurableListMenu(context, editor, editor.addButtonClick, update).open(player)
+                    }
+                }
+            },
+            visibleIf = visibleIf,
+            elementFactory = elementFactory
+        ).also { _editorValues.add(it) }
+    }
+
+    /**
+     * Specialized DSL for Maps of Configurables (ConfigurationSection in YAML).
+     */
+    protected fun <T : Configurable<T>> editConfigurableMap(
+        key: String,
+        initial: Map<String, T> = emptyMap(),
+        factory: () -> T,
+        addButton: (Player, (key: String?, value: T?) -> Unit) -> Unit,
+        listIcon: (Map<String, T>) -> ItemStack,
+        itemIcon: (key: String, value: T) -> ItemStack,
+        visibleIf: () -> Boolean = { true }
+    ): MapEditorValue<T> {
+        val wrapEntry: (String, T) -> ConfigurableEditorValue<T> = { entryKey, configurable ->
+            ConfigurableEditorValue(
+                key = entryKey,
+                value = configurable,
+                iconFactory = { itemIcon(entryKey, it) }
+            )
+        }
+
+        val elementFactory: (ConfigurationSection) -> EditorValue<T> = { section ->
+            val instance = factory()
+            instance.deserialize(section)
+            wrapEntry(section.name, instance)
+        }
+
+        return MapEditorValue(
+            key = key,
+            value = initial.map { (k, v) -> wrapEntry(k, v) }.toMutableList(),
+            addButtonClick = { player, accept ->
+                addButton(player) { newKey, newInstance ->
+                    if (newKey != null && newInstance != null) {
+                        accept(wrapEntry(newKey, newInstance))
+                    } else {
+                        accept(null)
+                    }
+                }
+            },
+            iconFactory = listIcon,
+            openMapGui = { player, editor, update ->
+                val context = player.getEditorContext() ?: return@MapEditorValue
+                KMenuCtx.launch {
+                    context.navigate {
+                        ConfigurableListMenu(context, editor, editor.addButtonClick, update).open(player)
+                    }
+                }
+            },
+            visibleIf = visibleIf,
+            elementFactory = elementFactory
+        ).also { _editorValues.add(it) }
+    }
+
     fun serialize(section: ConfigurationSection) {
         getEditorValues().forEach { it.save(section) }
     }
@@ -106,41 +238,21 @@ abstract class Configurable<A : Configurable<A>> {
     @Suppress("UNCHECKED_CAST")
     fun asEditorValue(
         key: String,
-        icon: (A) -> ItemStack,
-        onClick: (Player, ButtonType, () -> Unit) -> Unit
+        icon: (A) -> ItemStack
     ): EditorValue<A> {
-        val outer = this as A
-        return object : EditorValue<A> {
-            override val key: String = key
-            override var value: A = outer
-            override val visibleIf: () -> Boolean = { true }
-            override val defaultValue: A? = null
+        return ConfigurableEditorValue(key, this as A, icon)
+    }
 
-            override val serializer = object : ValueSerializer<A> {
-                override fun serialize(section: ConfigurationSection, path: String, value: A) {
-                    val sub = section.getConfigurationSection(path) ?: section.createSection(path)
-                    value.serialize(sub)
-                }
-
-                override fun deserialize(section: ConfigurationSection, path: String): A {
-                    val sub = section.getConfigurationSection(path) ?: MemoryConfiguration()
-                    outer.deserialize(sub)
-                    return outer
-                }
-            }
-
-            override fun getDisplayItem(): ItemStack = icon(outer)
-            override fun onClick(player: Player, clickType: ButtonType, updateParent: () -> Unit) =
-                onClick(player, clickType, updateParent)
-
-            override fun clone(): EditorValue<A> = (outer.copy() as A).asEditorValue(key, icon, onClick)
-
-            override fun save(section: ConfigurationSection) {
-                outer.serialize(section)
-            }
-
-            override fun load(section: ConfigurationSection) {
-                outer.deserialize(section)
+    protected fun <T> openListMenu(
+        player: Player,
+        editor: EditorValue<MutableList<EditorValue<T>>>,
+        addLogic: (Player, (EditorValue<T>?) -> Unit) -> Unit,
+        update: () -> Unit
+    ) {
+        val context = player.getEditorContext() ?: return
+        KMenuCtx.launch {
+            context.navigate {
+                ConfigurableListMenu(context, editor, addLogic, update).open(player)
             }
         }
     }

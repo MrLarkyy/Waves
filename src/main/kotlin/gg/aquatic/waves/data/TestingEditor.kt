@@ -16,7 +16,7 @@ object TestingEditor {
         command("edit") {
             execute<Player> {
 
-                val itemData = ItemData()
+                val itemData = BaseCrateData("test", Component.text("Test Crate"), listOf())
                 EditorHandler.startEditing(sender, Component.text("Item Edit"), itemData) {
                     val section = YamlConfiguration()
                     it.serialize(section)

@@ -10,7 +10,6 @@ import gg.aquatic.kmenu.privateMenu
 import gg.aquatic.replace.placeholder.PlaceholderContext
 import gg.aquatic.waves.editor.EditorContext
 import gg.aquatic.waves.editor.value.EditorValue
-import gg.aquatic.waves.editor.value.ListEditorValue
 import kotlinx.coroutines.withContext
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
@@ -19,7 +18,8 @@ import org.bukkit.inventory.ItemStack
 
 class ConfigurableListMenu<T>(
     val context: EditorContext,
-    val listValue: ListEditorValue<T>,
+    val listValue: EditorValue<MutableList<EditorValue<T>>>,
+    val addButtonClick: (Player, (EditorValue<T>?) -> Unit) -> Unit,
     val updateParent: () -> Unit
 ) : ListMenu<EditorValue<T>>(
     title = Component.text("Editing: ${listValue.key}"),
@@ -72,7 +72,7 @@ class ConfigurableListMenu<T>(
             textUpdater = placeholderContext,
             onClick = {
                 withContext(BukkitCtx.ofEntity(player)) {
-                    listValue.addButtonClick(player) { newValue ->
+                    addButtonClick(player) { newValue ->
                         if (newValue != null) {
                             listValue.value.add(newValue)
                             rebuildEntries()
