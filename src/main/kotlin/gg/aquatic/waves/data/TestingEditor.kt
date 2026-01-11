@@ -1,6 +1,8 @@
 package gg.aquatic.waves.data
 
 import gg.aquatic.kommand.command
+import gg.aquatic.waves.Config
+import gg.aquatic.waves.Waves
 import gg.aquatic.waves.editor.EditorHandler
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
@@ -14,12 +16,18 @@ object TestingEditor {
         command("edit") {
             execute<Player> {
 
-                val itemData = BaseCrateData("test", Component.text("Test Crate"), listOf())
-                EditorHandler.startEditing(sender, Component.text("Item Edit"), itemData) {
-                    val section = YamlConfiguration()
-                    it.serialize(section)
+                Waves.dataFolder.mkdirs()
+                val config = Config("test.yml", Waves)
+                config.loadSync()
 
-                    sender.sendMessage("Saved: ${section.saveToString()}")
+                val cfg = config.getConfiguration()
+
+                val itemData = BaseCrateData("test", Component.text("Test Crate"), listOf())
+                itemData.deserialize(cfg)
+                EditorHandler.startEditing(sender, Component.text("Item Edit"), itemData) {
+                    it.serialize(cfg)
+                    config.saveSync()
+                    sender.sendMessage("Saved: ${cfg.saveToString()}")
                 }
 
                 Bukkit.getGlobalRegionScheduler()
