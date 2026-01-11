@@ -1,6 +1,7 @@
 package gg.aquatic.waves
 
 import gg.aquatic.common.event
+import gg.aquatic.common.initializeCommon
 import gg.aquatic.execute.initExecute
 import gg.aquatic.kmenu.KMenu
 import gg.aquatic.kmenu.coroutine.KMenuCtx
@@ -19,6 +20,8 @@ object Waves : JavaPlugin() {
     }
 
     override fun onEnable() {
+        initializeCommon(this)
+
         event<PlayerJoinEvent> {
             Pakket.handler.injectPacketListener(it.player)
         }
