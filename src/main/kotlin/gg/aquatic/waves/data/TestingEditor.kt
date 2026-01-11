@@ -4,8 +4,6 @@ import gg.aquatic.kommand.command
 import gg.aquatic.waves.editor.EditorHandler
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
-import org.bukkit.configuration.MemoryConfiguration
-import org.bukkit.configuration.MemorySection
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 

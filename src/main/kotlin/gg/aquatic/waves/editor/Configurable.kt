@@ -1,17 +1,13 @@
 package gg.aquatic.waves.editor
 
 import gg.aquatic.kmenu.coroutine.KMenuCtx
-import gg.aquatic.kmenu.inventory.ButtonType
 import gg.aquatic.waves.editor.EditorHandler.getEditorContext
 import gg.aquatic.waves.editor.handlers.ChatInputHandler
-import gg.aquatic.waves.editor.handlers.ListGuiHandlerImpl
 import gg.aquatic.waves.editor.ui.ConfigurableListMenu
-import gg.aquatic.waves.editor.ui.EditorMenuProvider
 import gg.aquatic.waves.editor.value.*
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import org.bukkit.configuration.ConfigurationSection
-import org.bukkit.configuration.MemoryConfiguration
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
