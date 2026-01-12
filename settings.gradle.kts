@@ -12,6 +12,7 @@ val submodules = listOf(
     "Execute" to "gg.aquatic.execute:Execute",
     "Replace" to "gg.aquatic.replace:Replace",
     "Kommand" to "gg.aquatic:Kommand",
+    "KLocale" to "gg.aquatic:KLocale",
     "Kurrency" to "gg.aquatic:Kurrency",
     "AquaticCommon" to "gg.aquatic:Common"
 )
@@ -20,6 +21,9 @@ submodules.forEach { (folder, artifact) ->
     includeBuild(folder) {
         dependencySubstitution {
             substitute(module(artifact)).using(project(":"))
+            if (folder == "KLocale") {
+                substitute(module("gg.aquatic:KLocale-Paper")).using(project(":Paper"))
+                substitute(module("gg.aquatic:KLocale")).using(project(":Common"))            }
         }
     }
 }

@@ -28,3 +28,6 @@
 [submodule "Kurrency"]
 	path = Kurrency
 	url = https://github.com/MrLarkyy/Kurrency.git
+[submodule "KLocale"]
+	path = KLocale
+	url = https://github.com/MrLarkyy/KLocale.git
