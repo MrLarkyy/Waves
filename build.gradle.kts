@@ -45,8 +45,10 @@ repositories {
         url = uri("https://repo.nekroplex.com/releases")
     }
     maven("https://libraries.minecraft.net")
+    maven("https://jitpack.io")
 }
 
+val exposedVersion = "0.61.0"
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
@@ -65,6 +67,7 @@ dependencies {
     implementation("net.kyori:adventure-text-minimessage:4.26.1")
     compileOnly("net.kyori:adventure-text-serializer-gson:4.26.1")
     compileOnly("net.kyori:adventure-text-serializer-plain:4.26.1")
+    compileOnly("com.github.MilkBowl:VaultAPI:1.7")
 
     implementation("io.github.charlietap:cachemap:0.2.4")
     implementation("io.github.charlietap:cachemap-suspend:0.2.4")
@@ -73,6 +76,13 @@ dependencies {
     testImplementation("io.mockk:mockk:1.14.7")
     testImplementation(kotlin("test"))
     testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+
+    // DB
+    implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+    implementation("redis.clients:jedis:7.2.0")
+    implementation("com.zaxxer:HikariCP:7.0.2")
 }
 
 kotlin {
