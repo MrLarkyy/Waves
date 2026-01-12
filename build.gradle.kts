@@ -74,7 +74,7 @@ repositories {
 val exposedVersion = "0.61.0"
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
-    compileOnly("org.slf4j:slf4j-api:1.7.25")
+    compileOnly("org.slf4j:slf4j-api:1.7.36")
 
     implementation("gg.aquatic:KMenu:26.0.1")
     implementation("gg.aquatic.replace:Replace:26.0.2")
