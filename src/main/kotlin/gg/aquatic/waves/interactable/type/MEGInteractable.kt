@@ -15,111 +15,93 @@ import org.bukkit.Bukkit
 import org.bukkit.Color
 import org.bukkit.Location
 import org.bukkit.entity.Player
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Predicate
 import kotlin.jvm.optionals.getOrNull
 
 class MEGInteractable(
     override val location: Location,
     val modelId: String,
-    audience: AquaticAudience,
+    initialAudience: AquaticAudience,
     override val onInteract: (InteractableInteractEvent) -> Unit,
 ) : Interactable() {
 
-    override val viewers: MutableSet<Player> = mutableSetOf()
+    private val _viewers = ConcurrentHashMap.newKeySet<UUID>()
+    override val viewers: Collection<Player> get() = _viewers.mapNotNull { Bukkit.getPlayer(it) }
 
-    override var audience: AquaticAudience = audience
+    override var audience: AquaticAudience = initialAudience
         set(value) {
             field = value
-            for (player in viewers.toList()) {
-                if (!field.canBeApplied(player)) {
-                    removeViewer(player)
-                }
-            }
-            for (player in Bukkit.getOnlinePlayers()) {
-                if (viewers.contains(player)) continue
-                if (!field.canBeApplied(player)) continue
-                addViewer(player)
-            }
+            refreshViewers()
         }
 
     val dummy = MEGInteractableDummy(this).apply {
         location = this@MEGInteractable.location
-        bodyRotationController.yBodyRot = location.yaw
-        bodyRotationController.xHeadRot = location.pitch
-        bodyRotationController.yHeadRot = location.yaw
-        yHeadRot = location.yaw
-        yBodyRot = location.yaw
+        val rot = this@MEGInteractable.location
+        bodyRotationController.yBodyRot = rot.yaw
+        bodyRotationController.xHeadRot = rot.pitch
+        bodyRotationController.yHeadRot = rot.yaw
+        yHeadRot = rot.yaw
+        yBodyRot = rot.yaw
     }
 
-    val modeledEntity: ModeledEntity?
-        get() {
-            return ModelEngineAPI.getModeledEntity(dummy.uuid)
-        }
-    val activeModel: ActiveModel?
-        get() {
-            return modeledEntity?.getModel(modelId)?.getOrNull()
-        }
+    val modeledEntity: ModeledEntity? get() = ModelEngineAPI.getModeledEntity(dummy.uuid)
+    val activeModel: ActiveModel? get() = modeledEntity?.getModel(modelId)?.orElse(null)
 
-    fun setSkin(player: Player) {
-        setSkin(player.playerProfile)
+    init {
+        // Tie ModelEngine's visibility to our internal viewers set
+        dummy.data.tracked.playerPredicate = Predicate { p -> _viewers.contains(p.uniqueId) }
+
+        val me = ModelEngineAPI.createModeledEntity(dummy)
+        val model = ModelEngineAPI.createActiveModel(modelId)
+        me.addModel(model, true)
+
+        InteractableModule.register(this)
+        refreshViewers()
     }
 
-    fun setSkin(playerProfile: PlayerProfile) {
-        activeModel?.apply {
-            for (value in bones.values) {
-                value.getBoneBehavior(BoneBehaviorTypes.PLAYER_LIMB).ifPresent {
-                    (it as PlayerLimb).setTexture(playerProfile)
-                }
+    fun updateVisibility(player: Player) {
+        if (audience.canBeApplied(player)) {
+            _viewers.add(player.uniqueId)
+        } else {
+            _viewers.remove(player.uniqueId)
+        }
+    }
+
+    fun removeViewer(player: Player) {
+        _viewers.remove(player.uniqueId)
+    }
+
+    private fun refreshViewers() {
+        for (player in Bukkit.getOnlinePlayers()) {
+            updateVisibility(player)
+        }
+    }
+
+    fun setSkin(profile: PlayerProfile) {
+        activeModel?.bones?.values?.forEach { bone ->
+            bone.getBoneBehavior(BoneBehaviorTypes.PLAYER_LIMB).ifPresent {
+                (it as PlayerLimb).setTexture(profile)
             }
         }
     }
 
     fun setTint(tint: Color) {
-        activeModel?.apply {
-            this.defaultTint = tint
-        }
+        activeModel?.defaultTint = tint
     }
 
-    init {
-        this.audience = audience
-        dummy.data.tracked.playerPredicate = Predicate { p -> viewers.contains(p) }
-        val modeledEntity = ModelEngineAPI.createModeledEntity(dummy)
-        val activeModel = ModelEngineAPI.createActiveModel(modelId)
-        synchronized(InteractableModule.megInteractables) {
-            InteractableModule.megInteractables += this
-        }
-        modeledEntity.addModel(activeModel, true)
-    }
-
-
-    override fun addViewer(player: Player) {
-        viewers.add(player)
-    }
-
-    override fun removeViewer(player: Player) {
-        viewers.remove(player)
-    }
-
-
-    override fun destroy() {
-        this.activeModel?.destroy()
-        this.activeModel?.isRemoved = true
-        dummy.isRemoved = true
-        synchronized(InteractableModule.megInteractables) {
-            InteractableModule.megInteractables -= this
-        }
-        viewers.clear()
-    }
-
-    fun playAnimation(id: String, lerpIn: Double = .0, lerpOut: Double = .0, speed: Double = 1.0) {
+    fun playAnimation(id: String, lerpIn: Double = 0.0, lerpOut: Double = 0.0, speed: Double = 1.0) {
         activeModel?.animationHandler?.playAnimation(id, lerpIn, lerpOut, speed, true)
     }
 
-    override fun updateViewers() {
-        Bukkit.getOnlinePlayers().forEach { player ->
-            if (audience.canBeApplied(player)) {
-                addViewer(player)
-            }
+    override fun destroy() {
+        activeModel?.let {
+            it.destroy()
+            it.isRemoved = true
         }
+        dummy.isRemoved = true
+        InteractableModule.unregister(this)
+        _viewers.clear()
     }
 }
