@@ -25,3 +25,6 @@
 [submodule "AquaticCommon"]
 	path = AquaticCommon
 	url = https://github.com/MrLarkyy/AquaticCommon.git
+[submodule "Kurrency"]
+	path = Kurrency
+	url = https://github.com/MrLarkyy/Kurrency.git

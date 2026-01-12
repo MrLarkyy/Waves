@@ -12,6 +12,7 @@ val submodules = listOf(
     "Execute" to "gg.aquatic.execute:Execute",
     "Replace" to "gg.aquatic.replace:Replace",
     "Kommand" to "gg.aquatic:Kommand",
+    "Kurrency" to "gg.aquatic:Kurrency",
     "AquaticCommon" to "gg.aquatic:Common"
 )
 
