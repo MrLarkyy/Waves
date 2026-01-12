@@ -8,15 +8,13 @@ abstract class Interactable {
 
     abstract val onInteract: (InteractableInteractEvent) -> Unit
 
-    abstract var audience: AquaticAudience
     abstract val location: Location
+    abstract var audience: AquaticAudience
     abstract val viewers: Collection<Player>
-
-    abstract fun addViewer(player: Player)
-    abstract fun removeViewer(player: Player)
 
     abstract fun destroy()
 
-    abstract fun updateViewers()
-
+    fun trigger(player: Player, isLeftClick: Boolean) {
+        onInteract(InteractableInteractEvent(this, player, isLeftClick))
+    }
 }

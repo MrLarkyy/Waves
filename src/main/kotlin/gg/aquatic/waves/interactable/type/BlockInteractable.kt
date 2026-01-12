@@ -8,52 +8,27 @@ import org.bukkit.Location
 import org.bukkit.entity.Player
 
 class BlockInteractable(
-    val block: FakeBlock, override val onInteract: (InteractableInteractEvent) -> Unit
+    val block: FakeBlock,
+    override val onInteract: (InteractableInteractEvent) -> Unit
 ) : Interactable() {
 
     override var audience: AquaticAudience
-        get() {
-            return block.audience
-        }
-        set(value) {
-            block.setAudience(value)
-        }
+        get() = block.audience
+        set(value) { block.setAudience(value) }
 
-    override val location: Location
-        get() {
-            return block.location
-        }
-    override val viewers: Collection<Player>
-        get() {
-            return block.viewers()
-        }
+    override val location: Location get() = block.location
+    override val viewers: Collection<Player> get() = block.viewers
 
     init {
+        // Professional Delegation: Tell the block to trigger this interactable
         block.onInteract = { e ->
-            this.onInteract(
-                InteractableInteractEvent(
-                    this,
-                    e.player,
-                    e.isLeftClick
-                )
-            )
+            this.trigger(e.player, e.isLeftClick)
         }
-    }
-
-    override fun addViewer(player: Player) {
-        block.addViewer(player)
-    }
-
-    override fun removeViewer(player: Player) {
-        block.removeViewer(player)
+        // Ensure the block is active in the world
+        if (!block.registered) block.register()
     }
 
     override fun destroy() {
-        this.block.destroy()
+        block.destroy()
     }
-
-    override fun updateViewers() {
-        block.tickRange(true)
-    }
-
 }

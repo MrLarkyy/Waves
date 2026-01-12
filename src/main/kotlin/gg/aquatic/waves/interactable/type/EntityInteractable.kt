@@ -7,50 +7,26 @@ import gg.aquatic.waves.interactable.InteractableInteractEvent
 import org.bukkit.Location
 import org.bukkit.entity.Player
 
-class EntityInteractable(val entity: FakeEntity, override val onInteract: (InteractableInteractEvent) -> Unit) : Interactable() {
+class EntityInteractable(
+    val entity: FakeEntity,
+    override val onInteract: (InteractableInteractEvent) -> Unit
+) : Interactable() {
 
     override var audience: AquaticAudience
-        get() {
-            return entity.audience
-        }
-        set(value) {
-            entity.setAudience(value)
-        }
+        get() = entity.audience
+        set(value) { entity.setAudience(value) }
 
-    override val location: Location
-        get() {
-            return entity.location
-        }
-    override val viewers: Collection<Player>
-        get() {
-            return entity.viewers()
-        }
+    override val location: Location get() = entity.location
+    override val viewers: Collection<Player> get() = entity.viewers
 
     init {
         entity.onInteract = { e ->
-            this.onInteract(
-                InteractableInteractEvent(
-                    this,
-                    e.player,
-                    e.isLeftClick
-                )
-            )
+            this.trigger(e.player, e.isLeftClick)
         }
-    }
-
-    override fun addViewer(player: Player) {
-        entity.addViewer(player)
-    }
-
-    override fun removeViewer(player: Player) {
-        entity.removeViewer(player)
+        if (!entity.registered) entity.register()
     }
 
     override fun destroy() {
-        this.entity.destroy()
-    }
-
-    override fun updateViewers() {
-        entity.tickRange(true)
+        entity.destroy()
     }
 }
