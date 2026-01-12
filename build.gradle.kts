@@ -94,7 +94,7 @@ dependencies {
     compileOnly("net.kyori:adventure-text-minimessage:4.26.1")
     compileOnly("net.kyori:adventure-text-serializer-gson:4.26.1")
     compileOnly("net.kyori:adventure-text-serializer-plain:4.26.1")
-    compileOnly("com.github.MilkBowl:VaultAPI:1.7")
+    compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
     compileOnly("com.ticxo.modelengine:ModelEngine:R4.0.9")
 
     runtimeDownload("io.github.charlietap:cachemap:0.2.4")
