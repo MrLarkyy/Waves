@@ -1,5 +1,6 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import xyz.jpenilla.gremlin.gradle.ShadowGremlin
+import xyz.jpenilla.runtask.task.AbstractRun
 
 plugins {
     kotlin("jvm") version "2.3.0"
@@ -47,12 +48,7 @@ tasks {
     }
 }
 
-gremlin {
-    defaultJarRelocatorDependencies = true
-    defaultGremlinRuntimeDependency = true
-}
-
-tasks.withType(xyz.jpenilla.runtask.task.AbstractRun::class) {
+tasks.withType(AbstractRun::class) {
     javaLauncher = javaToolchains.launcherFor {
         vendor = JvmVendorSpec.JETBRAINS
         languageVersion = JavaLanguageVersion.of(21)
@@ -79,7 +75,6 @@ val exposedVersion = "0.61.0"
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     compileOnly("org.slf4j:slf4j-api:1.7.25")
-    compileOnly("xyz.jpenilla:gremlin-runtime:0.0.9")
 
     implementation("gg.aquatic:KMenu:26.0.1")
     implementation("gg.aquatic.replace:Replace:26.0.2")
@@ -91,10 +86,8 @@ dependencies {
     implementation("gg.aquatic:Kommand:26.0.2")
     implementation("gg.aquatic:Common:26.0.2")
 
-    runtimeDownload("org.reflections:reflections:0.10.2") {
-
-    }
-    implementation("net.kyori:adventure-text-minimessage:4.26.1")
+    runtimeDownload("org.reflections:reflections:0.10.2")
+    compileOnly("net.kyori:adventure-text-minimessage:4.26.1")
     compileOnly("net.kyori:adventure-text-serializer-gson:4.26.1")
     compileOnly("net.kyori:adventure-text-serializer-plain:4.26.1")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7")
@@ -115,8 +108,6 @@ dependencies {
     runtimeDownload("com.zaxxer:HikariCP:7.0.2")
 
     runtimeDownload("org.jetbrains.kotlin:kotlin-stdlib:2.3.0")
-    runtimeDownload("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.3.0")
-    runtimeDownload("org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.3.0")
     runtimeDownload("org.jetbrains.kotlin:kotlin-reflect:2.3.0")
     runtimeDownload("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 }
@@ -174,5 +165,4 @@ tasks.withType<ShadowJar> {
     filesMatching("META-INF/services/**") {
         duplicatesStrategy = DuplicatesStrategy.INCLUDE
     }
-
 }
