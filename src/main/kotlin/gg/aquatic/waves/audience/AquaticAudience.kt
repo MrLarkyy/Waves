@@ -7,6 +7,8 @@ import java.util.*
 interface AquaticAudience {
 
     val uuids: Collection<UUID>
+        get() = asOnlinePlayers().map { it.uniqueId }
+
     fun canBeApplied(player: Player): Boolean
 
     fun asOnlinePlayers(): List<Player> {
