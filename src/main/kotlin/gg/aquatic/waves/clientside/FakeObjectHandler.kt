@@ -33,46 +33,37 @@ object FakeObjectHandler {
 
     private val chunkCache = ConcurrentHashMap<String,MutableMap<ChunkId, ChunkBundle>>()
 
+    private var tickCycle = 0
     fun initialize() {
         Ticker {
+            tickCycle = (tickCycle + 1) % 4
+
             if (objectRemovalQueue.isNotEmpty()) {
-                tickableObjects -= objectRemovalQueue
+                tickableObjects.removeAll(objectRemovalQueue)
                 objectRemovalQueue.clear()
             }
+
             for (tickableObject in tickableObjects) {
                 if (tickableObject.destroyed) {
-                    objectRemovalQueue += tickableObject
+                    objectRemovalQueue.add(tickableObject)
+                    continue
                 }
-                tickableObject.handleTick()
+                // Pass the current cycle index
+                tickableObject.handleTick(tickCycle)
             }
-        }
+        }.register()
 
         packetEvent<PacketChunkLoadEvent> {
             val bundle = getChunkCacheBundle(it.x, it.z, it.player.world) ?: return@packetEvent
-
-            tickableObjects += bundle.blocks
-            tickableObjects += bundle.entities
-
-            val packets = mutableListOf<Any>()
-            for (block in bundle.blocks) {
-                if (block.destroyed) continue
-                if (block.viewers().contains(it.player)) {
-                    block.show(it.player)
-                    val packet = Pakket.handler.createBlockChangePacket(block.location, block.block.blockData)
-                    packets += packet
-
-                }
-            }
             it.then {
-                packets.forEach { packet -> it.player.sendPacket(packet) }
+                for (block in bundle.blocks) block.updateVisibility(it.player)
+                for (entity in bundle.entities) entity.updateVisibility(it.player)
             }
         }
         event<PlayerChunkUnloadEvent> {
-            for (tickableObject in tickableObjects) {
-                if (!tickableObject.location.isChunkLoaded) continue
-                if (tickableObject.location.chunk != it.chunk) continue
-                handlePlayerRemove(it.player, tickableObject, false)
-            }
+            val bundle = getChunkCacheBundle(it.chunk.x, it.chunk.z, it.world) ?: return@event
+            for (block in bundle.blocks) block.updateVisibility(it.player)
+            for (entity in bundle.entities) entity.updateVisibility(it.player)
         }
 
         event<PlayerQuitEvent> {
@@ -97,10 +88,9 @@ object FakeObjectHandler {
                 return@packetEvent
             }
             for (block in blocks) {
-                if (block.viewers().contains(player)) {
+                if (block.isAudienceMember(player)) { // Fixed the .viewers() error
                     if (!block.destroyed) {
-                        val newState = block.block.blockData
-                        it.blockData = newState
+                        it.blockData = block.block.blockData
                         break
                     }
                 }
@@ -112,20 +102,10 @@ object FakeObjectHandler {
             val blocks = locationToBlocks[it.clickedBlock?.location ?: return@event] ?: return@event
             for (block in blocks) {
                 if (block.destroyed) continue
-                if (block.viewers().contains(it.player)) {
+                if (block.isAudienceMember(it.player)) {
                     it.isCancelled = true
-                    val event = FakeBlockInteractEvent(
-                        block,
-                        it.player,
-                        it.action == Action.LEFT_CLICK_BLOCK || it.action == Action.LEFT_CLICK_AIR
-                    )
-                    block.onInteract(event)
-                    if (!block.destroyed) {
-                        if (it.action == Action.RIGHT_CLICK_AIR || it.action == Action.RIGHT_CLICK_BLOCK) {
-                        } else {
-                            block.show(it.player)
-                        }
-                    }
+                    val isLeft = it.action == Action.LEFT_CLICK_BLOCK || it.action == Action.LEFT_CLICK_AIR
+                    block.handleInteract(it.player, isLeft)
                     break
                 }
             }
