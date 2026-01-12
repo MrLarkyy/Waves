@@ -1,124 +1,137 @@
 package gg.aquatic.waves.clientside
 
 import gg.aquatic.waves.audience.AquaticAudience
-import gg.aquatic.waves.util.chunk.trackedBy
+import gg.aquatic.waves.util.chunk.isChunkTracked
+import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.entity.Player
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
-abstract class FakeObject {
+abstract class FakeObject(
+    open val viewRange: Int,
+    initialAudience: AquaticAudience
+) {
 
     abstract val location: Location
 
-    @Volatile
-    protected var registered: Boolean = false
-    abstract val viewRange: Int
-
-    @Volatile
     var destroyed: Boolean = false
-    abstract val audience: AquaticAudience
-    abstract fun setAudience(audience: AquaticAudience)
+        protected set
+
+    var registered: Boolean = false
+        protected set
+
+    private var _audience: AquaticAudience = initialAudience
+    open val audience: AquaticAudience get() = _audience
 
     // List of players that can see the object
-    private val viewers = HashSet<Player>()
+    protected val _viewers = ConcurrentHashMap.newKeySet<UUID>()
+    val viewers: Set<Player> get() = _viewers.mapNotNull { Bukkit.getPlayer(it) }.toSet()
 
     // List of players that are currently viewing the object
-    private val isViewing = HashSet<Player>()
+    protected val _isViewing = ConcurrentHashMap.newKeySet<UUID>()
+    val isViewing: Set<Player> get() = _isViewing.mapNotNull { Bukkit.getPlayer(it) }.toSet()
 
+    fun isAudienceMember(player: Player): Boolean = _viewers.contains(player.uniqueId)
+    fun isPacketViewer(player: Player): Boolean = _isViewing.contains(player.uniqueId)
+
+    fun setAudience(newAudience: AquaticAudience) {
+        this._audience = newAudience
+
+        // Remove those no longer in audience
+        val currentViewers = _viewers
+        for (uuid in currentViewers) {
+            val player = Bukkit.getPlayer(uuid) ?: continue
+            if (!newAudience.canBeApplied(player)) {
+                removeViewer(player)
+            }
+        }
+
+        // Add everyone online who matches the new audience
+        for (player in Bukkit.getOnlinePlayers()) {
+            if (newAudience.canBeApplied(player)) {
+                addViewer(player)
+            }
+        }
+    }
+
+
+    open fun addViewer(player: Player) {
+        if (!_viewers.add(player.uniqueId)) return
+        updateVisibility(player)
+    }
+
+    open fun removeViewer(player: Player) {
+        if (_isViewing.contains(player.uniqueId)) {
+            hide(player)
+        }
+        _viewers.remove(player.uniqueId)
+    }
+
+    fun show(player: Player) {
+        if (_isViewing.add(player.uniqueId)) {
+            onShow(player)
+        }
+    }
+
+    fun hide(player: Player) {
+        if (_isViewing.remove(player.uniqueId)) {
+            onHide(player)
+        }
+    }
+
+    protected abstract fun onShow(player: Player)
+    protected abstract fun onHide(player: Player)
+
+    fun updateVisibility(player: Player) {
+        if (shouldSee(player)) {
+            if (!_isViewing.contains(player.uniqueId)) show(player)
+        } else {
+            if (_isViewing.contains(player.uniqueId)) hide(player)
+        }
+    }
+
+    fun shouldSee(player: Player): Boolean {
+        if (destroyed || !player.isOnline) return false
+        if (player.world != location.world) return false
+        if (!audience.canBeApplied(player)) return false
+
+        val distSq = player.location.distanceSquared(location)
+        if (distSq > viewRange * viewRange) return false
+
+        return player.isChunkTracked(location.chunk)
+    }
+
+    abstract fun handleInteract(player: Player, isLeftClick: Boolean)
+
+    open suspend fun tick() {}
     abstract fun destroy()
-    abstract fun addViewer(player: Player)
-    abstract fun removeViewer(uuid: UUID)
-    abstract fun removeViewer(player: Player)
-    abstract fun show(player: Player)
-    abstract fun hide(player: Player)
 
-    abstract suspend fun tick()
-
-    fun viewers(): Collection<Player> {
-        return synchronized(viewers) {
-            viewers.toList()
-        }
-    }
-
-    protected fun internalAddViewer(player: Player) {
-        synchronized(viewers) {
-            viewers.add(player)
-        }
-    }
-
-    protected fun internalRemoveViewer(player: Player) {
-        synchronized(viewers) {
-            viewers.remove(player)
-        }
-    }
-
-    protected fun internalRemoveViewer(uuid: UUID) {
-        synchronized(viewers) {
-            viewers.removeIf { it.uniqueId == uuid }
-        }
-    }
-
-    fun isViewing(): Collection<Player> {
-        return synchronized(isViewing) {
-            isViewing.toList()
-        }
-    }
-
-    protected fun setIsViewing(isViewing: Boolean, player: Player) {
-        synchronized(this.isViewing) {
-            if (isViewing) {
-                this.isViewing.add(player)
-            } else {
-                this.isViewing.remove(player)
-            }
-        }
-    }
-
-    protected fun removeIsViewing(uuid: UUID) {
-        synchronized(this.isViewing) {
-            isViewing.removeIf { it.uniqueId == uuid }
-        }
-    }
-
-    private var rangeTick = 0
-    internal suspend fun handleTick() {
+    internal suspend fun handleTick(tickCount: Int) {
+        if (destroyed) return
         tick()
-        tickRange()
+
+        // Spread distance checks across different ticks
+        // Only check visibility every 4 ticks based on object's hash to stagger load
+        val myCycleSlot = (this.hashCode().let { if (it < 0) -it else it }) % 4
+
+        if (tickCount == myCycleSlot) {
+            refreshVisibility()
+        }
     }
 
-    internal fun tickRange(forced: Boolean = false) {
-        if (!forced) {
-            rangeTick++
-            if (rangeTick % 4 == 0) {
-                rangeTick = 0
+    private fun refreshVisibility() {
+        val worldPlayers = location.world?.players ?: return
+
+        for (player in worldPlayers) {
+            // If they are in the audience, check distance/chunk
+            if (audience.canBeApplied(player)) {
+                _viewers.add(player.uniqueId)
+                updateVisibility(player)
             } else {
-                return
-            }
-        }
-        synchronized(viewers) {
-            val trackedPlayers = location.chunk.trackedBy()
-            val loadedChunkViewers = trackedPlayers.filter { viewers.contains(it) }
-            for (loadedChunkViewer in loadedChunkViewers.toSet()) {
-                if (!loadedChunkViewer.isOnline) {
-                    FakeObjectHandler.handlePlayerRemove(loadedChunkViewer, this@FakeObject, true)
-                    continue
-                }
-                if (loadedChunkViewer.world != location.world) {
-                    FakeObjectHandler.handlePlayerRemove(loadedChunkViewer, this@FakeObject)
-                    continue
-                }
-                val distance = loadedChunkViewer.location.distanceSquared(location)
-                synchronized(isViewing) {
-                    if (isViewing.contains(loadedChunkViewer)) {
-                        if (distance > viewRange * viewRange) {
-                            hide(loadedChunkViewer)
-                            isViewing.remove(loadedChunkViewer)
-                        }
-                    } else {
-                        if (distance <= viewRange * viewRange) {
-                            show(loadedChunkViewer)
-                        }
-                    }
+                // If they were seeing it but are no longer in audience, remove
+                if (_viewers.contains(player.uniqueId)) {
+                    removeViewer(player)
                 }
             }
         }
