@@ -1,4 +1,4 @@
-package gg.aquatic.waves.data
+package gg.aquatic.waves.testing.data
 
 import gg.aquatic.waves.editor.Configurable
 import gg.aquatic.waves.input.impl.ChatInput

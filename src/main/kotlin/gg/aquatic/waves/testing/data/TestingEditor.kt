@@ -1,4 +1,4 @@
-package gg.aquatic.waves.data
+package gg.aquatic.waves.testing.data
 
 import gg.aquatic.kommand.command
 import gg.aquatic.waves.Config
@@ -6,7 +6,6 @@ import gg.aquatic.waves.Waves
 import gg.aquatic.waves.editor.EditorHandler
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
-import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 
 object TestingEditor {

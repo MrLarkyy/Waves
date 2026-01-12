@@ -1,4 +1,4 @@
-package gg.aquatic.waves.data
+package gg.aquatic.waves.testing.data
 
 import gg.aquatic.common.toMMComponent
 import gg.aquatic.stacked.StackedItem

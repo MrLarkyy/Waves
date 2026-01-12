@@ -7,8 +7,9 @@ import gg.aquatic.kmenu.KMenu
 import gg.aquatic.kmenu.coroutine.KMenuCtx
 import gg.aquatic.pakket.Pakket
 import gg.aquatic.stacked.initializeStacked
-import gg.aquatic.waves.data.TestingEditor
+import gg.aquatic.waves.testing.data.TestingEditor
 import gg.aquatic.waves.input.InputHandler
+import gg.aquatic.waves.world.AwaitingWorlds
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.plugin.java.JavaPlugin
@@ -31,9 +32,10 @@ object Waves : JavaPlugin() {
         initializeStacked(this, KMenuCtx.scope)
         KMenu.initialize()
         initExecute(this)
-        InputHandler.initialize()
 
+        InputHandler.initialize()
         TestingEditor.initialize()
+        AwaitingWorlds.initialize()
     }
 
 }
