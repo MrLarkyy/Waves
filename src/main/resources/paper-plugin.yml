@@ -1,10 +1,10 @@
 name: Waves
 main: gg.aquatic.waves.Waves
-version: '${project.version}'
+version: $version
 authors: [ Larkyy ]
 api-version: "1.21"
 folia-supported: true
-#loader: gg.aquatic.waves.dependency.DependencyLoader
+loader: gg.aquatic.waves.dependency.DependencyLoader
 
 dependencies:
   server:

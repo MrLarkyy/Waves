@@ -1,3 +1,6 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import xyz.jpenilla.gremlin.gradle.ShadowGremlin
+
 plugins {
     kotlin("jvm") version "2.3.0"
     id("com.gradleup.shadow") version "9.3.1"
@@ -23,6 +26,31 @@ tasks {
     build {
         dependsOn(shadowJar)
     }
+
+    processResources {
+        val props = mapOf(
+            "version" to project.version
+        )
+        inputs.properties(props)
+        filesMatching("*.yml") {
+            expand(props)
+        }
+    }
+
+    test {
+        useJUnitPlatform()
+    }
+
+    writeDependencies {
+        repos.add("https://repo.papermc.io/repository/maven-public/")
+        repos.add("https://repo.maven.apache.org/maven2/")
+    }
+}
+
+gremlin {
+    //defaultJarRelocatorDependencies.set(true)
+    defaultJarRelocatorDependencies = true
+    defaultGremlinRuntimeDependency = true
 }
 
 tasks.withType(xyz.jpenilla.runtask.task.AbstractRun::class) {
@@ -51,7 +79,8 @@ repositories {
 val exposedVersion = "0.61.0"
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
-    compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+    compileOnly("org.slf4j:slf4j-api:1.7.25")
+    compileOnly("xyz.jpenilla:gremlin-runtime:0.0.9")
 
     implementation("gg.aquatic:KMenu:26.0.1")
     implementation("gg.aquatic.replace:Replace:26.0.2")
@@ -63,14 +92,16 @@ dependencies {
     implementation("gg.aquatic:Kommand:26.0.2")
     implementation("gg.aquatic:Common:26.0.2")
 
-    implementation("org.reflections:reflections:0.10.2")
+    runtimeDownload("org.reflections:reflections:0.10.2") {
+
+    }
     implementation("net.kyori:adventure-text-minimessage:4.26.1")
     compileOnly("net.kyori:adventure-text-serializer-gson:4.26.1")
     compileOnly("net.kyori:adventure-text-serializer-plain:4.26.1")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7")
 
-    implementation("io.github.charlietap:cachemap:0.2.4")
-    implementation("io.github.charlietap:cachemap-suspend:0.2.4")
+    runtimeDownload("io.github.charlietap:cachemap:0.2.4")
+    runtimeDownload("io.github.charlietap:cachemap-suspend:0.2.4")
 
     // Testing
     testImplementation("io.mockk:mockk:1.14.7")
@@ -78,32 +109,50 @@ dependencies {
     testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
 
     // DB
-    implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
-    implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
-    implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
-    implementation("redis.clients:jedis:7.2.0")
-    implementation("com.zaxxer:HikariCP:7.0.2")
+    runtimeDownload("org.jetbrains.exposed:exposed-core:$exposedVersion")
+    runtimeDownload("org.jetbrains.exposed:exposed-dao:$exposedVersion")
+    runtimeDownload("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+    runtimeDownload("redis.clients:jedis:7.2.0")
+    runtimeDownload("com.zaxxer:HikariCP:7.0.2")
+
+    runtimeDownload("org.jetbrains.kotlin:kotlin-stdlib:2.3.0")
+    runtimeDownload("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.3.0")
+    runtimeDownload("org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.3.0")
+    runtimeDownload("org.jetbrains.kotlin:kotlin-reflect:2.3.0")
+    runtimeDownload("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+}
+
+
+configurations {
+    runtimeDownload {
+        exclude("org.checkerframework", "checker-qual")
+        exclude("com.google.code.gson")
+    }
+    compileOnly {
+        extendsFrom(configurations.runtimeDownload.get())
+    }
+    testImplementation {
+        extendsFrom(configurations.runtimeDownload.get())
+    }
 }
 
 kotlin {
     jvmToolchain(21)
 }
 
-tasks.test {
-    useJUnitPlatform()
-}
+tasks.withType<ShadowJar> {
+    fun Task.reloc(pkg: String) {
+        ShadowGremlin.relocate(this, pkg, "gg.aquatic.waves.dependency.$pkg")
+    }
 
-tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
     archiveFileName.set("Waves-${project.version}.jar")
     archiveClassifier.set("")
 
     dependencies {
-        /*
         exclude(dependency("org.jetbrains.kotlin:.*:.*"))
         exclude(dependency("org.jetbrains.kotlinx:.*:.*"))
         exclude(dependency("org.jetbrains:annotations:.*"))
 
-         */
         exclude(dependency("net.kyori:adventure-api:.*"))
 
         exclude(dependency("org.javassist:javassist:.*"))
@@ -112,11 +161,27 @@ tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
         exclude(dependency("org.slf4j:.*:.*"))
     }
 
-    relocate("kotlinx", "gg.aquatic.waves.libs.kotlinx")
-    relocate("org.jetbrains.kotlin", "gg.aquatic.waves.libs.kotlin")
-    relocate("kotlin", "gg.aquatic.waves.libs.kotlin")
-    relocate("org.bstats", "gg.aquatic.waves.shadow.bstats")
-    //relocate("com.undefined", "gg.aquatic.waves.shadow.undefined")
+    listOf(tasks.shadowJar, tasks.writeDependencies).forEach { taskProvider ->
+        taskProvider.configure {
+            reloc("kotlinx")
+            reloc("org.jetbrains.kotlin")
+            reloc("kotlin")
+            reloc("org.bstats")
+        }
+    }
+    /*
+    reloc("kotlinx")
+    reloc("org.jetbrains.kotlin")
+    reloc("kotlin")
+    reloc("org.bstats")
+    reloc("com.zaxxer.hikari")
 
-    relocate("com.zaxxer.hikari", "gg.aquatic.waves.libs.hikari")
+     */
+
+    mergeServiceFiles()
+    // Needed for mergeServiceFiles to work properly in Shadow 9+
+    filesMatching("META-INF/services/**") {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    }
+
 }
