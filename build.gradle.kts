@@ -48,7 +48,6 @@ tasks {
 }
 
 gremlin {
-    //defaultJarRelocatorDependencies.set(true)
     defaultJarRelocatorDependencies = true
     defaultGremlinRuntimeDependency = true
 }
@@ -122,7 +121,6 @@ dependencies {
     runtimeDownload("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 }
 
-
 configurations {
     runtimeDownload {
         exclude("org.checkerframework", "checker-qual")
@@ -167,16 +165,9 @@ tasks.withType<ShadowJar> {
             reloc("org.jetbrains.kotlin")
             reloc("kotlin")
             reloc("org.bstats")
+            reloc("com.zaxxer.hikari")
         }
     }
-    /*
-    reloc("kotlinx")
-    reloc("org.jetbrains.kotlin")
-    reloc("kotlin")
-    reloc("org.bstats")
-    reloc("com.zaxxer.hikari")
-
-     */
 
     mergeServiceFiles()
     // Needed for mergeServiceFiles to work properly in Shadow 9+
