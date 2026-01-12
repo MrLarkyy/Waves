@@ -67,8 +67,8 @@ repositories {
         name = "aquatic-releases"
         url = uri("https://repo.nekroplex.com/releases")
     }
-    maven("https://libraries.minecraft.net")
     maven("https://jitpack.io")
+    maven("https://mvn.lumine.io/repository/maven-public/")
 }
 
 val exposedVersion = "0.61.0"
@@ -87,6 +87,7 @@ dependencies {
     implementation("gg.aquatic:Common:26.0.2")
     implementation("gg.aquatic:Kurrency:26.0.1")
     implementation("gg.aquatic:KLocale:26.0.2")
+    implementation("gg.aquatic:Blokk:26.0.1")
     implementation("gg.aquatic:KLocale-Paper:26.0.2")
 
     runtimeDownload("org.reflections:reflections:0.10.2")
@@ -94,6 +95,7 @@ dependencies {
     compileOnly("net.kyori:adventure-text-serializer-gson:4.26.1")
     compileOnly("net.kyori:adventure-text-serializer-plain:4.26.1")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7")
+    compileOnly("com.ticxo.modelengine:ModelEngine:R4.0.9")
 
     runtimeDownload("io.github.charlietap:cachemap:0.2.4")
     runtimeDownload("io.github.charlietap:cachemap-suspend:0.2.4")

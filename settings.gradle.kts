@@ -14,6 +14,7 @@ val submodules = listOf(
     "Kommand" to "gg.aquatic:Kommand",
     "KLocale" to "gg.aquatic:KLocale",
     "Kurrency" to "gg.aquatic:Kurrency",
+    "Blokk" to "gg.aquatic:Blokk",
     "AquaticCommon" to "gg.aquatic:Common"
 )
 

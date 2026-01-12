@@ -31,3 +31,6 @@
 [submodule "KLocale"]
 	path = KLocale
 	url = https://github.com/MrLarkyy/KLocale.git
+[submodule "Blokk"]
+	path = Blokk
+	url = https://github.com/MrLarkyy/Blokk.git
