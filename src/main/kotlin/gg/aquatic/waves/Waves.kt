@@ -43,9 +43,12 @@ object Waves : JavaPlugin() {
         InputHandler.initialize(mapOf("chat" to ChatInput))
         TestingEditor.initialize()
         AwaitingWorlds.initialize()
+    }
 
+    fun initializeMultilingualMessages(plugin: JavaPlugin) {
+        val dataFolder = plugin.dataFolder
         dataFolder.mkdirs()
-        val languageFiles = dataFolder.resolve("languages").deepFilesLookup { it.extension == "yml" }
+        val languageFiles = dataFolder.resolve("messages").deepFilesLookup { it.extension == "yml" }
 
         val providers = ArrayList<LocaleProvider<PaperMessage>>()
         for (item in languageFiles) {
