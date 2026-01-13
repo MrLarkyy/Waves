@@ -22,6 +22,8 @@ run/
 run/*
 run
 
+.env
+
 ### Kotlin ###
 .kotlin
 

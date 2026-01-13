@@ -42,7 +42,7 @@ object Waves : JavaPlugin() {
         initExecute(this)
 
         InputHandler.initialize(mapOf("chat" to ChatInput))
-        TestingEditor.initialize()
+        //TestingEditor.initialize()
         AwaitingWorlds.initialize()
         initializeStatistik()
     }
