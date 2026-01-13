@@ -15,6 +15,7 @@ import gg.aquatic.pakket.Pakket
 import gg.aquatic.stacked.initializeStacked
 import gg.aquatic.waves.input.InputHandler
 import gg.aquatic.waves.input.impl.ChatInput
+import gg.aquatic.waves.statistic.initializeStatistik
 import gg.aquatic.waves.testing.data.TestingEditor
 import gg.aquatic.waves.world.AwaitingWorlds
 import org.bukkit.event.player.PlayerJoinEvent
@@ -43,6 +44,7 @@ object Waves : JavaPlugin() {
         InputHandler.initialize(mapOf("chat" to ChatInput))
         TestingEditor.initialize()
         AwaitingWorlds.initialize()
+        initializeStatistik()
     }
 
     fun initializeMultilingualMessages(plugin: JavaPlugin) {
