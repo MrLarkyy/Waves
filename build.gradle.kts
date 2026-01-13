@@ -137,10 +137,15 @@ kotlin {
     jvmToolchain(21)
 }
 
-tasks.withType<ShadowJar> {
-    from(sourceSets.main.get().output)
+val regularJar = tasks.register<ShadowJar>("regularJar") {
+    group = "build"
     configurations = listOf(project.configurations.runtimeClasspath.get())
+    from(sourceSets.main.get().output)
+    archiveBaseName.set("Waves")
+    archiveClassifier.set("")
+}
 
+tasks.withType<ShadowJar> {
     dependencies {
         exclude(dependency("org.jetbrains.kotlin:.*:.*"))
         exclude(dependency("org.jetbrains.kotlinx:.*:.*"))
@@ -160,28 +165,26 @@ tasks.withType<ShadowJar> {
     }
 }
 
-// Task for the Regular version (Fat JAR, no relocations)
-val regularJar = tasks.register<ShadowJar>("regularJar") {
-    group = "build"
-    archiveBaseName.set("Waves")
-    archiveClassifier.set("")
-}
+listOf(tasks.shadowJar, tasks.writeDependencies).forEach { taskProvider ->
+    taskProvider.configure {
+        // Ensure shadowJar is also a fat jar
+        if (this is ShadowJar) {
+            from(sourceSets.main.get().output)
+            configurations = listOf(project.configurations.runtimeClasspath.get())
+            archiveClassifier.set("shaded")
+        }
 
-// Configuration specific to the Shaded version (Fat JAR + Relocations)
-tasks.shadowJar {
-    fun Task.reloc(pkg: String) {
-        ShadowGremlin.relocate(this, pkg, "gg.aquatic.waves.dependency.$pkg")
+        fun reloc(pkg: String) {
+            ShadowGremlin.relocate(this, pkg, "gg.aquatic.waves.dependency.$pkg")
+        }
+
+        reloc("kotlinx")
+        reloc("org.jetbrains.kotlin")
+        reloc("kotlin")
+        reloc("org.bstats")
+        reloc("com.zaxxer.hikari")
     }
-
-    archiveClassifier.set("shaded")
-
-    reloc("kotlinx")
-    reloc("org.jetbrains.kotlin")
-    reloc("kotlin")
-    reloc("org.bstats")
-    reloc("com.zaxxer.hikari")
 }
-
 
 val maven_username = if (env.isPresent("MAVEN_USERNAME")) env.fetch("MAVEN_USERNAME") else ""
 val maven_password = if (env.isPresent("MAVEN_PASSWORD")) env.fetch("MAVEN_PASSWORD") else ""
