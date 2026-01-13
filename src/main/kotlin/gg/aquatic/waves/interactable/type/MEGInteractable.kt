@@ -15,10 +15,9 @@ import org.bukkit.Bukkit
 import org.bukkit.Color
 import org.bukkit.Location
 import org.bukkit.entity.Player
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Predicate
-import kotlin.jvm.optionals.getOrNull
 
 class MEGInteractable(
     override val location: Location,

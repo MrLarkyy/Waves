@@ -3,7 +3,6 @@ package gg.aquatic.waves.audience
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import java.util.*
-import java.util.function.Function
 import java.util.function.Predicate
 
 class FilterAudience(

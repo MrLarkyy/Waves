@@ -1,7 +1,6 @@
 package gg.aquatic.waves.interactable
 
 import com.ticxo.modelengine.api.events.BaseEntityInteractEvent
-import com.ticxo.modelengine.api.events.BaseEntityInteractEvent.Action
 import gg.aquatic.common.event
 import org.bukkit.inventory.EquipmentSlot
 
