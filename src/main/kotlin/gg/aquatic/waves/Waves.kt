@@ -3,6 +3,7 @@ package gg.aquatic.waves
 import gg.aquatic.common.deepFilesLookup
 import gg.aquatic.common.event
 import gg.aquatic.common.initializeCommon
+import gg.aquatic.execute.Execute
 import gg.aquatic.execute.initExecute
 import gg.aquatic.klocale.LocaleProvider
 import gg.aquatic.klocale.impl.paper.KLocale
@@ -40,6 +41,7 @@ object Waves : JavaPlugin() {
         initializeStacked(this, KMenuCtx.scope)
         KMenu.initialize()
         initExecute(this)
+        Execute.injectExecutables()
 
         InputHandler.initialize(mapOf("chat" to ChatInput))
         //TestingEditor.initialize()
