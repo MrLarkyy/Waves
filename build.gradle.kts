@@ -1,5 +1,4 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.gradle.platform.base.internal.DefaultBinaryNamingScheme.component
 import xyz.jpenilla.gremlin.gradle.ShadowGremlin
 import xyz.jpenilla.runtask.task.AbstractRun
 
@@ -19,7 +18,7 @@ bukkitKObjects {
 }
 
 group = "gg.aquatic.waves"
-version = "26.0.1"
+version = "26.0.2"
 
 tasks {
     runServer {
