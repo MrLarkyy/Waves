@@ -69,6 +69,7 @@ repositories {
     }
     maven("https://jitpack.io")
     maven("https://mvn.lumine.io/repository/maven-public/")
+    maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
 }
 
 val exposedVersion = "0.61.0"
@@ -96,6 +97,7 @@ dependencies {
     compileOnly("net.kyori:adventure-text-serializer-plain:4.26.1")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
     compileOnly("com.ticxo.modelengine:ModelEngine:R4.0.9")
+    compileOnly("me.clip:placeholderapi:2.11.7")
 
     runtimeDownload("io.github.charlietap:cachemap:0.2.4")
     runtimeDownload("io.github.charlietap:cachemap-suspend:0.2.4")
