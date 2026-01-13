@@ -1,4 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.platform.base.internal.DefaultBinaryNamingScheme.component
 import xyz.jpenilla.gremlin.gradle.ShadowGremlin
 import xyz.jpenilla.runtask.task.AbstractRun
 
@@ -10,6 +11,7 @@ plugins {
     id("co.uzzu.dotenv.gradle") version "4.0.0"
     java
     id("xyz.jpenilla.run-paper") version "3.0.2"
+    `maven-publish`
 }
 
 bukkitKObjects {
@@ -137,39 +139,77 @@ kotlin {
 }
 
 tasks.withType<ShadowJar> {
-    fun Task.reloc(pkg: String) {
-        ShadowGremlin.relocate(this, pkg, "gg.aquatic.waves.dependency.$pkg")
-    }
-
-    archiveFileName.set("Waves-${project.version}.jar")
-    archiveClassifier.set("")
+    from(sourceSets.main.get().output)
+    configurations = listOf(project.configurations.runtimeClasspath.get())
 
     dependencies {
         exclude(dependency("org.jetbrains.kotlin:.*:.*"))
         exclude(dependency("org.jetbrains.kotlinx:.*:.*"))
         exclude(dependency("org.jetbrains:annotations:.*"))
+        exclude(dependency("com.intellij:annotations:.*"))
 
         exclude(dependency("net.kyori:adventure-api:.*"))
-
         exclude(dependency("org.javassist:javassist:.*"))
         exclude(dependency("javax.annotation:javax.annotation-api:.*"))
         exclude(dependency("com.google.code.findbugs:jsr305:.*"))
         exclude(dependency("org.slf4j:.*:.*"))
     }
 
-    listOf(tasks.shadowJar, tasks.writeDependencies).forEach { taskProvider ->
-        taskProvider.configure {
-            reloc("kotlinx")
-            reloc("org.jetbrains.kotlin")
-            reloc("kotlin")
-            reloc("org.bstats")
-            reloc("com.zaxxer.hikari")
-        }
-    }
-
     mergeServiceFiles()
-    // Needed for mergeServiceFiles to work properly in Shadow 9+
     filesMatching("META-INF/services/**") {
         duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    }
+}
+
+// Task for the Regular version (Fat JAR, no relocations)
+val regularJar = tasks.register<ShadowJar>("regularJar") {
+    group = "build"
+    archiveBaseName.set("Waves")
+    archiveClassifier.set("")
+}
+
+// Configuration specific to the Shaded version (Fat JAR + Relocations)
+tasks.shadowJar {
+    fun Task.reloc(pkg: String) {
+        ShadowGremlin.relocate(this, pkg, "gg.aquatic.waves.dependency.$pkg")
+    }
+
+    archiveClassifier.set("shaded")
+
+    reloc("kotlinx")
+    reloc("org.jetbrains.kotlin")
+    reloc("kotlin")
+    reloc("org.bstats")
+    reloc("com.zaxxer.hikari")
+}
+
+
+val maven_username = if (env.isPresent("MAVEN_USERNAME")) env.fetch("MAVEN_USERNAME") else ""
+val maven_password = if (env.isPresent("MAVEN_PASSWORD")) env.fetch("MAVEN_PASSWORD") else ""
+
+publishing {
+    repositories {
+        maven {
+            name = "aquaticRepository"
+            url = uri("https://repo.nekroplex.com/releases")
+
+            credentials {
+                username = maven_username
+                password = maven_password
+            }
+            authentication {
+                create<BasicAuthentication>("basic")
+            }
+        }
+    }
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = "gg.aquatic"
+            artifactId = "Waves"
+            version = project.version.toString()
+
+            artifact(regularJar)
+            artifact(tasks.shadowJar)
+        }
     }
 }
