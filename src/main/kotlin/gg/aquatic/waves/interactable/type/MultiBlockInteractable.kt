@@ -14,7 +14,8 @@ class MultiBlockInteractable(
     override val location: Location,
     val viewRange: Int,
     initialAudience: AquaticAudience,
-    override val onInteract: (InteractableInteractEvent) -> Unit
+    override val onInteract: (InteractableInteractEvent) -> Unit,
+    onTick: suspend () -> Unit = {}
 ) : Interactable() {
 
     private val blocks = ConcurrentHashMap.newKeySet<FakeBlock>()
@@ -33,7 +34,7 @@ class MultiBlockInteractable(
         multiBlokk.processLayerCells(location) { char, newLoc ->
             val blokk = multiBlokk.shape.blocks[char] ?: return@processLayerCells
 
-            val fakeBlock = FakeBlock(blokk, newLoc, viewRange, audience)
+            val fakeBlock = FakeBlock(blokk, newLoc, viewRange, audience, onTick = onTick)
 
             // Delegate interactions to the MultiBlock container
             fakeBlock.onInteract = { e ->

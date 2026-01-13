@@ -25,6 +25,7 @@ class FakeEntity(
     consumer: FakeEntity.() -> Unit = {},
     override var onInteract: (FakeEntityInteractEvent) -> Unit = {},
     var onUpdate: (Player) -> Unit = {},
+    var onTick: suspend () -> Unit = {}
 ) : FakeObject(viewRange, audience), EntityBased {
 
     override var location: Location = location
@@ -129,5 +130,7 @@ class FakeEntity(
         unregister()
     }
 
-    override suspend fun tick() {}
+    override suspend fun tick() {
+        onTick()
+    }
 }

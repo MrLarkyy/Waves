@@ -15,7 +15,8 @@ class FakeBlock(
     location: Location,
     override val viewRange: Int,
     audience: AquaticAudience,
-    var onInteract: (FakeBlockInteractEvent) -> Unit = {}
+    var onInteract: (FakeBlockInteractEvent) -> Unit = {},
+    var onTick: suspend () -> Unit = {}
 ) : FakeObject(viewRange, audience) {
 
     override val location: Location = location.toBlockLocation().apply { yaw = location.yaw }
@@ -79,5 +80,7 @@ class FakeBlock(
         FakeObjectHandler.locationToBlocks[location]?.remove(this)
     }
 
-    override suspend fun tick() {}
+    override suspend fun tick() {
+        onTick()
+    }
 }
