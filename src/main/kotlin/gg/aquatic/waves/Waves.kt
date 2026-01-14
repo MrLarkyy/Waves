@@ -5,7 +5,6 @@ import gg.aquatic.common.event
 import gg.aquatic.common.initializeCommon
 import gg.aquatic.execute.Action
 import gg.aquatic.execute.Execute
-import gg.aquatic.execute.Execute.injectActions
 import gg.aquatic.execute.action.registerAction
 import gg.aquatic.execute.initExecute
 import gg.aquatic.klocale.LocaleProvider
@@ -21,7 +20,6 @@ import gg.aquatic.stacked.initializeStacked
 import gg.aquatic.waves.input.InputHandler
 import gg.aquatic.waves.input.impl.ChatInput
 import gg.aquatic.waves.statistic.initializeStatistik
-import gg.aquatic.waves.testing.data.TestingEditor
 import gg.aquatic.waves.util.action.BossbarAction
 import gg.aquatic.waves.util.action.MessageAction
 import gg.aquatic.waves.world.AwaitingWorlds

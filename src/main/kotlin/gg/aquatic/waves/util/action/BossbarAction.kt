@@ -2,7 +2,6 @@ package gg.aquatic.waves.util.action
 
 import gg.aquatic.common.toMMComponent
 import gg.aquatic.execute.Action
-import gg.aquatic.execute.Execute
 import gg.aquatic.execute.argument.ArgumentContext
 import gg.aquatic.execute.argument.ObjectArgument
 import gg.aquatic.waves.Waves
