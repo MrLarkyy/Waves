@@ -27,39 +27,16 @@ object AquaticMessageSerializer: LocaleSerializer<YamlConfiguration, PaperMessag
     }
 
     fun parseMessage(section: ConfigurationSection, key: String): PaperMessage {
-        val value = section.get(key) ?: return PaperMessage.of()
-        return if (section.isString(key)) {
-            PaperMessage.of((value as String).toMMComponent())
-        } else if (section.isList(key)) {
-            PaperMessage.of((value as List<*>).map { it.toString().toMMComponent() })
-        } else {
-            val section = section.getConfigurationSection(key)
-            if (section == null) {
-                if (value is List<*>) {
-                    return PaperMessage.of((value.map { it.toString().toMMComponent() }))
-                }
-                return PaperMessage.of(value.toString().toMMComponent())
-            }
-            if (section.contains("messages")) {
-                val messagesList = section.getList("messages")
-                if (messagesList is List<*>) {
-                    return parse(section)
-                }
-            }
-            PaperMessage.of()
-            /*
-            if (section.contains("paginated")) {
-                val messageList =
-                    section.getList("paginated") ?: emptyList<String>()
-                val messages = MessageParser.parse(messageList)
-                val pageSize = section.getInt("page-size", 10)
-                val header = section.getString("header")
-                val footer = section.getString("footer")
+        if (!section.contains(key)) return PaperMessage.of()
 
-                PaginatedMessage(messages, pageSize, header, footer)
-            } else SimpleMessage(emptyList())
-
-             */
+        return when {
+            section.isString(key) -> PaperMessage.of(section.getString(key)!!.toMMComponent())
+            section.isList(key) -> PaperMessage.of(section.getStringList(key).map { it.toMMComponent() })
+            section.isConfigurationSection(key) -> {
+                val subSection = section.getConfigurationSection(key)!!
+                if (subSection.contains("messages")) parse(subSection) else PaperMessage.of()
+            }
+            else -> PaperMessage.of()
         }
     }
 
