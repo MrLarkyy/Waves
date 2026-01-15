@@ -22,6 +22,7 @@ import gg.aquatic.waves.input.impl.ChatInput
 import gg.aquatic.waves.statistic.initializeStatistik
 import gg.aquatic.waves.util.action.BossbarAction
 import gg.aquatic.waves.util.action.MessageAction
+import gg.aquatic.waves.util.message.AquaticMessageSerializer
 import gg.aquatic.waves.world.AwaitingWorlds
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
@@ -66,12 +67,12 @@ object Waves : JavaPlugin() {
 
         val providers = ArrayList<LocaleProvider<PaperMessage>>()
         for (item in languageFiles) {
-            providers += YamlLocaleProvider(item, YamlLocaleProvider.DefaultSerializer)
+            providers += YamlLocaleProvider(item, AquaticMessageSerializer)
         }
 
-        KLocale.paper(
-            MergedLocaleProvider(providers)
-        ) {}
+        KLocale.paper {
+            providers += MergedLocaleProvider(providers)
+        }
     }
 
 }
