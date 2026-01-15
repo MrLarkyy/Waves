@@ -18,7 +18,7 @@ bukkitKObjects {
 }
 
 group = "gg.aquatic.waves"
-version = "26.0.5"
+version = "26.0.6"
 
 tasks {
     runServer {
@@ -92,6 +92,7 @@ dependencies {
     implementation("gg.aquatic:Blokk:26.0.1")
     implementation("gg.aquatic:KLocale-Paper:26.0.2")
 
+    runtimeDownload("com.github.ben-manes.caffeine:caffeine:3.2.3")
     runtimeDownload("org.reflections:reflections:0.10.2")
     compileOnly("net.kyori:adventure-text-minimessage:4.26.1")
     compileOnly("net.kyori:adventure-text-serializer-gson:4.26.1")
