@@ -19,6 +19,20 @@ abstract class Configurable<A : Configurable<A>> {
      */
     fun getEditorValues(): List<EditorValue<*>> = _editorValues
 
+    /**
+     * Creates a read-only string editor value with a custom icon factory.
+     * This string still appears in the GUI, but cannot be edited.
+     */
+    protected fun infoString(key: String, initial: String, icon: (String) -> ItemStack = {
+        ItemStack(Material.PAPER).apply { editMeta { m -> m.displayName(Component.text(it)) } }
+    }) = edit(
+        key = key,
+        initial = initial,
+        serializer = Serializers.STRING,
+        icon = icon,
+        handler = { _, _, _, _ -> /* Do nothing, it's read-only */ }
+    )
+
     protected fun editString(key: String, initial: String, prompt: String) =
         edit(key, initial, Serializers.STRING,
             { ItemStack(Material.PAPER).apply { editMeta { m -> m.displayName(Component.text(it)) } } },
