@@ -7,6 +7,7 @@ import gg.aquatic.execute.Action
 import gg.aquatic.execute.Execute
 import gg.aquatic.execute.action.registerAction
 import gg.aquatic.execute.initExecute
+import gg.aquatic.klocale.LocaleManager
 import gg.aquatic.klocale.LocaleProvider
 import gg.aquatic.klocale.impl.paper.KLocale
 import gg.aquatic.klocale.impl.paper.PaperMessage
@@ -27,12 +28,15 @@ import gg.aquatic.waves.world.AwaitingWorlds
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.plugin.java.JavaPlugin
+import kotlin.collections.plusAssign
 
 object Waves : JavaPlugin() {
 
     override fun onLoad() {
 
     }
+
+    lateinit var locale: LocaleManager<PaperMessage>
 
     override fun onEnable() {
         initializeCommon(this)
@@ -58,21 +62,7 @@ object Waves : JavaPlugin() {
         //TestingEditor.initialize()
         AwaitingWorlds.initialize()
         initializeStatistik()
+
+        locale = KLocale.paper {}
     }
-
-    fun initializeMultilingualMessages(plugin: JavaPlugin) {
-        val dataFolder = plugin.dataFolder
-        dataFolder.mkdirs()
-        val languageFiles = dataFolder.resolve("messages").deepFilesLookup { it.extension == "yml" }
-
-        val providers = ArrayList<LocaleProvider<PaperMessage>>()
-        for (item in languageFiles) {
-            providers += YamlLocaleProvider(item, AquaticMessageSerializer)
-        }
-
-        KLocale.paper {
-            providers += MergedLocaleProvider(providers)
-        }
-    }
-
 }
