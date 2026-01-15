@@ -6,6 +6,7 @@ import gg.aquatic.common.getSectionList
 import gg.aquatic.execute.action.ActionSerializer
 import gg.aquatic.execute.executeActions
 import gg.aquatic.klocale.LocaleSerializer
+import gg.aquatic.klocale.impl.paper.PaginationSettings
 import gg.aquatic.klocale.impl.paper.PaperMessage
 import gg.aquatic.klocale.impl.paper.toMMComponent
 import org.bukkit.configuration.ConfigurationSection
