@@ -34,7 +34,25 @@ object AquaticMessageSerializer: LocaleSerializer<YamlConfiguration, PaperMessag
             section.isList(key) -> PaperMessage.of(section.getStringList(key).map { it.toMMComponent() })
             section.isConfigurationSection(key) -> {
                 val subSection = section.getConfigurationSection(key)!!
-                if (subSection.contains("messages")) parse(subSection) else PaperMessage.of()
+                if (subSection.contains("messages")) parse(subSection)
+                else if (section.contains("paginated")) {
+                    val messageList =
+                        section.getList("paginated") ?: emptyList<String>()
+                    val messages = parse(messageList)
+                    val pageSize = section.getInt("page-size", 10)
+                    val header = section.getString("header")
+                    val footer = section.getString("footer")
+
+                    val actions = ActionSerializer.fromSections<Player>(section.getSectionList("actions"))
+                    val pagination = PaginationSettings(pageSize,header?.toMMComponent(), footer?.toMMComponent())
+                    PaperMessage.of(messages.map { it.toMMComponent() }, pagination, callbacks = listOf { sender, message ->
+                        VirtualsCtx {
+                            if (sender is Player) {
+                                actions.executeActions(sender)
+                            }
+                        }
+                    })
+                } else PaperMessage.of()
             }
             else -> PaperMessage.of()
         }
@@ -46,7 +64,7 @@ object AquaticMessageSerializer: LocaleSerializer<YamlConfiguration, PaperMessag
             section.getList("messages") ?: (emptyList<Any>() + section.getList("message"))
         val messages = parse(messageList).map { it.toMMComponent() }
         //val view = MessageView.load(section)
-        return PaperMessage.of(messages, listOf { sender, message ->
+        return PaperMessage.of(messages, callbacks =  listOf { sender, message ->
             VirtualsCtx {
                 if (sender is Player) {
                     actions.executeActions(sender)
