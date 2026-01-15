@@ -41,7 +41,7 @@ class ConfigurableListMenu<T>(
                 itemVisual = { editor.getDisplayItem() },
                 placeholderContext = PlaceholderContext.privateMenu(),
                 onClick = { event ->
-                    if (event.buttonType == ButtonType.RIGHT) {
+                    if (event.buttonType == ButtonType.DROP) {
                         listValue.value.remove(editor)
                         updateParent()
                         context.refresh()

@@ -4,6 +4,7 @@ import gg.aquatic.kmenu.coroutine.KMenuCtx
 import gg.aquatic.waves.editor.EditorHandler.getEditorContext
 import gg.aquatic.waves.editor.handlers.ChatInputHandler
 import gg.aquatic.waves.editor.ui.ConfigurableListMenu
+import gg.aquatic.waves.editor.ui.PolymorphicSelectionMenu
 import gg.aquatic.waves.editor.value.*
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
@@ -83,6 +84,87 @@ abstract class Configurable<A : Configurable<A>> {
         ).also { _editorValues.add(it) }
     }
 
+    protected fun <T : Configurable<T>> editPolymorphicConfigurable(
+        key: String,
+        initial: T,
+        options: Map<String, () -> T>,
+        icon: (T) -> ItemStack,
+        menuTitle: Component = Component.text("Select Type"),
+        visibleIf: () -> Boolean = { true }
+    ): PolymorphicConfigurableEditorValue<T> {
+        return PolymorphicConfigurableEditorValue(
+            key = key,
+            value = initial,
+            options = options,
+            iconFactory = icon,
+            selectionMenuTitle = menuTitle,
+            visibleIf = visibleIf
+        ).also { _editorValues.add(it) }
+    }
+
+    /**
+     * DSL for a list of Configurables where each element can be a different type.
+     * When adding a new element, it opens a selection menu to pick the type.
+     */
+    protected fun <T : Configurable<T>> editPolymorphicConfigurableList(
+        key: String,
+        initial: List<T> = emptyList(),
+        options: Map<String, () -> T>,
+        listIcon: (List<T>) -> ItemStack,
+        itemIcon: (T) -> ItemStack,
+        visibleIf: () -> Boolean = { true }
+    ): ListEditorValue<T> {
+        val wrapPolymorphic: (T) -> PolymorphicConfigurableEditorValue<T> = { configurable ->
+            PolymorphicConfigurableEditorValue(
+                key = "__value",
+                value = configurable,
+                options = options,
+                iconFactory = { itemIcon(it) },
+                selectionMenuTitle = Component.text("Select Type")
+            )
+        }
+
+        val elementFactory: (ConfigurationSection) -> EditorValue<T> = { section ->
+            // Note: For polymorphic loading, we'd ideally need a type hint in the section.
+            // Assuming the base factory or a copy-logic can handle it via deserialize.
+            val instance = options.values.first()().copy()
+            instance.deserialize(section)
+            wrapPolymorphic(instance)
+        }
+
+        return ListEditorValue(
+            key = key,
+            value = initial.map(wrapPolymorphic).toMutableList(),
+            addButtonClick = { player, accept ->
+                val context = player.getEditorContext() ?: return@ListEditorValue
+                KMenuCtx.launch {
+                    context.navigate {
+                        PolymorphicSelectionMenu(
+                            context = context,
+                            title = Component.text("Select Type to Add"),
+                            options = options,
+                            onSelect = { newInstance ->
+                                accept(wrapPolymorphic(newInstance))
+                                KMenuCtx.launch { context.goBack() }
+                            }
+                        ).open(player)
+                    }
+                }
+            },
+            iconFactory = { list -> listIcon(list.map { it.value }) },
+            openListGui = { player, editor, update ->
+                val context = player.getEditorContext() ?: return@ListEditorValue
+                KMenuCtx.launch {
+                    context.navigate {
+                        ConfigurableListMenu(context, editor, editor.addButtonClick, update).open(player)
+                    }
+                }
+            },
+            visibleIf = visibleIf,
+            elementFactory = elementFactory
+        ).also { _editorValues.add(it) }
+    }
+
     /**
      * Unified DSL for simple Lists (e.g., List<String>, List<Component>).
      * It automatically wraps simple types into EditorValues.
@@ -94,7 +176,7 @@ abstract class Configurable<A : Configurable<A>> {
         behavior: ElementBehavior<T>,
         addButtonClick: (player: Player, accept: (T?) -> Unit) -> Unit,
         listIcon: (List<EditorValue<T>>) -> ItemStack,
-        guiHandler: ListGuiHandler<T>,
+        guiHandler: ListGuiHandler<T>? = null,
         visibleIf: () -> Boolean = { true }
     ): ListEditorValue<T> {
         val wrapSimple: (T) -> SimpleEditorValue<T> = { valData ->
@@ -114,18 +196,20 @@ abstract class Configurable<A : Configurable<A>> {
             wrapSimple(initialValue)
         }
 
+        val finalGuiHandler = guiHandler ?: ListGuiHandler { player, editor, update ->
+            val context = player.getEditorContext() ?: return@ListGuiHandler
+            KMenuCtx.launch {
+                context.navigate {
+                    ConfigurableListMenu(context, editor, editor.addButtonClick, update).open(player)
+                }
+            }
+        }
+
         return ListEditorValue(
             key, initial.map(wrapSimple).toMutableList(),
             addButtonClick = addButtonClickWrap,
             iconFactory = listIcon,
-            openListGui = { player, editor, update ->
-                val context = player.getEditorContext() ?: return@ListEditorValue
-                KMenuCtx.launch {
-                    context.navigate {
-                        ConfigurableListMenu(context, editor, editor.addButtonClick, update).open(player)
-                    }
-                }
-            },
+            openListGui = finalGuiHandler,
             visibleIf = visibleIf,
             elementFactory = elementFactory
         ).also { _editorValues.add(it) }
@@ -140,11 +224,20 @@ abstract class Configurable<A : Configurable<A>> {
         elementFactory: (ConfigurationSection) -> EditorValue<T>,
         addButtonClick: (player: Player, accept: (EditorValue<T>) -> Unit) -> Unit,
         listIcon: (List<EditorValue<T>>) -> ItemStack,
-        guiHandler: ListGuiHandler<T>,
+        guiHandler: ListGuiHandler<T>? = null,
         visibleIf: () -> Boolean = { true }
     ): ListEditorValue<T> {
+        val finalGuiHandler = guiHandler ?: ListGuiHandler { player, editor, update ->
+            val context = player.getEditorContext() ?: return@ListGuiHandler
+            KMenuCtx.launch {
+                context.navigate {
+                    ConfigurableListMenu(context, editor, editor.addButtonClick, update).open(player)
+                }
+            }
+        }
+
         return ListEditorValue(
-            key, mutableListOf(), addButtonClick, listIcon, guiHandler,
+            key, mutableListOf(), addButtonClick, listIcon, finalGuiHandler,
             visibleIf, elementFactory = elementFactory
         ).also { _editorValues.add(it) }
     }
