@@ -55,6 +55,20 @@ abstract class Configurable<A : Configurable<A>> {
         ).also { _editorValues.add(it) }
     }
 
+    protected fun <T : Configurable<T>> editConfigurable(
+        key: String,
+        initial: T,
+        icon: (T) -> ItemStack,
+        visibleIf: () -> Boolean = { true }
+    ): ConfigurableEditorValue<T> {
+        return ConfigurableEditorValue(
+            key = key,
+            value = initial,
+            iconFactory = icon,
+            visibleIf = visibleIf
+        ).also { _editorValues.add(it) }
+    }
+
     /**
      * Unified DSL for simple Lists (e.g., List<String>, List<Component>).
      * It automatically wraps simple types into EditorValues.
