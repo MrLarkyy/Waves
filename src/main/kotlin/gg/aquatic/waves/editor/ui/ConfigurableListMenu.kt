@@ -7,7 +7,7 @@ import gg.aquatic.kmenu.inventory.InventoryType
 import gg.aquatic.kmenu.menu.component.Button
 import gg.aquatic.kmenu.menu.util.ListMenu
 import gg.aquatic.kmenu.privateMenu
-import gg.aquatic.replace.placeholder.PlaceholderContext
+import gg.aquatic.replace.PlaceholderContext
 import gg.aquatic.waves.editor.EditorContext
 import gg.aquatic.waves.editor.value.EditorValue
 import kotlinx.coroutines.withContext
