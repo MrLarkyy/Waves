@@ -34,3 +34,6 @@
 [submodule "Blokk"]
 	path = Blokk
 	url = https://github.com/MrLarkyy/Blokk.git
+[submodule "TreePAPI"]
+	path = TreePAPI
+	url = https://github.com/MrLarkyy/TreePAPI.git
