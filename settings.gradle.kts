@@ -16,6 +16,7 @@ val submodules = listOf(
     "Kurrency" to "gg.aquatic:Kurrency",
     "Blokk" to "gg.aquatic:Blokk",
     "TreePAPI" to "gg.aquatic:TreePAPI",
+    "SnapshotMap" to "gg.aquatic:snapshotmap",
     "AquaticCommon" to "gg.aquatic:Common"
 )
 

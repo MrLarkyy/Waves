@@ -37,3 +37,6 @@
 [submodule "TreePAPI"]
 	path = TreePAPI
 	url = https://github.com/MrLarkyy/TreePAPI.git
+[submodule "SnapshotMap"]
+	path = SnapshotMap
+	url = https://github.com/MrLarkyy/SnapshotMap.git
