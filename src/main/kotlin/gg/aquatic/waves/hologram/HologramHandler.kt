@@ -2,21 +2,27 @@ package gg.aquatic.waves.hologram
 
 import gg.aquatic.common.event
 import gg.aquatic.common.ticker.Ticker
+import gg.aquatic.snapshotmap.SnapshotMap
 import gg.aquatic.waves.util.chunk.ChunkId
 import gg.aquatic.waves.util.chunk.chunkId
 import org.bukkit.event.world.ChunkLoadEvent
 import org.bukkit.event.world.ChunkUnloadEvent
-import java.util.concurrent.ConcurrentHashMap
 
 object HologramHandler {
-    val tickingHolograms = ConcurrentHashMap<ChunkId, MutableCollection<Hologram>>()
-    val waitingHolograms = ConcurrentHashMap<ChunkId, MutableCollection<Hologram>>()
+    val tickingHolograms = SnapshotMap<ChunkId, MutableCollection<Hologram>>()
+    val waitingHolograms = SnapshotMap<ChunkId, MutableCollection<Hologram>>()
 
     fun onLoad() {
         Ticker {
-            for ((_, holograms) in tickingHolograms) {
-                for (hologram in holograms) {
-                    hologram.tick()
+            tickingHolograms.forEach { (_, list) ->
+                val iterator = list.iterator()
+                while (iterator.hasNext()) {
+                    val hologram = iterator.next()
+                    try {
+                        hologram.tick()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
             }
         }.register()
