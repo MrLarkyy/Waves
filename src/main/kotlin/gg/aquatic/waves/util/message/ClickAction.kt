@@ -5,7 +5,7 @@ import org.bukkit.configuration.ConfigurationSection
 interface ClickAction {
 
     companion object {
-        private val serializers = mutableMapOf<String, Serializer>(
+        private val serializers = mutableMapOf(
             "open-url" to OpenUrl,
             "run-command" to RunCommand,
             "suggest-command" to SuggestCommand,
