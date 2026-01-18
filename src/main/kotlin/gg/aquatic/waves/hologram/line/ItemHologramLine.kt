@@ -15,7 +15,7 @@ import gg.aquatic.waves.clientside.entity.data.impl.display.ItemDisplayEntityDat
 import gg.aquatic.waves.hologram.CommonHologramLineSettings
 import gg.aquatic.waves.hologram.HologramLine
 import gg.aquatic.waves.hologram.HologramSerializer
-import gg.aquatic.waves.hologram.SpawnedHologramLine
+import gg.aquatic.waves.hologram.HologramLineHandle
 import gg.aquatic.waves.hologram.serialize.LineFactory
 import gg.aquatic.waves.hologram.serialize.LineSettings
 import org.bukkit.Location
@@ -91,13 +91,13 @@ class ItemHologramLine(
         return packetEntity
     }
 
-    override suspend fun tick(spawnedHologramLine: SpawnedHologramLine) {
-        val entityData = buildData(spawnedHologramLine)
+    override suspend fun tick(hologramLineHandle: HologramLineHandle) {
+        val entityData = buildData(hologramLineHandle)
         if (entityData.isEmpty()) return
 
-        val packet = Pakket.handler.createEntityUpdatePacket(spawnedHologramLine.packetEntity.entityId, entityData)
-        spawnedHologramLine.packetEntity.updatePacket = packet
-        spawnedHologramLine.player.sendPacket(packet, false)
+        val packet = Pakket.handler.createEntityUpdatePacket(hologramLineHandle.packetEntity.entityId, entityData)
+        hologramLineHandle.packetEntity.updatePacket = packet
+        hologramLineHandle.player.sendPacket(packet, false)
     }
 
     override fun buildData(placeholderContext: PlaceholderContext<Player>, player: Player): List<EntityDataValue> {

@@ -6,7 +6,6 @@ import gg.aquatic.execute.requirement.ConditionHandle
 import gg.aquatic.pakket.Pakket
 import gg.aquatic.pakket.sendPacket
 import gg.aquatic.replace.PlaceholderContext
-import gg.aquatic.snapshotmap.SnapshotMap
 import gg.aquatic.snapshotmap.SuspendingSnapshotMap
 import gg.aquatic.waves.hologram.line.TextHologramLine
 import gg.aquatic.waves.hologram.serialize.LineSettings
@@ -21,7 +20,7 @@ class Hologram(
     location: Location,
     val filter: suspend (Player) -> Boolean,
     val placeholderContext: () -> PlaceholderContext<Player>,
-    val viewDistance: Int,
+    viewDistance: Int,
     lines: Collection<HologramLine>,
 ) {
 
@@ -152,7 +151,7 @@ class Hologram(
             val existing = spawnedLines.find { it.line == line }
             val packetEntity = if (existing == null) {
                 val entity = line.spawn(targetLocation, player, viewer.context)
-                val newLine = SpawnedHologramLine(this, player, line, targetLocation, viewer.context, entity)
+                val newLine = HologramLineHandle(this, player, line, targetLocation, viewer.context, entity)
                 spawnedLines.add(newLine)
                 changed = true
                 entity
@@ -258,6 +257,6 @@ class Hologram(
     class HologramViewer(
         val player: Player,
         val context: PlaceholderContext<Player>,
-        val lines: MutableList<SpawnedHologramLine>
+        val lines: MutableList<HologramLineHandle>
     )
 }

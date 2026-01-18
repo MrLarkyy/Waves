@@ -13,7 +13,7 @@ import gg.aquatic.snapshotmap.SnapshotMap
 import gg.aquatic.waves.hologram.CommonHologramLineSettings
 import gg.aquatic.waves.hologram.HologramLine
 import gg.aquatic.waves.hologram.HologramSerializer
-import gg.aquatic.waves.hologram.SpawnedHologramLine
+import gg.aquatic.waves.hologram.HologramLineHandle
 import gg.aquatic.waves.hologram.serialize.LineFactory
 import gg.aquatic.waves.hologram.serialize.LineSettings
 import org.bukkit.Location
@@ -43,8 +43,8 @@ class AnimatedHologramLine(
         return frames.first().second.spawn(location, player, placeholderContext)
     }
 
-    override suspend fun tick(spawnedHologramLine: SpawnedHologramLine) {
-        val handle = ticks.getOrPut(spawnedHologramLine.player.uniqueId) { AnimationHandle() }
+    override suspend fun tick(hologramLineHandle: HologramLineHandle) {
+        val handle = ticks.getOrPut(hologramLineHandle.player.uniqueId) { AnimationHandle() }
         handle.tick++
 
         var (stay, frame) = frames[handle.index]
@@ -59,25 +59,25 @@ class AnimatedHologramLine(
             frame = pair.second
 
             if (previousFrame.javaClass != frame.javaClass) {
-                spawnedHologramLine.packetEntity.sendDespawn(Pakket.handler, false, spawnedHologramLine.player)
+                hologramLineHandle.packetEntity.sendDespawn(Pakket.handler, false, hologramLineHandle.player)
                 val packetEntity = frame.spawn(
-                    spawnedHologramLine.currentLocation,
-                    spawnedHologramLine.player,
-                    spawnedHologramLine.placeholderContext
+                    hologramLineHandle.currentLocation,
+                    hologramLineHandle.player,
+                    hologramLineHandle.placeholderContext
                 )
-                spawnedHologramLine.packetEntity = packetEntity
-                spawnedHologramLine.packetEntity.sendSpawnComplete(Pakket.handler, false, spawnedHologramLine.player)
+                hologramLineHandle.packetEntity = packetEntity
+                hologramLineHandle.packetEntity.sendSpawnComplete(Pakket.handler, false, hologramLineHandle.player)
                 return
             }
-            val data = buildData(spawnedHologramLine)
+            val data = buildData(hologramLineHandle)
             if (data.isEmpty()) return
 
-            frame.tick(spawnedHologramLine)
+            frame.tick(hologramLineHandle)
 
-            val packet = Pakket.handler.createEntityUpdatePacket(spawnedHologramLine.packetEntity.entityId, data)
-            spawnedHologramLine.packetEntity.updatePacket = packet
+            val packet = Pakket.handler.createEntityUpdatePacket(hologramLineHandle.packetEntity.entityId, data)
+            hologramLineHandle.packetEntity.updatePacket = packet
 
-            spawnedHologramLine.player.sendPacket(packet)
+            hologramLineHandle.player.sendPacket(packet)
             return
         }
     }
@@ -89,9 +89,9 @@ class AnimatedHologramLine(
         return frames.first().second.buildData(placeholderContext, player)
     }
 
-    override fun buildData(spawnedHologramLine: SpawnedHologramLine): List<EntityDataValue> {
-        return frames[ticks.getOrPut(spawnedHologramLine.player.uniqueId) { AnimationHandle() }.index].second.buildData(
-            spawnedHologramLine
+    override fun buildData(hologramLineHandle: HologramLineHandle): List<EntityDataValue> {
+        return frames[ticks.getOrPut(hologramLineHandle.player.uniqueId) { AnimationHandle() }.index].second.buildData(
+            hologramLineHandle
         )
     }
 

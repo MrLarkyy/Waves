@@ -29,10 +29,10 @@ interface HologramLine {
         }
 
     fun spawn(location: Location, player: Player, placeholderContext: PlaceholderContext<Player>): PacketEntity
-    suspend fun tick(spawnedHologramLine: SpawnedHologramLine)
+    suspend fun tick(hologramLineHandle: HologramLineHandle)
     fun buildData(placeholderContext: PlaceholderContext<Player>, player: Player): List<EntityDataValue>
 
-    fun buildData(spawnedHologramLine: SpawnedHologramLine): List<EntityDataValue> {
-        return buildData(spawnedHologramLine.placeholderContext, spawnedHologramLine.player)
+    fun buildData(hologramLineHandle: HologramLineHandle): List<EntityDataValue> {
+        return buildData(hologramLineHandle.placeholderContext, hologramLineHandle.player)
     }
 }

@@ -12,7 +12,7 @@ object HologramHandler {
     val tickingHolograms = SuspendingSnapshotMap<ChunkId, MutableCollection<Hologram>>()
     val waitingHolograms = SuspendingSnapshotMap<ChunkId, MutableCollection<Hologram>>()
 
-    fun onLoad() {
+    fun initialize() {
         Ticker {
             tickingHolograms.forEachSuspended { _, list ->
                 val iterator = list.iterator()

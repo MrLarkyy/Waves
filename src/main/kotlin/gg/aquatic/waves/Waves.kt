@@ -15,6 +15,7 @@ import gg.aquatic.kregistry.Registry
 import gg.aquatic.pakket.Pakket
 import gg.aquatic.stacked.initializeStacked
 import gg.aquatic.treepapi.papiPlaceholder
+import gg.aquatic.waves.hologram.HologramHandler
 import gg.aquatic.waves.input.InputHandler
 import gg.aquatic.waves.input.impl.ChatInput
 import gg.aquatic.waves.statistic.initializeStatistik
@@ -57,11 +58,9 @@ object Waves : JavaPlugin() {
         //TestingEditor.initialize()
         AwaitingWorlds.initialize()
         initializeStatistik()
+        HologramHandler.initialize()
 
         locale = KLocale.paper {}
 
-        papiPlaceholder("larkyy","eventsmania") {
-
-        }
     }
 }

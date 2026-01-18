@@ -15,7 +15,7 @@ import gg.aquatic.waves.clientside.entity.data.impl.display.TextDisplayEntityDat
 import gg.aquatic.waves.hologram.CommonHologramLineSettings
 import gg.aquatic.waves.hologram.HologramLine
 import gg.aquatic.waves.hologram.HologramSerializer
-import gg.aquatic.waves.hologram.SpawnedHologramLine
+import gg.aquatic.waves.hologram.HologramLineHandle
 import gg.aquatic.waves.hologram.serialize.LineFactory
 import gg.aquatic.waves.hologram.serialize.LineSettings
 import org.bukkit.Color
@@ -177,12 +177,12 @@ class TextHologramLine(
         }
     }
 
-    override suspend fun tick(spawnedHologramLine: SpawnedHologramLine) {
-        val data = buildData(spawnedHologramLine)
+    override suspend fun tick(hologramLineHandle: HologramLineHandle) {
+        val data = buildData(hologramLineHandle)
         if (data.isEmpty()) return
-        val packet = Pakket.handler.createEntityUpdatePacket(spawnedHologramLine.packetEntity.entityId, data)
-        spawnedHologramLine.packetEntity.updatePacket = packet
-        spawnedHologramLine.player.sendPacket(packet, false)
+        val packet = Pakket.handler.createEntityUpdatePacket(hologramLineHandle.packetEntity.entityId, data)
+        hologramLineHandle.packetEntity.updatePacket = packet
+        hologramLineHandle.player.sendPacket(packet, false)
     }
 
     private var textContextItem: PlaceholderContext<Player>.ComponentItem? = null

@@ -6,7 +6,7 @@ import gg.aquatic.replace.PlaceholderContext
 import org.bukkit.Location
 import org.bukkit.entity.Player
 
-class SpawnedHologramLine(
+class HologramLineHandle(
     val hologram: Hologram,
     val player: Player,
     val line: HologramLine,
