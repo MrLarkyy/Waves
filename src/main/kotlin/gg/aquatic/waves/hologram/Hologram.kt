@@ -7,6 +7,7 @@ import gg.aquatic.pakket.Pakket
 import gg.aquatic.pakket.sendPacket
 import gg.aquatic.replace.PlaceholderContext
 import gg.aquatic.snapshotmap.SnapshotMap
+import gg.aquatic.snapshotmap.SuspendingSnapshotMap
 import gg.aquatic.waves.hologram.line.TextHologramLine
 import gg.aquatic.waves.hologram.serialize.LineSettings
 import gg.aquatic.waves.util.chunk.chunkId
@@ -28,10 +29,10 @@ class Hologram(
     var seat: Int? = null
         private set
 
-    fun setAsPassenger(seat: Int?) {
+    suspend fun setAsPassenger(seat: Int?) {
         val previous = this.seat
         this.seat = seat
-        viewers.forEach { (viewer, lines) ->
+        viewers.forEachSuspended { viewer, lines ->
             if (seat != null) {
                 val ids = lines.lines.map { it.packetEntity.entityId }.toIntArray()
                 val passengerPacket = Pakket.handler.createPassengersPacket(seat,ids)
@@ -49,8 +50,8 @@ class Hologram(
 
         tickRange()
         destroyLines()
-        for (player in viewers.keys) {
-            showOrUpdate(player)
+        viewers.forEachSuspended { viewer, _ ->
+            showOrUpdate(viewer)
         }
     }
 
@@ -86,7 +87,7 @@ class Hologram(
     private var rangeTick = 0
 
     val lines = ConcurrentHashMap.newKeySet<HologramLine>().apply { addAll(lines) }
-    val viewers = SnapshotMap<Player, HologramViewer>()
+    val viewers = SuspendingSnapshotMap<Player, HologramViewer>()
 
     init {
         val chunkId = location.chunk.chunkId()
@@ -103,7 +104,7 @@ class Hologram(
 
     suspend fun tick() {
         tickRange()
-        viewers.forEach { (player, _) ->
+        viewers.forEachSuspended { player, _ ->
             // CurrentLineIndex -> Get Hologram line -> Compare Hologram Line with SpawnedHologramLine
             // If it is the same, then skip & add index, otherwise update line, add to the set & move other lines
 
@@ -212,14 +213,14 @@ class Hologram(
         }
     }
 
-    fun destroyLines() {
-        viewers.forEach { (_, spawnedHologramLines) ->
+    suspend fun destroyLines() {
+        viewers.forEachSuspended { _, spawnedHologramLines ->
             spawnedHologramLines.lines.forEach { it.destroy() }
             spawnedHologramLines.lines.clear()
         }
     }
 
-    fun destroy() {
+    suspend fun destroy() {
         HologramHandler.removeHologram(this)
         destroyLines()
         viewers.clear()
@@ -229,7 +230,7 @@ class Hologram(
 
     suspend fun teleport(location: Location) {
         this.location = location
-        viewers.forEach { (player, _) ->
+        viewers.forEachSuspended { player, _ ->
             showOrUpdate(player)
         }
     }

@@ -2,19 +2,19 @@ package gg.aquatic.waves.hologram
 
 import gg.aquatic.common.event
 import gg.aquatic.common.ticker.Ticker
-import gg.aquatic.snapshotmap.SnapshotMap
+import gg.aquatic.snapshotmap.SuspendingSnapshotMap
 import gg.aquatic.waves.util.chunk.ChunkId
 import gg.aquatic.waves.util.chunk.chunkId
 import org.bukkit.event.world.ChunkLoadEvent
 import org.bukkit.event.world.ChunkUnloadEvent
 
 object HologramHandler {
-    val tickingHolograms = SnapshotMap<ChunkId, MutableCollection<Hologram>>()
-    val waitingHolograms = SnapshotMap<ChunkId, MutableCollection<Hologram>>()
+    val tickingHolograms = SuspendingSnapshotMap<ChunkId, MutableCollection<Hologram>>()
+    val waitingHolograms = SuspendingSnapshotMap<ChunkId, MutableCollection<Hologram>>()
 
     fun onLoad() {
         Ticker {
-            tickingHolograms.forEach { (_, list) ->
+            tickingHolograms.forEachSuspended { _, list ->
                 val iterator = list.iterator()
                 while (iterator.hasNext()) {
                     val hologram = iterator.next()
@@ -51,7 +51,7 @@ object HologramHandler {
         return listOf(tickingHolograms.values.flatten(), waitingHolograms.values.flatten()).flatten()
     }
 
-    fun destroyHolograms() {
+    suspend fun destroyHolograms() {
         for (hologram in allHolograms()) {
             hologram.destroy()
         }
@@ -59,11 +59,11 @@ object HologramHandler {
         tickingHolograms.clear()
     }
 
-    fun removeHologram(hologram: Hologram) {
-        for ((_, holograms) in tickingHolograms) {
+    suspend fun removeHologram(hologram: Hologram) {
+        tickingHolograms.forEachSuspended { _, holograms ->
             holograms.remove(hologram)
         }
-        for ((_, holograms) in waitingHolograms) {
+        waitingHolograms.forEachSuspended { _, holograms ->
             holograms.remove(hologram)
         }
     }

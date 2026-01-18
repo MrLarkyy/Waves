@@ -9,6 +9,7 @@ import gg.aquatic.pakket.api.nms.PacketEntity
 import gg.aquatic.pakket.api.nms.entity.EntityDataValue
 import gg.aquatic.pakket.sendPacket
 import gg.aquatic.replace.PlaceholderContext
+import gg.aquatic.snapshotmap.SnapshotMap
 import gg.aquatic.waves.hologram.CommonHologramLineSettings
 import gg.aquatic.waves.hologram.HologramLine
 import gg.aquatic.waves.hologram.HologramSerializer
@@ -21,7 +22,6 @@ import org.bukkit.entity.Display
 import org.bukkit.entity.Player
 import org.joml.Vector3f
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 
 class AnimatedHologramLine(
     val frames: MutableList<Pair<Int, HologramLine>>,
@@ -34,7 +34,7 @@ class AnimatedHologramLine(
     override var teleportInterpolation: Int, override var translation: Vector3f = Vector3f(),
 ) : HologramLine {
 
-    val ticks = ConcurrentHashMap<UUID, AnimationHandle>()
+    val ticks = SnapshotMap<UUID, AnimationHandle>()
     override fun spawn(
         location: Location,
         player: Player,
