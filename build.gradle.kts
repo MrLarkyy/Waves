@@ -91,7 +91,7 @@ dependencies {
     implementation("gg.aquatic:KLocale:26.0.2")
     implementation("gg.aquatic:Blokk:26.0.1")
     implementation("gg.aquatic:TreePAPI:26.0.1")
-    implementation("gg.aquatic:snapshotmap:26.0.1")
+    implementation("gg.aquatic:snapshotmap:26.0.2")
     implementation("gg.aquatic:KLocale-Paper:26.0.2")
 
     runtimeDownload("com.github.ben-manes.caffeine:caffeine:3.2.3")
