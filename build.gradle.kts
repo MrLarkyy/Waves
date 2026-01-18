@@ -103,9 +103,6 @@ dependencies {
     compileOnly("com.ticxo.modelengine:ModelEngine:R4.0.9")
     compileOnly("me.clip:placeholderapi:2.11.7")
 
-    runtimeDownload("io.github.charlietap:cachemap:0.2.4")
-    runtimeDownload("io.github.charlietap:cachemap-suspend:0.2.4")
-
     // Testing
     testImplementation("io.mockk:mockk:1.14.7")
     testImplementation(kotlin("test"))
