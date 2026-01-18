@@ -43,7 +43,7 @@ class AnimatedHologramLine(
         return frames.first().second.spawn(location, player, placeholderContext)
     }
 
-    override fun tick(spawnedHologramLine: SpawnedHologramLine) {
+    override suspend fun tick(spawnedHologramLine: SpawnedHologramLine) {
         val handle = ticks.getOrPut(spawnedHologramLine.player.uniqueId) { AnimationHandle() }
         handle.tick++
 

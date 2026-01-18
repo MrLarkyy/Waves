@@ -91,7 +91,7 @@ class ItemHologramLine(
         return packetEntity
     }
 
-    override fun tick(spawnedHologramLine: SpawnedHologramLine) {
+    override suspend fun tick(spawnedHologramLine: SpawnedHologramLine) {
         val entityData = buildData(spawnedHologramLine)
         if (entityData.isEmpty()) return
 

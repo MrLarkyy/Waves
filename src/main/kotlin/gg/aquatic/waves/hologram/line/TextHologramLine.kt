@@ -177,7 +177,7 @@ class TextHologramLine(
         }
     }
 
-    override fun tick(spawnedHologramLine: SpawnedHologramLine) {
+    override suspend fun tick(spawnedHologramLine: SpawnedHologramLine) {
         val data = buildData(spawnedHologramLine)
         if (data.isEmpty()) return
         val packet = Pakket.handler.createEntityUpdatePacket(spawnedHologramLine.packetEntity.entityId, data)

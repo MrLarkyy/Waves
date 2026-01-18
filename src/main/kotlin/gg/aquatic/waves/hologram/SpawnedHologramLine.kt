@@ -22,7 +22,7 @@ class SpawnedHologramLine(
     var currentLocation: Location = location
         private set
 
-    fun tick() {
+    suspend fun tick() {
         line.tick(this)
     }
 
