@@ -1,6 +1,5 @@
 package gg.aquatic.waves
 
-import gg.aquatic.common.deepFilesLookup
 import gg.aquatic.common.event
 import gg.aquatic.common.initializeCommon
 import gg.aquatic.execute.Action
@@ -8,11 +7,8 @@ import gg.aquatic.execute.Execute
 import gg.aquatic.execute.action.registerAction
 import gg.aquatic.execute.initExecute
 import gg.aquatic.klocale.LocaleManager
-import gg.aquatic.klocale.LocaleProvider
 import gg.aquatic.klocale.impl.paper.KLocale
 import gg.aquatic.klocale.impl.paper.PaperMessage
-import gg.aquatic.klocale.impl.paper.provider.YamlLocaleProvider
-import gg.aquatic.klocale.provider.MergedLocaleProvider
 import gg.aquatic.kmenu.KMenu
 import gg.aquatic.kmenu.coroutine.KMenuCtx
 import gg.aquatic.kregistry.Registry
@@ -24,12 +20,10 @@ import gg.aquatic.waves.input.impl.ChatInput
 import gg.aquatic.waves.statistic.initializeStatistik
 import gg.aquatic.waves.util.action.BossbarAction
 import gg.aquatic.waves.util.action.MessageAction
-import gg.aquatic.waves.util.message.AquaticMessageSerializer
 import gg.aquatic.waves.world.AwaitingWorlds
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.plugin.java.JavaPlugin
-import kotlin.collections.plusAssign
 
 object Waves : JavaPlugin() {
 
