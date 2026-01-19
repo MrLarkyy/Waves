@@ -44,7 +44,7 @@ class FakeBlock(
 
 
     override fun handleInteract(player: Player, isLeftClick: Boolean) {
-        val event = FakeBlockInteractEvent(this, player, isLeftClick)
+        val event = FakeBlockInteractEvent(player, isLeftClick)
         onInteract.invoke(event)
 
         // Anti-ghosting correction for right-clicks

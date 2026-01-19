@@ -111,7 +111,6 @@ object FakeObjectHandler {
         packetEvent<PacketInteractEvent> {
             val entity = idToEntity[it.entityId] ?: return@packetEvent
             val event = FakeEntityInteractEvent(
-                entity,
                 it.player,
                 it.isAttack
             )
