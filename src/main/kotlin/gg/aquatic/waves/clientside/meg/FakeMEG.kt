@@ -1,4 +1,4 @@
-package gg.aquatic.waves.interactable.type
+package gg.aquatic.waves.clientside.meg
 
 import com.destroystokyo.paper.profile.PlayerProfile
 import com.ticxo.modelengine.api.ModelEngineAPI
@@ -7,37 +7,24 @@ import com.ticxo.modelengine.api.model.ModeledEntity
 import com.ticxo.modelengine.api.model.bone.BoneBehaviorTypes
 import com.ticxo.modelengine.api.model.bone.type.PlayerLimb
 import gg.aquatic.waves.audience.AquaticAudience
-import gg.aquatic.waves.interactable.Interactable
-import gg.aquatic.waves.interactable.InteractableInteractEvent
-import gg.aquatic.waves.interactable.InteractableModule
-import gg.aquatic.waves.interactable.MEGInteractableDummy
-import org.bukkit.Bukkit
+import gg.aquatic.waves.clientside.FakeObject
+import gg.aquatic.waves.clientside.ObjectInteractEvent
 import org.bukkit.Color
 import org.bukkit.Location
 import org.bukkit.entity.Player
-import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Predicate
 
-class MEGInteractable(
+class FakeMEG(
     override val location: Location,
     val modelId: String,
+    override val viewRange: Int,
     initialAudience: AquaticAudience,
-    override val onInteract: (InteractableInteractEvent) -> Unit,
-) : Interactable() {
-
-    private val _viewers = ConcurrentHashMap.newKeySet<UUID>()
-    override val viewers: Collection<Player> get() = _viewers.mapNotNull { Bukkit.getPlayer(it) }
-
-    override var audience: AquaticAudience = initialAudience
-        set(value) {
-            field = value
-            refreshViewers()
-        }
+    var onInteract: ObjectInteractEvent<FakeMEG> = {}
+) : FakeObject(viewRange, initialAudience) {
 
     val dummy = MEGInteractableDummy(this).apply {
-        location = this@MEGInteractable.location
-        val rot = this@MEGInteractable.location
+        location = this@FakeMEG.location
+        val rot = this@FakeMEG.location
         bodyRotationController.yBodyRot = rot.yaw
         bodyRotationController.xHeadRot = rot.pitch
         bodyRotationController.yHeadRot = rot.yaw
@@ -49,33 +36,17 @@ class MEGInteractable(
     val activeModel: ActiveModel? get() = modeledEntity?.getModel(modelId)?.orElse(null)
 
     init {
-        // Tie ModelEngine's visibility to our internal viewers set
         dummy.data.tracked.playerPredicate = Predicate { p -> _viewers.contains(p.uniqueId) }
-
         val me = ModelEngineAPI.createModeledEntity(dummy)
         val model = ModelEngineAPI.createActiveModel(modelId)
         me.addModel(model, true)
-
-        InteractableModule.register(this)
-        refreshViewers()
     }
 
-    fun updateVisibility(player: Player) {
-        if (audience.canBeApplied(player)) {
-            _viewers.add(player.uniqueId)
-        } else {
-            _viewers.remove(player.uniqueId)
-        }
-    }
+    override fun onShow(player: Player) {}
+    override fun onHide(player: Player) {}
 
-    fun removeViewer(player: Player) {
-        _viewers.remove(player.uniqueId)
-    }
-
-    private fun refreshViewers() {
-        for (player in Bukkit.getOnlinePlayers()) {
-            updateVisibility(player)
-        }
+    override fun handleInteract(player: Player, isLeftClick: Boolean) {
+        onInteract.onInteract(this, player, isLeftClick)
     }
 
     fun setSkin(profile: PlayerProfile) {
@@ -95,12 +66,12 @@ class MEGInteractable(
     }
 
     override fun destroy() {
+        destroyed = true
         activeModel?.let {
             it.destroy()
             it.isRemoved = true
         }
         dummy.isRemoved = true
-        InteractableModule.unregister(this)
         _viewers.clear()
     }
 }

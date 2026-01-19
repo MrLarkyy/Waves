@@ -1,4 +1,4 @@
-package gg.aquatic.waves.interactable
+package gg.aquatic.waves.clientside.meg
 
 import com.ticxo.modelengine.api.events.BaseEntityInteractEvent
 import gg.aquatic.common.event
@@ -16,7 +16,7 @@ class MEGInteractableHandler {
             val interactable = dummy.interactable
             val isLeft = event.action == BaseEntityInteractEvent.Action.ATTACK
 
-            interactable.trigger(event.player, isLeft)
+            interactable.handleInteract(event.player, isLeft)
         }
     }
 }

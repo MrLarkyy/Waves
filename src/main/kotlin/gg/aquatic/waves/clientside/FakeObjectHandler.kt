@@ -8,9 +8,10 @@ import gg.aquatic.pakket.api.event.packet.PacketInteractEvent
 import gg.aquatic.pakket.packetEvent
 import gg.aquatic.waves.clientside.block.FakeBlock
 import gg.aquatic.waves.clientside.entity.FakeEntity
-import gg.aquatic.waves.clientside.entity.FakeEntityInteractEvent
+import gg.aquatic.waves.clientside.meg.MEGInteractableHandler
 import gg.aquatic.waves.util.chunk.ChunkId
 import io.papermc.paper.event.packet.PlayerChunkUnloadEvent
+import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.World
 import org.bukkit.entity.Player
@@ -24,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap
 object FakeObjectHandler {
 
     internal val tickableObjects = ConcurrentHashMap.newKeySet<FakeObject>()
-    internal val idToEntity = ConcurrentHashMap<Int, EntityBased>()
+    internal val idToEntity = ConcurrentHashMap<Int, FakeEntity>()
     internal val locationToBlocks = ConcurrentHashMap<Location, MutableSet<FakeBlock>>()
     private val objectRemovalQueue: MutableSet<FakeObject> = ConcurrentHashMap.newKeySet()
 
@@ -49,6 +50,10 @@ object FakeObjectHandler {
                 tickableObject.handleTick(tickCycle)
             }
         }.register()
+
+        if (Bukkit.getPluginManager().getPlugin("ModelEngine") != null) {
+            MEGInteractableHandler()
+        }
 
         packetEvent<PacketChunkLoadEvent> {
             val bundle = getChunkCacheBundle(it.x, it.z, it.player.world) ?: return@packetEvent
@@ -110,11 +115,8 @@ object FakeObjectHandler {
         }
         packetEvent<PacketInteractEvent> {
             val entity = idToEntity[it.entityId] ?: return@packetEvent
-            val event = FakeEntityInteractEvent(
-                it.player,
-                it.isAttack
-            )
-            entity.onInteract(event)
+            entity.handleInteract(it.player,
+                it.isAttack)
         }
     }
 

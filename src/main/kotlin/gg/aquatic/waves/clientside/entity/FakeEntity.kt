@@ -8,6 +8,7 @@ import gg.aquatic.waves.audience.AquaticAudience
 import gg.aquatic.waves.clientside.EntityBased
 import gg.aquatic.waves.clientside.FakeObject
 import gg.aquatic.waves.clientside.FakeObjectHandler
+import gg.aquatic.waves.clientside.ObjectInteractEvent
 import gg.aquatic.waves.clientside.entity.data.impl.ItemEntityData
 import org.bukkit.Location
 import org.bukkit.Material
@@ -23,7 +24,7 @@ class FakeEntity(
     override val viewRange: Int,
     audience: AquaticAudience,
     consumer: FakeEntity.() -> Unit = {},
-    override var onInteract: (FakeEntityInteractEvent) -> Unit = {},
+    var onInteract: ObjectInteractEvent<FakeEntity> = {},
     var onUpdate: (Player) -> Unit = {},
     var onTick: suspend () -> Unit = {}
 ) : FakeObject(viewRange, audience), EntityBased {
@@ -91,8 +92,7 @@ class FakeEntity(
     }
 
     override fun handleInteract(player: Player, isLeftClick: Boolean) {
-        val event = FakeEntityInteractEvent(this, player, isLeftClick)
-        onInteract.invoke(event)
+        onInteract.onInteract(this,player, isLeftClick)
     }
 
     fun teleport(newLocation: Location) {

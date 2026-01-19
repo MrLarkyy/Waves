@@ -12,8 +12,8 @@ import gg.aquatic.replace.PlaceholderContext
 import gg.aquatic.snapshotmap.SnapshotMap
 import gg.aquatic.waves.hologram.CommonHologramLineSettings
 import gg.aquatic.waves.hologram.HologramLine
-import gg.aquatic.waves.hologram.HologramSerializer
 import gg.aquatic.waves.hologram.HologramLineHandle
+import gg.aquatic.waves.hologram.HologramSerializer
 import gg.aquatic.waves.hologram.serialize.LineFactory
 import gg.aquatic.waves.hologram.serialize.LineSettings
 import org.bukkit.Location

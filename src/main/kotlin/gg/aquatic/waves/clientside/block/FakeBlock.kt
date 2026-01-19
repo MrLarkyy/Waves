@@ -6,6 +6,7 @@ import gg.aquatic.pakket.sendPacket
 import gg.aquatic.waves.audience.AquaticAudience
 import gg.aquatic.waves.clientside.FakeObject
 import gg.aquatic.waves.clientside.FakeObjectHandler
+import gg.aquatic.waves.clientside.ObjectInteractEvent
 import org.bukkit.Location
 import org.bukkit.entity.Player
 import java.util.concurrent.ConcurrentHashMap
@@ -15,7 +16,7 @@ class FakeBlock(
     location: Location,
     override val viewRange: Int,
     audience: AquaticAudience,
-    var onInteract: (FakeBlockInteractEvent) -> Unit = {},
+    var onInteract: ObjectInteractEvent<FakeBlock> = {},
     var onTick: suspend () -> Unit = {}
 ) : FakeObject(viewRange, audience) {
 
@@ -44,9 +45,7 @@ class FakeBlock(
 
 
     override fun handleInteract(player: Player, isLeftClick: Boolean) {
-        val event = FakeBlockInteractEvent(player, isLeftClick)
-        onInteract.invoke(event)
-
+        onInteract.onInteract(this, player, isLeftClick)
         // Anti-ghosting correction for right-clicks
         if (!isLeftClick && !destroyed) {
             onShow(player)
