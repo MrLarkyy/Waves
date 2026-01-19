@@ -36,6 +36,9 @@ class MapEditorValue<T>(
         )
     }
 
+    val map: Map<String, T>
+        get() = value.associate { it.key to it.value }
+
     class Serializer<T>(
         private val elementFactory: (ConfigurationSection) -> EditorValue<T>
     ) : ValueSerializer<MutableList<EditorValue<T>>> {
