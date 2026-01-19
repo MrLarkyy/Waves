@@ -28,6 +28,7 @@ class FakeBlock(
         setAudience(audience)
     }
 
+    @Suppress("unused")
     fun changeBlock(aquaticBlock: Blokk) {
         this.block = aquaticBlock
         isViewing.forEach { onShow(it) }

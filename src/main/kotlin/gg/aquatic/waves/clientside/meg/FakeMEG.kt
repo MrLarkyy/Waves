@@ -49,6 +49,7 @@ class FakeMEG(
         onInteract.onInteract(this, player, isLeftClick)
     }
 
+    @Suppress("unused")
     fun setSkin(profile: PlayerProfile) {
         activeModel?.bones?.values?.forEach { bone ->
             bone.getBoneBehavior(BoneBehaviorTypes.PLAYER_LIMB).ifPresent {
@@ -57,10 +58,12 @@ class FakeMEG(
         }
     }
 
+    @Suppress("unused")
     fun setTint(tint: Color) {
         activeModel?.defaultTint = tint
     }
 
+    @Suppress("unused")
     fun playAnimation(id: String, lerpIn: Double = 0.0, lerpOut: Double = 0.0, speed: Double = 1.0) {
         activeModel?.animationHandler?.playAnimation(id, lerpIn, lerpOut, speed, true)
     }

@@ -40,7 +40,7 @@ class FakeEntity(
 
     val entityData = ConcurrentHashMap<Int, EntityDataValue>()
     val equipment = ConcurrentHashMap<EquipmentSlot, ItemStack>()
-    val passengers = ConcurrentHashMap.newKeySet<Int>()
+    val passengers: MutableSet<Int> = ConcurrentHashMap.newKeySet<Int>()
 
     init {
         if (type == EntityType.ITEM) {
@@ -54,6 +54,7 @@ class FakeEntity(
         return Pakket.handler.createEntity(location, type) ?: throw Exception("Failed to create NMS entity")
     }
 
+    @Suppress("unused")
     fun setEntityData(vararg dataValues: EntityDataValue) {
         dataValues.forEach { entityData[it.id] = it }
     }
@@ -95,6 +96,7 @@ class FakeEntity(
         onInteract.onInteract(this,player, isLeftClick)
     }
 
+    @Suppress("unused")
     fun teleport(newLocation: Location) {
         this.location = newLocation
         if (registered) {
