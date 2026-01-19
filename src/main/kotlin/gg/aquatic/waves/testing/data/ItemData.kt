@@ -1,16 +1,10 @@
 package gg.aquatic.waves.testing.data
 
-import gg.aquatic.common.toMMComponent
 import gg.aquatic.stacked.StackedItem
 import gg.aquatic.stacked.stackedItem
 import gg.aquatic.waves.editor.Configurable
-import gg.aquatic.waves.editor.Serializers.COMPONENT
-import gg.aquatic.waves.editor.handlers.ChatInputHandler
-import gg.aquatic.waves.editor.value.ElementBehavior
-import gg.aquatic.waves.input.impl.ChatInput
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
-import org.bukkit.inventory.ItemStack
 import java.util.*
 
 class ItemData(
@@ -23,22 +17,7 @@ class ItemData(
     val material = editMaterial("material", initialMaterial, "Enter Material Name:")
     val amount = editInt("amount", initialAmount, "Enter Amount (1-64):")
 
-    val lore = editList(
-        "lore", initialLore, COMPONENT,
-        behavior = ElementBehavior(
-            icon = { line -> ItemStack(Material.PAPER).apply { editMeta { it.displayName(line) } } },
-            handler = ChatInputHandler.forComponent("Enter line:")
-        ),
-        addButtonClick = { player, accept ->
-            player.closeInventory()
-            player.sendMessage("Enter line:")
-            ChatInput.createHandle(listOf("cancel")).await(player).thenAccept {
-                accept(it?.toMMComponent())
-            }
-        },
-        listIcon = { list -> ItemStack(Material.BOOK).apply { editMeta { it.displayName(Component.text("Edit Lore (${list.size} lines)")) } } },
-        guiHandler = { p, ed, u -> openListMenu(p, ed, ed.addButtonClick, u) }
-    )
+    val lore = editComponentList("lore", initialLore)
 
     fun asStacked(): StackedItem {
         return stackedItem(material.value) {

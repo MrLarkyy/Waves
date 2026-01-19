@@ -1,11 +1,16 @@
 package gg.aquatic.waves.editor
 
+import gg.aquatic.common.getSectionList
+import gg.aquatic.common.toMMComponent
 import gg.aquatic.kmenu.coroutine.KMenuCtx
+import gg.aquatic.stacked.stackedItem
 import gg.aquatic.waves.editor.EditorHandler.getEditorContext
 import gg.aquatic.waves.editor.handlers.ChatInputHandler
 import gg.aquatic.waves.editor.ui.ConfigurableListMenu
 import gg.aquatic.waves.editor.ui.PolymorphicSelectionMenu
 import gg.aquatic.waves.editor.value.*
+import gg.aquatic.waves.input.impl.ChatInput
+import gg.aquatic.waves.input.impl.ChatInputValidator
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import org.bukkit.configuration.ConfigurationSection
@@ -24,9 +29,11 @@ abstract class Configurable<A : Configurable<A>> {
      * Creates a read-only string editor value with a custom icon factory.
      * This string still appears in the GUI, but cannot be edited.
      */
-    protected fun infoString(key: String, initial: String, icon: (String) -> ItemStack = {
-        ItemStack(Material.PAPER).apply { editMeta { m -> m.displayName(Component.text(it)) } }
-    }) = edit(
+    protected fun infoString(
+        key: String, initial: String, icon: (String) -> ItemStack = {
+            ItemStack(Material.PAPER).apply { editMeta { m -> m.displayName(Component.text(it)) } }
+        }
+    ) = edit(
         key = key,
         initial = initial,
         serializer = Serializers.STRING,
@@ -35,14 +42,186 @@ abstract class Configurable<A : Configurable<A>> {
     )
 
     protected fun editString(key: String, initial: String, prompt: String) =
-        edit(key, initial, Serializers.STRING,
+        edit(
+            key, initial, Serializers.STRING,
             { ItemStack(Material.PAPER).apply { editMeta { m -> m.displayName(Component.text(it)) } } },
-            ChatInputHandler.forString(prompt))
+            ChatInputHandler.forString(prompt)
+        )
+
+    protected fun editStringList(
+        key: String,
+        initial: List<String> = emptyList(),
+        prompt: String = "Enter text:",
+        validator: ChatInputValidator? = null,
+        icon: (String) -> ItemStack = { str ->
+            ItemStack(Material.PAPER).apply {
+                editMeta { it.displayName(Component.text(str)) }
+            }
+        },
+        listIcon: (List<EditorValue<String>>) -> ItemStack = { list ->
+            stackedItem(Material.BOOK) {
+                displayName = Component.text("Edit $key (${list.size} lines")
+                lore.addAll(listOf("", "Lines:").map { it.toMMComponent() })
+                lore.addAll(list.map { it.value.toMMComponent() })
+            }.getItem()
+        },
+        visibleIf: () -> Boolean = { true }
+    ): ListEditorValue<String> {
+        return editList(
+            key = key,
+            initial = initial,
+            serializer = Serializers.STRING,
+            behavior = ElementBehavior(
+                icon = icon,
+                handler = ChatInputHandler.forString(prompt)
+            ),
+            addButtonClick = { player, accept ->
+                player.closeInventory()
+                player.sendMessage(prompt)
+                ChatInput.createHandle(validator = validator).await(player).thenAccept {
+                    accept(it)
+                }
+            },
+            listIcon = listIcon,
+            visibleIf = visibleIf
+        )
+    }
+
+    protected fun editComponentList(
+        key: String,
+        initial: List<Component> = emptyList(),
+        prompt: String = "Enter line:",
+        validator: ChatInputValidator? = null,
+        icon: (Component) -> ItemStack = { comp ->
+            ItemStack(Material.PAPER).apply {
+                editMeta { it.displayName(comp) }
+            }
+        },
+        listIcon: (List<EditorValue<Component>>) -> ItemStack = { list ->
+            stackedItem(Material.BOOK) {
+                displayName = Component.text("Edit $key (${list.size} lines")
+                lore.addAll(listOf("", "Lines:").map { it.toMMComponent() })
+                lore.addAll(list.map { it.value })
+            }.getItem()
+        },
+        visibleIf: () -> Boolean = { true }
+    ): ListEditorValue<Component> {
+        return editList(
+            key = key,
+            initial = initial,
+            serializer = Serializers.COMPONENT,
+            behavior = ElementBehavior(
+                icon = icon,
+                handler = ChatInputHandler.forComponent(prompt)
+            ),
+            addButtonClick = { player, accept ->
+                player.closeInventory()
+                player.sendMessage(prompt)
+                ChatInput.createHandle(validator = validator).await(player).thenAccept {
+                    accept(it?.toMMComponent())
+                }
+            },
+            listIcon = listIcon,
+            visibleIf = visibleIf
+        )
+    }
+
+    /**
+     * Specialized DSL for Map<String, List<Configurable>>
+     */
+    protected fun <T : Configurable<T>> editConfigurableListMap(
+        key: String,
+        initial: Map<String, List<T>> = emptyMap(),
+        factory: () -> T,
+        addButton: (Player, (key: String?) -> Unit) -> Unit,
+        mapIcon: (Map<String, List<T>>) -> ItemStack,
+        listIcon: (key: String, List<T>) -> ItemStack,
+        itemIcon: (T) -> ItemStack,
+        visibleIf: () -> Boolean = { true }
+    ): MapEditorValue<MutableList<EditorValue<T>>> {
+        val wrapList: (String, List<T>) -> ListEditorValue<T> = { listKey, listValues ->
+            val wrapConfigurable: (T) -> ConfigurableEditorValue<T> = { configurable ->
+                ConfigurableEditorValue(key = "__value", value = configurable, iconFactory = { itemIcon(it) })
+            }
+            val elementFactory: (ConfigurationSection) -> EditorValue<T> = { section ->
+                val instance = factory()
+                instance.deserialize(section)
+                wrapConfigurable(instance)
+            }
+            ListEditorValue(
+                key = listKey,
+                value = listValues.map(wrapConfigurable).toMutableList(),
+                addButtonClick = { player, accept ->
+                    accept(wrapConfigurable(factory()))
+                },
+                iconFactory = { list -> listIcon(listKey, list.map { it.value }) },
+                openListGui = { player, editor, update -> openListMenu(player, editor, editor.addButtonClick, update) },
+                elementFactory = elementFactory
+            )
+        }
+
+        val elementFactory: (ConfigurationSection) -> EditorValue<MutableList<EditorValue<T>>> = { section ->
+            val instanceList = section.getSectionList("").map { sec ->
+                factory().apply { deserialize(sec) }
+            }
+            wrapList(section.name, instanceList)
+        }
+
+        return MapEditorValue(
+            key = key,
+            value = initial.map { (k, v) -> wrapList(k, v) }.toMutableList(),
+            addButtonClick = { player, accept ->
+                addButton(player) { newKey ->
+                    if (newKey != null) accept(wrapList(newKey, emptyList()))
+                    else accept(null)
+                }
+            },
+            iconFactory = { editorValues ->
+                val dataMap = HashMap<String, List<T>>()
+                for (editorValue in editorValues) {
+                    // The MapEditorValue holds the inner ListEditorValues as its values
+                    val listEditor = editorValue.value as? ListEditorValue<T> ?: continue
+
+                    dataMap[listEditor.key] = listEditor.value.map { it.value }
+                }
+                mapIcon(dataMap)
+            },
+            openMapGui = { player, editor, update -> openListMenu(player, editor, editor.addButtonClick, update) },
+            visibleIf = visibleIf,
+            elementFactory = elementFactory
+        ).also { _editorValues.add(it) }
+    }
+
+    protected fun <T : Configurable<T>> editConfigurableListIntMap(
+        key: String,
+        initial: Map<Int, List<T>> = emptyMap(),
+        factory: () -> T,
+        addButton: (Player, (key: Int?) -> Unit) -> Unit,
+        mapIcon: (Map<Int, List<T>>) -> ItemStack,
+        listIcon: (key: Int, List<T>) -> ItemStack,
+        itemIcon: (T) -> ItemStack,
+        visibleIf: () -> Boolean = { true }
+    ): MapEditorValue<MutableList<EditorValue<T>>> {
+        return editConfigurableListMap(
+            key = key,
+            initial = initial.mapKeys { it.key.toString() },
+            factory = factory,
+            addButton = { player, accept ->
+                addButton(player) { intKey -> accept(intKey?.toString()) }
+            },
+            mapIcon = { map -> mapIcon(map.mapKeys { it.key.toIntOrNull() ?: 0 }) },
+            listIcon = { k, list -> listIcon(k.toIntOrNull() ?: 0, list) },
+            itemIcon = itemIcon,
+            visibleIf = visibleIf
+        )
+    }
 
     protected fun editInt(key: String, initial: Int, prompt: String) =
-        edit(key, initial, Serializers.INT,
+        edit(
+            key, initial, Serializers.INT,
             { ItemStack(Material.GOLD_NUGGET).apply { amount = it.coerceIn(1, 64) } },
-            ChatInputHandler.forInteger(prompt))
+            ChatInputHandler.forInteger(prompt)
+        )
 
     protected fun editMaterial(key: String, initial: Material, prompt: String) =
         edit(key, initial, Serializers.MATERIAL, { ItemStack(it) }, ChatInputHandler.forMaterial(prompt))
