@@ -126,6 +126,21 @@ abstract class Configurable<A : Configurable<A>> {
         )
     }
 
+    protected fun editBoolean(
+        key: String,
+        initial: Boolean,
+        prompt: String,
+        icon: (Boolean) -> ItemStack = {
+            ItemStack(if (it) Material.LIME_DYE else Material.GRAY_DYE).apply {
+                editMeta { m -> m.displayName(Component.text("$key: $it")) }
+            }
+        }
+    ) = edit(
+        key, initial, Serializers.BOOLEAN,
+        icon,
+        ChatInputHandler.forBoolean(prompt)
+    )
+
     /**
      * Specialized DSL for Map<String, List<T>> where T is polymorphic (Action, HologramLine, etc.)
      */

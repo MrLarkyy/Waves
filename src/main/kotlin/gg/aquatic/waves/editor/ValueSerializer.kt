@@ -93,4 +93,5 @@ object Serializers {
         Component.empty(),
         { MiniMessage.miniMessage().deserialize(it.toString()) },
         { it.toMMString() })
+    val BOOLEAN = ValueSerializer.Simple(false, encode = { it.toString().toBoolean() })
 }

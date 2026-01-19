@@ -59,6 +59,14 @@ class ChatInputHandler<T>(
                 i?.coerceIn(min, max)
             }
 
+        fun forDouble(prompt: String, min: Double = -Double.MAX_VALUE, max: Double = Double.MAX_VALUE) =
+            ChatInputHandler(prompt) {
+                val d = it.toDoubleOrNull()
+                d?.coerceIn(min, max)
+            }
+
+        fun forBoolean(prompt: String) = ChatInputHandler(prompt) { it.toBooleanStrictOrNull() }
+
         fun forMaterial(prompt: String) = ChatInputHandler(prompt) { Material.matchMaterial(it) }
     }
 }
