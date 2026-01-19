@@ -67,6 +67,14 @@ class ChatInputHandler<T>(
 
         fun forBoolean(prompt: String) = ChatInputHandler(prompt) { it.toBooleanStrictOrNull() }
 
-        fun forMaterial(prompt: String) = ChatInputHandler(prompt) { Material.matchMaterial(it) }
+        fun forMaterial(prompt: String) = forEnum<Material>(prompt)
+
+        inline fun <reified T : Enum<T>> forEnum(prompt: String) = ChatInputHandler(prompt) { str ->
+            try {
+                java.lang.Enum.valueOf(T::class.java, str.uppercase())
+            } catch (e: IllegalArgumentException) {
+                null
+            }
+        }
     }
 }

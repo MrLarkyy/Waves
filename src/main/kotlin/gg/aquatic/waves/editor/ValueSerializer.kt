@@ -83,6 +83,17 @@ interface ValueSerializer<T> {
             return section.getString(path) ?: default ?: throw IllegalStateException("Missing value for $path")
         }
     }
+
+    class EnumSerializer<T : Enum<T>>(private val clazz: Class<T>) : ValueSerializer<T> {
+        override fun serialize(section: ConfigurationSection, path: String, value: T) {
+            section.set(path, value.name)
+        }
+
+        override fun deserialize(section: ConfigurationSection, path: String): T {
+            val name = section.getString(path) ?: clazz.enumConstants[0].name
+            return java.lang.Enum.valueOf(clazz, name)
+        }
+    }
 }
 
 object Serializers {
@@ -94,4 +105,5 @@ object Serializers {
         { MiniMessage.miniMessage().deserialize(it.toString()) },
         { it.toMMString() })
     val BOOLEAN = ValueSerializer.Simple(false, encode = { it.toString().toBoolean() })
+    fun <T : Enum<T>> enum(clazz: Class<T>) = ValueSerializer.EnumSerializer(clazz)
 }

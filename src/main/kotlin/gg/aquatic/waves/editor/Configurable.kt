@@ -87,6 +87,23 @@ abstract class Configurable<A : Configurable<A>> {
         )
     }
 
+    protected inline fun <reified T : Enum<T>> editEnum(
+        key: String,
+        initial: T,
+        prompt: String,
+        noinline icon: (T) -> ItemStack = {
+            ItemStack(Material.COMPARATOR).apply {
+                editMeta { m -> m.displayName(Component.text("$key: ${it.name}")) }
+            }
+        }
+    ) = edit(
+        key = key,
+        initial = initial,
+        serializer = ValueSerializer.EnumSerializer(T::class.java),
+        icon = icon,
+        handler = ChatInputHandler.forEnum<T>(prompt)
+    )
+
     protected fun editComponentList(
         key: String,
         initial: List<Component> = emptyList(),
@@ -140,7 +157,7 @@ abstract class Configurable<A : Configurable<A>> {
         serializer = Serializers.BOOLEAN,
         icon = icon,
         handler = { _, editor, _, update ->
-            update(editor)
+            update(!editor)
         }
     )
 
