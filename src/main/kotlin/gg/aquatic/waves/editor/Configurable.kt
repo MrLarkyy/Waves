@@ -181,8 +181,7 @@ abstract class Configurable<A : Configurable<A>> {
             iconFactory = { editorValues ->
                 val dataMap = HashMap<String, List<T>>()
                 for (editorValue in editorValues) {
-                    val listEditor = editorValue.value as? ListEditorValue<T> ?: continue
-                    dataMap[listEditor.key] = listEditor.value.map { it.value }
+                    dataMap[editorValue.key] = editorValue.value.map { it.value }
                 }
                 mapIcon(dataMap)
             },
