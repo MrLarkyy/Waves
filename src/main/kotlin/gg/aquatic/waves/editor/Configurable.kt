@@ -13,6 +13,8 @@ import gg.aquatic.waves.input.impl.ChatInput
 import gg.aquatic.waves.input.impl.ChatInputValidator
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
+import org.bukkit.Registry
+import org.bukkit.Sound
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
@@ -46,6 +48,21 @@ abstract class Configurable<A : Configurable<A>> {
             key, initial, Serializers.STRING,
             { ItemStack(Material.PAPER).apply { editMeta { m -> m.displayName(Component.text(it)) } } },
             ChatInputHandler.forString(prompt)
+        )
+
+    protected fun editSound(key: String, initial: Sound, prompt: String) =
+        edit(
+            key, initial, Serializers.SOUND,
+            {
+                stackedItem(Material.JUKEBOX) {
+                    displayName = Component.text("$key: ${
+                        Registry.SOUNDS.getKey(
+                            it
+                        )?.toString()
+                    }")
+                }.getItem()
+            },
+            ChatInputHandler.forSound(prompt)
         )
 
     protected fun editStringList(

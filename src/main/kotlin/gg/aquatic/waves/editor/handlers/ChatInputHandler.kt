@@ -76,5 +76,13 @@ class ChatInputHandler<T>(
                 null
             }
         }
+
+        fun forSound(prompt: String) = ChatInputHandler(prompt) { key ->
+            try {
+                org.bukkit.Registry.SOUNDS.getOrThrow(org.bukkit.NamespacedKey.minecraft(key.lowercase()))
+            } catch (e: Exception) {
+                null
+            }
+        }
     }
 }
