@@ -65,6 +65,18 @@ class ChatInputHandler<T>(
                 d?.coerceIn(min, max)
             }
 
+        fun forFloat(prompt: String, min: Float = -Float.MAX_VALUE, max: Float = Float.MAX_VALUE) =
+            ChatInputHandler(prompt) {
+                val f = it.toFloatOrNull()
+                f?.coerceIn(min, max)
+            }
+
+        fun forLong(prompt: String, min: Long = Long.MIN_VALUE, max: Long = Long.MAX_VALUE) =
+            ChatInputHandler(prompt) {
+                val l = it.toLongOrNull()
+                l?.coerceIn(min, max)
+            }
+
         fun forBoolean(prompt: String) = ChatInputHandler(prompt) { it.toBooleanStrictOrNull() }
 
         fun forMaterial(prompt: String) = forEnum<Material>(prompt)

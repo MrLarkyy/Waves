@@ -102,6 +102,9 @@ interface ValueSerializer<T> {
 object Serializers {
     val MATERIAL = ValueSerializer.Simple(Material.STONE, encode = { Material.matchMaterial(it.toString()) }, decode = { it.toString() })
     val INT = ValueSerializer.Simple(1, encode = { it.toString().toIntOrNull() ?: 1 })
+    val FLOAT = ValueSerializer.Simple(1f, encode = { it.toString().toFloatOrNull() ?: 1f })
+    val DOUBLE = ValueSerializer.Simple(1.0, encode = { it.toString().toDoubleOrNull() ?: 1.0 })
+    val LONG = ValueSerializer.Simple(1L, encode = { it.toString().toLongOrNull() ?: 1L })
     val STRING = ValueSerializer.Simple("", encode = { it.toString() })
     val COMPONENT = ValueSerializer.Simple(
         Component.empty(),

@@ -55,15 +55,49 @@ abstract class Configurable<A : Configurable<A>> {
             key, initial, Serializers.SOUND,
             {
                 stackedItem(Material.JUKEBOX) {
-                    displayName = Component.text("$key: ${
-                        Registry.SOUNDS.getKey(
-                            it
-                        )?.toString()
-                    }")
+                    displayName = Component.text(
+                        "$key: ${
+                            Registry.SOUNDS.getKey(
+                                it
+                            )?.toString()
+                        }"
+                    )
                 }.getItem()
             },
             ChatInputHandler.forSound(prompt)
         )
+
+    protected fun editFloat(
+        key: String, initial: Float, prompt: String, icon: (Float) -> ItemStack = {
+            stackedItem(Material.GOLD_NUGGET) {
+                displayName = Component.text("$key: $it")
+            }.getItem()
+        }
+    ) =
+        edit(
+            key, initial, Serializers.FLOAT,
+            icon,
+            ChatInputHandler.forFloat(prompt)
+        )
+
+    protected fun editDouble(
+        key: String, initial: Double, prompt: String, icon: (Double) -> ItemStack = {
+            stackedItem(Material.GOLD_NUGGET) {
+                displayName = Component.text("$key: $it")
+            }.getItem()
+        }
+    ) =
+        edit(
+            key, initial, Serializers.DOUBLE, icon, ChatInputHandler.forDouble(prompt)
+        )
+
+    protected fun editLong(
+        key: String, initial: Long, prompt: String, icon: (Long) -> ItemStack = {
+            stackedItem(Material.GOLD_NUGGET) {
+                displayName = Component.text("$key: $it")
+            }.getItem()
+        }
+    ) = edit(key, initial, Serializers.LONG, icon, ChatInputHandler.forLong(prompt))
 
     protected fun editStringList(
         key: String,
