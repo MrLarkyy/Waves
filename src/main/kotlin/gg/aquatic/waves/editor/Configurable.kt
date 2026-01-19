@@ -127,89 +127,91 @@ abstract class Configurable<A : Configurable<A>> {
     }
 
     /**
-     * Specialized DSL for Map<String, List<Configurable>>
+     * Specialized DSL for Map<String, List<T>> where T is polymorphic (Action, HologramLine, etc.)
      */
-    protected fun <T : Configurable<T>> editConfigurableListMap(
+    protected fun <T : Configurable<T>> editString2PolymorphicListConfigurableMap(
         key: String,
         initial: Map<String, List<T>> = emptyMap(),
-        factory: () -> T,
+        options: Map<String, () -> T>,
         addButton: (Player, (key: String?) -> Unit) -> Unit,
         mapIcon: (Map<String, List<T>>) -> ItemStack,
         listIcon: (key: String, List<T>) -> ItemStack,
         itemIcon: (T) -> ItemStack,
         visibleIf: () -> Boolean = { true }
     ): MapEditorValue<MutableList<EditorValue<T>>> {
-        val wrapList: (String, List<T>) -> ListEditorValue<T> = { listKey, listValues ->
-            val wrapConfigurable: (T) -> ConfigurableEditorValue<T> = { configurable ->
-                ConfigurableEditorValue(key = "__value", value = configurable, iconFactory = { itemIcon(it) })
-            }
-            val elementFactory: (ConfigurationSection) -> EditorValue<T> = { section ->
-                val instance = factory()
-                instance.deserialize(section)
-                wrapConfigurable(instance)
-            }
-            ListEditorValue(
-                key = listKey,
-                value = listValues.map(wrapConfigurable).toMutableList(),
-                addButtonClick = { player, accept ->
-                    accept(wrapConfigurable(factory()))
-                },
-                iconFactory = { list -> listIcon(listKey, list.map { it.value }) },
-                openListGui = { player, editor, update -> openListMenu(player, editor, editor.addButtonClick, update) },
-                elementFactory = elementFactory
-            )
-        }
 
-        val elementFactory: (ConfigurationSection) -> EditorValue<MutableList<EditorValue<T>>> = { section ->
-            val instanceList = section.getSectionList("").map { sec ->
-                factory().apply { deserialize(sec) }
-            }
-            wrapList(section.name, instanceList)
+        // Helper to create the inner ListEditorValue using the existing polymorphic logic
+        val createInnerList: (String, List<T>) -> ListEditorValue<T> = { listKey, listValues ->
+            // Temporarily remove from _editorValues because editPolymorphicConfigurableList adds itself there
+            val listEditor = editPolymorphicConfigurableList(
+                key = listKey,
+                initial = listValues,
+                options = options,
+                listIcon = { listIcon(listKey, it) },
+                itemIcon = itemIcon
+            )
+            _editorValues.remove(listEditor)
+            listEditor
         }
 
         return MapEditorValue(
             key = key,
-            value = initial.map { (k, v) -> wrapList(k, v) }.toMutableList(),
+            value = initial.map { (k, v) -> createInnerList(k, v) }.toMutableList(),
             addButtonClick = { player, accept ->
                 addButton(player) { newKey ->
-                    if (newKey != null) accept(wrapList(newKey, emptyList()))
+                    if (newKey != null) accept(createInnerList(newKey, emptyList()))
                     else accept(null)
                 }
             },
             iconFactory = { editorValues ->
                 val dataMap = HashMap<String, List<T>>()
                 for (editorValue in editorValues) {
-                    // The MapEditorValue holds the inner ListEditorValues as its values
                     val listEditor = editorValue.value as? ListEditorValue<T> ?: continue
-
                     dataMap[listEditor.key] = listEditor.value.map { it.value }
                 }
                 mapIcon(dataMap)
             },
             openMapGui = { player, editor, update -> openListMenu(player, editor, editor.addButtonClick, update) },
             visibleIf = visibleIf,
-            elementFactory = elementFactory
+            elementFactory = { section ->
+                val instanceList = section.getSectionList("").map { sec ->
+                    val instance = options.values.first()().copy()
+                    instance.deserialize(sec)
+                    instance
+                }
+                createInnerList(section.name, instanceList)
+            }
         ).also { _editorValues.add(it) }
     }
 
-    protected fun <T : Configurable<T>> editConfigurableListIntMap(
+    /**
+     * Specialized DSL for Map<Int, List<T>> where T is polymorphic.
+     */
+    protected fun <T : Configurable<T>> editInt2PolymorphicListConfigurableMap(
         key: String,
         initial: Map<Int, List<T>> = emptyMap(),
-        factory: () -> T,
+        options: Map<String, () -> T>,
         addButton: (Player, (key: Int?) -> Unit) -> Unit,
         mapIcon: (Map<Int, List<T>>) -> ItemStack,
         listIcon: (key: Int, List<T>) -> ItemStack,
         itemIcon: (T) -> ItemStack,
         visibleIf: () -> Boolean = { true }
     ): MapEditorValue<MutableList<EditorValue<T>>> {
-        return editConfigurableListMap(
+        return editString2PolymorphicListConfigurableMap(
             key = key,
             initial = initial.mapKeys { it.key.toString() },
-            factory = factory,
+            options = options,
             addButton = { player, accept ->
                 addButton(player) { intKey -> accept(intKey?.toString()) }
             },
-            mapIcon = { map -> mapIcon(map.mapKeys { it.key.toIntOrNull() ?: 0 }) },
+            mapIcon = { stringMap ->
+                val intMap = HashMap<Int, List<T>>()
+                for (entry in stringMap) {
+                    val intKey = entry.key.toIntOrNull() ?: continue
+                    intMap[intKey] = entry.value
+                }
+                mapIcon(intMap)
+            },
             listIcon = { k, list -> listIcon(k.toIntOrNull() ?: 0, list) },
             itemIcon = itemIcon,
             visibleIf = visibleIf
