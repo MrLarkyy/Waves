@@ -28,54 +28,56 @@ Waves shifts the paradigm:
 
 ## 🧱 The Module Ecosystem
 
-Waves is powered by a family of libraries. You can use the full suite or pick individual modules.
+Waves is powered by a comprehensive family of specialized libraries. Each module handles a specific pillar of modern
+plugin development, allowing for a clean, decoupled architecture.
 
-| Module                                                         | Purpose                                                                                                    | Repository                                             |
-|:---------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------|:-------------------------------------------------------|
-| **[AquaticCommon](https://github.com/MrLarkyy/AquaticCommon)** | The foundation. Includes `ArgumentContext` for flexible data passing and robust `Ticker` implementations.  | [🔗 Source](https://github.com/MrLarkyy/AquaticCommon) |
-| **[Pakket](https://github.com/MrLarkyy/Pakket)**               | A high-level NMS/Packet wrapper. Handles entity spawning, metadata updates, and passenger management.      | [🔗 Source](https://github.com/MrLarkyy/Pakket)        |
-| **[Execute](https://github.com/MrLarkyy/Execute)**             | A serializable logic engine. Allows `Actions` (rewards) and `Requirements` (checks) to be defined in YAML. | [🔗 Source](https://github.com/MrLarkyy/Execute)       |
-| **[KMenu](https://github.com/MrLarkyy/KMenu)**                 | A DSL for Inventories. Supports reactive updates, pagination, and asynchronous click handling.             | [🔗 Source](https://github.com/MrLarkyy/KMenu)         |
-| **[Kommand](https://github.com/MrLarkyy/Kommand)**             | Type-safe command routing. No more massive `onCommand` switch statements.                                  | [🔗 Source](https://github.com/MrLarkyy/Kommand)       |
-| **[SnapshotMap](https://github.com/MrLarkyy/SnapshotMap)**     | Thread-safe, lock-free read map designed for high-concurrency environments.                                | [🔗 Source](https://github.com/MrLarkyy/SnapshotMap)   |
-| **[KLocale](https://github.com/MrLarkyy/KLocale)**             | Internationalization engine. Supports per-player languages via Adventure/MiniMessage.                      | [🔗 Source](https://github.com/MrLarkyy/KLocale)       |
+| Module                                                         | Purpose                                                                                                                           | Repository                                             |
+|:---------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------|
+| **[AquaticCommon](https://github.com/MrLarkyy/AquaticCommon)** | The foundation. Provides `ArgumentContext` for type-safe data parsing, Coroutine scopes, and extensive Bukkit extensions.         | [🔗 Source](https://github.com/MrLarkyy/AquaticCommon) |
+| **[Pakket](https://github.com/MrLarkyy/Pakket)**               | High-level NMS/Packet abstraction. Manages client-side entity spawning, metadata updates, and passenger packets.                  | [🔗 Source](https://github.com/MrLarkyy/Pakket)        |
+| **[Execute](https://github.com/MrLarkyy/Execute)**             | A serializable logic engine. Allows complex `Actions` and `Requirements` to be defined in configurations and executed at runtime. | [🔗 Source](https://github.com/MrLarkyy/Execute)       |
+| **[KMenu](https://github.com/MrLarkyy/KMenu)**                 | A reactive DSL for Inventory GUIs. Features asynchronous click handling, pagination, and dynamic button updating.                 | [🔗 Source](https://github.com/MrLarkyy/KMenu)         |
+| **[Kommand](https://github.com/MrLarkyy/Kommand)**             | Modern, type-safe command routing framework that eliminates boilerplate command registration.                                     | [🔗 Source](https://github.com/MrLarkyy/Kommand)       |
+| **[KLocale](https://github.com/MrLarkyy/KLocale)**             | Internationalization engine. Handles per-player localization with full Adventure/MiniMessage support.                             | [🔗 Source](https://github.com/MrLarkyy/KLocale)       |
+| **[SnapshotMap](https://github.com/MrLarkyy/SnapshotMap)**     | Thread-safe, lock-free maps optimized for extreme read performance in high-concurrency environments.                              | [🔗 Source](https://github.com/MrLarkyy/SnapshotMap)   |
+| **[KRegistry](https://github.com/MrLarkyy/KRegistry)**         | Dynamic object registry for managing lifecycles and lookups of custom plugin components.                                          | [🔗 Source](https://github.com/MrLarkyy/KRegistry)     |
+| **[KEvent](https://github.com/MrLarkyy/KEvent)**               | Lightweight, Coroutine-friendly event wrappers to replace standard, bulky event listeners.                                        | [🔗 Source](https://github.com/MrLarkyy/KEvent)        |
+| **[Kurrency](https://github.com/MrLarkyy/Kurrency)**           | A unified economy abstraction layer supporting multiple providers (Vault, PlayerPoints, etc.) and custom currencies.              | [🔗 Source](https://github.com/MrLarkyy/Kurrency)      |
+| **[Blokk](https://github.com/MrLarkyy/Blokk)**                 | Advanced block manipulation library for handling custom block data and complex block-based mechanics.                             | [🔗 Source](https://github.com/MrLarkyy/Blokk)         |
+| **[Replace](https://github.com/MrLarkyy/Replace)**             | High-performance string replacement engine designed for rapid placeholder processing.                                             | [🔗 Source](https://github.com/MrLarkyy/Replace)       |
+| **[Stacked](https://github.com/MrLarkyy/Stacked)**             | Modern ItemStack utility library for simplified NBT access, PersistentData management, and item building.                         | [🔗 Source](https://github.com/MrLarkyy/Stacked)       |
+| **[Statistik](https://github.com/MrLarkyy/Statistik)**         | Optimized data tracking system for player metrics, statistics gathering, and persistent data storage.                             | [🔗 Source](https://github.com/MrLarkyy/Statistik)     |
+| **[TreePAPI](https://github.com/MrLarkyy/TreePAPI)**           | An efficient integration and caching layer for PlaceholderAPI, reducing the overhead of placeholder requests.                     | [🔗 Source](https://github.com/MrLarkyy/TreePAPI)      |
 
 ---
 
 ## 🛠 Feature Deep-Dive
 
-### 1. Fake Entity & Block System (`gg.aquatic.waves.clientside`)
+### 👻 Packet-Based "Fake" Objects
 
-Easily manage complex visuals that don't affect server TPS.
+Located in `gg.aquatic.waves.clientside`, this system allows for:
 
-- **FakeEntity**: Supports all EntityTypes, equipment, and metadata.
-- **Multi-Blocks**: Display complex structures using fake blocks that can be changed dynamically for specific "
-  audiences."
-- **ModelEngine Support**: Seamlessly integrate `FakeMEG` to handle custom models as packet-entities.
+- **Client-Side Entities**: Spawn NPCs, items, or effects that only specific players can see.
+- **ModelEngine Integration**: Built-in support for `FakeMEG` to handle custom models via packets.
+- **Interaction Handling**: Packet-level click detection that maps back to standard Bukkit-like events.
 
-### 2. Scriptable Logic (`gg.aquatic.execute`)
+### 📜 Scriptable Actions (`Execute`)
 
-The `Execute` module allows you to turn configuration files into executable code.
+Turn your YAML configs into logic. `Execute` supports:
 
-- **Arguments**: Define required/optional parameters with default values.
-- **Contextual Execution**: Actions can be bound to players or console.
-- **Logical Actions**: Use `ConditionalActionsAction` to create "if-then-else" logic directly in your plugin's config.
+- **Arguments**: Type-safe parameter parsing (Int, String, Collection, etc.) for actions.
+- **Requirements**: Gate actions behind checks (permissions, currency, etc.).
+- **Smart Actions**: Nested logical conditions directly in configuration.
 
-### 3. Modern GUI Design (`gg.aquatic.kmenu`)
+### 💰 Economy & Data (`Kurrency` & `Statistik`)
 
-Stop fighting with `InventoryClickEvent`.
+- **Kurrency**: A unified API for handling multiple types of currency (Vault, Points, etc.).
+- **Statistik**: Optimized tracking of player data and metrics.
 
-```kotlin
-val menu = kMenu(rows = 3) {
-    title = "Select a Reward".miniMessage()
+### 🗺 Optimized Collections (`SnapshotMap`)
 
-    button(13, itemStack(Material.DIAMOND)) {
-        onClick { player ->
-            player.sendMessage("You clicked the diamond!")
-        }
-    }
-}
-```
+For data that is read thousands of times per second (like move events or packet listeners), Waves uses `SnapshotMap` to
+provide lock-free, thread-safe access that outperforms standard `ConcurrentHashMap`.
 
 ---
 
