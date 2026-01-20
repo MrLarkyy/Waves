@@ -57,7 +57,7 @@ plugin development, allowing for a clean, decoupled architecture.
 
 Located in `gg.aquatic.waves.clientside`, this system allows for:
 
-- **Client-Side Entities**: Spawn NPCs, items, or effects that only specific players can see.
+- **Client-Side Entities**: Spawn NPCs, blocks, or models that only specific players can see.
 - **ModelEngine Integration**: Built-in support for `FakeMEG` to handle custom models via packets.
 - **Interaction Handling**: Packet-level click detection that maps back to standard Bukkit-like events.
 
