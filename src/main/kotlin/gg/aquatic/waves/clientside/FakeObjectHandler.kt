@@ -32,7 +32,16 @@ object FakeObjectHandler {
     private val chunkCache = ConcurrentHashMap<String,MutableMap<ChunkId, ChunkBundle>>()
 
     private var tickCycle = 0
+
     fun initialize() {
+        setupTicker()
+        setupModelEngine()
+        setupChunkEvents()
+        setupPlayerEvents()
+        setupInteractionEvents()
+    }
+
+    private fun setupTicker() {
         Ticker {
             tickCycle = (tickCycle + 1) % 4
 
@@ -46,15 +55,18 @@ object FakeObjectHandler {
                     objectRemovalQueue.add(tickableObject)
                     continue
                 }
-                // Pass the current cycle index
                 tickableObject.handleTick(tickCycle)
             }
         }.register()
+    }
 
+    private fun setupModelEngine() {
         if (Bukkit.getPluginManager().getPlugin("ModelEngine") != null) {
             MEGInteractableHandler()
         }
+    }
 
+    private fun setupChunkEvents() {
         packetEvent<PacketChunkLoadEvent> {
             val bundle = getChunkCacheBundle(it.x, it.z, it.player.world) ?: return@packetEvent
             it.then {
@@ -67,7 +79,9 @@ object FakeObjectHandler {
             for (block in bundle.blocks) block.updateVisibility(it.player)
             for (entity in bundle.entities) entity.updateVisibility(it.player)
         }
+    }
 
+    private fun setupPlayerEvents() {
         event<PlayerQuitEvent> {
             handlePlayerRemove(it.player)
         }
@@ -78,6 +92,9 @@ object FakeObjectHandler {
                 }
             }
         }
+    }
+
+    private fun setupInteractionEvents() {
         packetEvent<PacketBlockChangeEvent> {
             val player = it.player
             val blocks = locationToBlocks[Location(
@@ -85,16 +102,12 @@ object FakeObjectHandler {
                 it.x.toDouble(),
                 it.y.toDouble(),
                 it.z.toDouble()
-            ).toBlockLocation()]
-            if (blocks.isNullOrEmpty()) {
-                return@packetEvent
-            }
+            ).toBlockLocation()] ?: return@packetEvent
+
             for (block in blocks) {
-                if (block.isAudienceMember(player)) { // Fixed the .viewers() error
-                    if (!block.destroyed) {
-                        it.blockData = block.block.blockData
-                        break
-                    }
+                if (block.isAudienceMember(player) && !block.destroyed) {
+                    it.blockData = block.block.blockData
+                    break
                 }
             }
         }
@@ -111,12 +124,11 @@ object FakeObjectHandler {
                     break
                 }
             }
-
         }
+
         packetEvent<PacketInteractEvent> {
             val entity = idToEntity[it.entityId] ?: return@packetEvent
-            entity.handleInteract(it.player,
-                it.isAttack)
+            entity.handleInteract(it.player, it.isAttack)
         }
     }
 

@@ -2,7 +2,8 @@ package gg.aquatic.waves.audience
 
 import org.bukkit.entity.Player
 
-private class CombinedAudience(
+@Suppress("unused")
+class CombinedAudience(
     val first: AquaticAudience,
     val second: AquaticAudience,
     val combineOr: Boolean

@@ -113,7 +113,7 @@ abstract class FakeObject(
 
         // Spread distance checks across different ticks
         // Only check visibility every 4 ticks based on object's hash to stagger load
-        val myCycleSlot = (this.hashCode().let { if (it < 0) -it else it }) % 4
+        val myCycleSlot = this.hashCode().let { if (it < 0) -it else it } % 4
 
         if (tickCount == myCycleSlot) {
             refreshVisibility()

@@ -227,8 +227,8 @@ open class DisplayEntityData internal constructor(): BaseEntityData() {
 
         override fun generate(arguments: ObjectArguments, updater: (String) -> String): Collection<EntityDataValue> {
             return generate(
-                (arguments.enum<Display.Billboard>(id, updater)
-                    ?: Display.Billboard.FIXED)
+                arguments.enum<Display.Billboard>(id, updater)
+                    ?: Display.Billboard.FIXED
             )
         }
 
