@@ -1,7 +1,7 @@
 package gg.aquatic.waves.util.argument
 
-import gg.aquatic.execute.argument.ObjectArgument
-import gg.aquatic.execute.argument.ObjectArgumentFactory
+import gg.aquatic.common.argument.ObjectArgument
+import gg.aquatic.common.argument.ObjectArgumentFactory
 import gg.aquatic.klocale.impl.paper.PaperMessage
 import gg.aquatic.klocale.message.Message
 import gg.aquatic.waves.util.message.AquaticMessageSerializer

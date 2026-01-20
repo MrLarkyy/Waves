@@ -1,8 +1,8 @@
 package gg.aquatic.waves.util.action
 
 import gg.aquatic.execute.Action
-import gg.aquatic.execute.argument.ArgumentContext
-import gg.aquatic.execute.argument.ObjectArgument
+import gg.aquatic.common.argument.ArgumentContext
+import gg.aquatic.common.argument.ObjectArgument
 import gg.aquatic.klocale.impl.paper.PaperMessage
 import gg.aquatic.waves.util.argument.MessageArgument
 import gg.aquatic.waves.util.message.EmptyMessage

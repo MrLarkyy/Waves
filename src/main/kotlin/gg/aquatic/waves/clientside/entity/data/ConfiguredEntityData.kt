@@ -1,6 +1,6 @@
 package gg.aquatic.waves.clientside.entity.data
 
-import gg.aquatic.execute.argument.ObjectArguments
+import gg.aquatic.common.argument.ObjectArguments
 import gg.aquatic.pakket.api.nms.entity.EntityDataValue
 
 class ConfiguredEntityData(

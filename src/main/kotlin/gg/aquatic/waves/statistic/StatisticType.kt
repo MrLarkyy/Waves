@@ -1,7 +1,7 @@
 package gg.aquatic.waves.statistic
 
-import gg.aquatic.execute.argument.ObjectArgument
-import gg.aquatic.execute.argument.ObjectArguments
+import gg.aquatic.common.argument.ObjectArgument
+import gg.aquatic.common.argument.ObjectArguments
 import gg.aquatic.kregistry.*
 
 abstract class StatisticType<T> {

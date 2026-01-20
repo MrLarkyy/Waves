@@ -1,8 +1,8 @@
 package gg.aquatic.waves.clientside.entity.data.impl.display
 
-import gg.aquatic.execute.argument.ObjectArgument
-import gg.aquatic.execute.argument.ObjectArguments
-import gg.aquatic.execute.argument.impl.PrimitiveObjectArgument
+import gg.aquatic.common.argument.ObjectArgument
+import gg.aquatic.common.argument.ObjectArguments
+import gg.aquatic.common.argument.impl.PrimitiveObjectArgument
 import gg.aquatic.pakket.NMSVersion
 import gg.aquatic.pakket.api.nms.entity.DataSerializerTypes
 import gg.aquatic.pakket.api.nms.entity.EntityDataValue

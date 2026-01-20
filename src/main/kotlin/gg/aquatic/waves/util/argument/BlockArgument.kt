@@ -2,8 +2,8 @@ package gg.aquatic.waves.util.argument
 
 import gg.aquatic.blokk.Blokk
 import gg.aquatic.blokk.BlokkSerializer
-import gg.aquatic.execute.argument.ObjectArgument
-import gg.aquatic.execute.argument.ObjectArgumentFactory
+import gg.aquatic.common.argument.ObjectArgument
+import gg.aquatic.common.argument.ObjectArgumentFactory
 import org.bukkit.configuration.ConfigurationSection
 
 class BlockArgument(

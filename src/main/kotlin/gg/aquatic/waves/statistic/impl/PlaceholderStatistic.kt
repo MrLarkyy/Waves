@@ -1,7 +1,7 @@
 package gg.aquatic.waves.statistic.impl
 
-import gg.aquatic.execute.argument.ObjectArgument
-import gg.aquatic.execute.argument.impl.PrimitiveObjectArgument
+import gg.aquatic.common.argument.ObjectArgument
+import gg.aquatic.common.argument.impl.PrimitiveObjectArgument
 import gg.aquatic.treepapi.updatePAPIPlaceholders
 import gg.aquatic.waves.Waves
 import gg.aquatic.waves.statistic.StatisticAddEvent

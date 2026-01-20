@@ -1,7 +1,7 @@
 package gg.aquatic.waves.statistic
 
-import gg.aquatic.execute.argument.ArgumentSerializer
-import gg.aquatic.execute.argument.ObjectArguments
+import gg.aquatic.common.argument.ArgumentSerializer
+import gg.aquatic.common.argument.ObjectArguments
 import org.bukkit.configuration.ConfigurationSection
 
 object StatistikSerializer {
