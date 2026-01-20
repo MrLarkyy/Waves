@@ -20,7 +20,7 @@ import java.io.File
 
 object HologramSerializer {
 
-    fun loadFromFolder(folder: File): Map<Hologram.Settings, List<LazyLocation>> {
+    suspend fun loadFromFolder(folder: File): Map<Hologram.Settings, List<LazyLocation>> {
         val holograms = HashMap<Hologram.Settings, List<LazyLocation>>()
         folder.deepFilesLookup { it.extension == "yml" }.forEach {
             holograms += loadFromFile(it)
@@ -28,14 +28,13 @@ object HologramSerializer {
         return holograms
     }
 
-    fun loadFromFile(file: File): Map<Hologram.Settings, List<LazyLocation>> {
+    suspend fun loadFromFile(file: File): Map<Hologram.Settings, List<LazyLocation>> {
         val holograms = HashMap<Hologram.Settings, List<LazyLocation>>()
         if (!file.exists() || file.extension != "yml") {
             return holograms
         }
         val config = Config(file, Waves)
-        config.loadSync()
-        val cfg = config.getConfiguration()
+        val cfg = config.load()
         for (section in cfg.getSectionList("holograms")) {
             val hologram = loadHologram(section)
             val locations = section.getStringList("locations").map { it.toLazyLocation() }

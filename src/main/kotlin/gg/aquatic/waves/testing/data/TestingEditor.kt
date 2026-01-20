@@ -19,7 +19,7 @@ object TestingEditor {
                 val config = Config("test.yml", Waves)
                 config.loadSync()
 
-                val cfg = config.getConfiguration()
+                val cfg = config.configuration
 
                 val itemData = BaseCrateData("test", Component.text("Test Crate"), listOf())
                 itemData.deserialize(cfg)

@@ -1,5 +1,6 @@
 package gg.aquatic.waves
 
+import gg.aquatic.common.coroutine.VirtualsCtx
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.bukkit.configuration.file.FileConfiguration
@@ -10,7 +11,6 @@ import java.io.IOException
 
 class Config {
     private var file: File
-    private var config: FileConfiguration? = null
     private var main: JavaPlugin
 
     constructor(file: File, main: JavaPlugin) {
@@ -21,42 +21,46 @@ class Config {
         this.main = main
         file = File(main.dataFolder, path)
     }
+    private var _config: FileConfiguration? = null
 
-    suspend fun load() = withContext(Dispatchers.IO) {
+    suspend fun load() = withContext(VirtualsCtx) {
         loadSync()
     }
 
-    fun loadSync() {
+    fun loadSync(): FileConfiguration {
         if (!file.exists()) {
-            try {
-                main.saveResource(file.name, false)
-            } catch (_: IllegalArgumentException) {
-                try {
-                    file.createNewFile()
-                } catch (var3: IOException) {
-                    var3.printStackTrace()
-                }
+            val resourcePath = file.absolutePath
+                .removePrefix(main.dataFolder.absolutePath)
+                .replace('\\', '/')
+                .trim('/')
+
+            if (main.getResource(resourcePath) != null) {
+                main.saveResource(resourcePath, false)
+            } else {
+                file.parentFile?.mkdirs()
+                runCatching { file.createNewFile() }
+                    .onFailure { it.printStackTrace() }
             }
         }
-        config = YamlConfiguration.loadConfiguration(file)
+        _config = YamlConfiguration.loadConfiguration(file)
+        return configuration
     }
 
-    fun getConfiguration(): FileConfiguration {
-        return config ?: error("Configuration has not been loaded!")
-    }
+    val configuration: FileConfiguration
+        get() = _config ?: error("Configuration ${file.name} has not been loaded!")
 
-    suspend fun save() = withContext(Dispatchers.IO) {
+    @Suppress("unused")
+    suspend fun save() = withContext(VirtualsCtx) {
         saveSync()
     }
 
     fun saveSync() {
-        try {
-            config!!.save(file)
-        } catch (var2: IOException) {
-            var2.printStackTrace()
-        }
+        runCatching {
+            configuration.save(file)
+        }.onFailure { it.printStackTrace() }
     }
 
+    @Suppress("unused")
     fun getFile(): File {
         return file
     }
