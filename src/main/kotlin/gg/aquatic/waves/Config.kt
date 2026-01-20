@@ -1,13 +1,11 @@
 package gg.aquatic.waves
 
 import gg.aquatic.common.coroutine.VirtualsCtx
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
-import java.io.IOException
 
 class Config {
     private var file: File
