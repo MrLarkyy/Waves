@@ -45,9 +45,9 @@ plugin development, allowing for a clean, decoupled architecture.
 | **[Kurrency](https://github.com/MrLarkyy/Kurrency)**           | A unified economy abstraction layer supporting multiple providers (Vault, PlayerPoints, etc.) and custom currencies.              | [🔗 Source](https://github.com/MrLarkyy/Kurrency)      |
 | **[Blokk](https://github.com/MrLarkyy/Blokk)**                 | A simple block library for getting blockdata & placing blocks via multiple plugins.                                               | [🔗 Source](https://github.com/MrLarkyy/Blokk)         |
 | **[Replace](https://github.com/MrLarkyy/Replace)**             | High-performance string replacement engine designed for rapid placeholder processing.                                             | [🔗 Source](https://github.com/MrLarkyy/Replace)       |
-| **[Stacked](https://github.com/MrLarkyy/Stacked)**             | Modern ItemStack utility library for simplified NBT access, PersistentData management, and item building.                         | [🔗 Source](https://github.com/MrLarkyy/Stacked)       |
-| **[Statistik](https://github.com/MrLarkyy/Statistik)**         | Optimized data tracking system for player metrics, statistics gathering, and persistent data storage.                             | [🔗 Source](https://github.com/MrLarkyy/Statistik)     |
-| **[TreePAPI](https://github.com/MrLarkyy/TreePAPI)**           | An efficient integration and caching layer for PlaceholderAPI, reducing the overhead of placeholder requests.                     | [🔗 Source](https://github.com/MrLarkyy/TreePAPI)      |
+| **[Stacked](https://github.com/MrLarkyy/Stacked)**             | Modern ItemStack utility library for click handling and item building with plugin hooks.                                          | [🔗 Source](https://github.com/MrLarkyy/Stacked)       |
+| **[Statistik](https://github.com/MrLarkyy/Statistik)**         | Optimized data tracking system for player metrics.                                                                                | [🔗 Source](https://github.com/MrLarkyy/Statistik)     |
+| **[TreePAPI](https://github.com/MrLarkyy/TreePAPI)**           | A placeholders DSL for PlaceholderAPI plugin - simple creation of placeholders.                                                   | [🔗 Source](https://github.com/MrLarkyy/TreePAPI)      |
 
 ---
 
