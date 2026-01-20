@@ -40,3 +40,6 @@
 [submodule "SnapshotMap"]
 	path = SnapshotMap
 	url = https://github.com/MrLarkyy/SnapshotMap.git
+[submodule "Statistik"]
+	path = Statistik
+	url = https://github.com/MrLarkyy/Statistik.git

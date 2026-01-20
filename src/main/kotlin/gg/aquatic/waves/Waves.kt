@@ -14,10 +14,10 @@ import gg.aquatic.kmenu.coroutine.KMenuCtx
 import gg.aquatic.kregistry.Registry
 import gg.aquatic.pakket.Pakket
 import gg.aquatic.stacked.initializeStacked
+import gg.aquatic.statistik.initializeStatistik
 import gg.aquatic.waves.hologram.HologramHandler
 import gg.aquatic.waves.input.InputHandler
 import gg.aquatic.waves.input.impl.ChatInput
-import gg.aquatic.waves.statistic.initializeStatistik
 import gg.aquatic.waves.util.action.BossbarAction
 import gg.aquatic.waves.util.action.MessageAction
 import gg.aquatic.waves.world.AwaitingWorlds

@@ -89,10 +89,11 @@ dependencies {
     implementation("gg.aquatic:Common:26.0.5")
     implementation("gg.aquatic:Kurrency:26.0.1")
     implementation("gg.aquatic:KLocale:26.0.2")
+    implementation("gg.aquatic:KLocale-Paper:26.0.2")
     implementation("gg.aquatic:Blokk:26.0.1")
     implementation("gg.aquatic:TreePAPI:26.0.1")
     implementation("gg.aquatic:snapshotmap:26.0.2")
-    implementation("gg.aquatic:KLocale-Paper:26.0.2")
+    implementation("gg.aquatic:Statistik:26.0.1")
 
     runtimeDownload("com.github.ben-manes.caffeine:caffeine:3.2.3")
     runtimeDownload("org.reflections:reflections:0.10.2")
