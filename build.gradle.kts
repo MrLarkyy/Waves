@@ -83,7 +83,7 @@ dependencies {
     implementation("gg.aquatic:Stacked:26.0.1")
     implementation("gg.aquatic:KRegistry:25.0.2")
     implementation("gg.aquatic:KEvent:1.0.4")
-    implementation("gg.aquatic:Pakket:26.1.1")
+    implementation("gg.aquatic:Pakket:26.1.6")
     implementation("gg.aquatic.execute:Execute:26.0.1")
     implementation("gg.aquatic:Kommand:26.0.2")
     implementation("gg.aquatic:Common:26.0.7")
@@ -94,6 +94,8 @@ dependencies {
     implementation("gg.aquatic:TreePAPI:26.0.1")
     implementation("gg.aquatic:snapshotmap:26.0.2")
     implementation("gg.aquatic:Statistik:26.0.1")
+    implementation("gg.aquatic:KHolograms:26.0.1")
+    implementation("gg.aquatic:Clientside:26.0.1")
 
     runtimeDownload("com.github.ben-manes.caffeine:caffeine:3.2.3")
     runtimeDownload("org.reflections:reflections:0.10.2")
