@@ -10,7 +10,7 @@ import gg.aquatic.pakket.Pakket
 import gg.aquatic.pakket.sendPacket
 import gg.aquatic.replace.PlaceholderContext
 import gg.aquatic.stacked.stackedItem
-import gg.aquatic.waves.Config
+import gg.aquatic.common.Config
 import gg.aquatic.waves.Waves
 import gg.aquatic.waves.editor.EditorHandler
 import net.kyori.adventure.text.Component

@@ -6,7 +6,7 @@ import gg.aquatic.common.getSectionList
 import gg.aquatic.common.location.LazyLocation
 import gg.aquatic.common.location.toLazyLocation
 import gg.aquatic.execute.requirement.ConditionSerializer
-import gg.aquatic.waves.Config
+import gg.aquatic.common.Config
 import gg.aquatic.waves.Waves
 import gg.aquatic.waves.hologram.line.AnimatedHologramLine
 import gg.aquatic.waves.hologram.line.TextHologramLine
