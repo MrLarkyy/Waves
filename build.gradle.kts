@@ -108,7 +108,7 @@ dependencies {
     testImplementation("io.mockk:mockk:1.14.7")
     testImplementation(kotlin("test"))
     testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
-    testImplementation("com.h2database:h2:2.3.232")
+    testImplementation("com.h2database:h2:2.4.240")
 
     // DB
     runtimeDownload("org.jetbrains.exposed:exposed-core:$exposedVersion")
