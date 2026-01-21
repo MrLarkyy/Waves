@@ -6,6 +6,7 @@ import gg.aquatic.execute.Action
 import gg.aquatic.execute.Execute
 import gg.aquatic.execute.action.registerAction
 import gg.aquatic.execute.initExecute
+import gg.aquatic.kholograms.HologramHandler
 import gg.aquatic.klocale.LocaleManager
 import gg.aquatic.klocale.impl.paper.KLocale
 import gg.aquatic.klocale.impl.paper.PaperMessage
@@ -15,7 +16,6 @@ import gg.aquatic.kregistry.Registry
 import gg.aquatic.pakket.Pakket
 import gg.aquatic.stacked.initializeStacked
 import gg.aquatic.statistik.initializeStatistik
-import gg.aquatic.waves.hologram.HologramHandler
 import gg.aquatic.waves.input.InputHandler
 import gg.aquatic.waves.input.impl.ChatInput
 import gg.aquatic.waves.testing.data.TestingEditor
