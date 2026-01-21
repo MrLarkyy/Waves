@@ -3,7 +3,7 @@ package gg.aquatic.waves.hologram
 import gg.aquatic.common.event
 import gg.aquatic.common.ticker.Ticker
 import gg.aquatic.snapshotmap.SuspendingSnapshotMap
-import gg.aquatic.waves.util.chunk.ChunkId
+import gg.aquatic.common.ChunkId
 import gg.aquatic.waves.util.chunk.chunkId
 import org.bukkit.event.world.ChunkLoadEvent
 import org.bukkit.event.world.ChunkUnloadEvent

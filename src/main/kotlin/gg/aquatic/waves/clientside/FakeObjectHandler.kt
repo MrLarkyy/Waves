@@ -9,7 +9,7 @@ import gg.aquatic.pakket.packetEvent
 import gg.aquatic.waves.clientside.block.FakeBlock
 import gg.aquatic.waves.clientside.entity.FakeEntity
 import gg.aquatic.waves.clientside.meg.MEGInteractableHandler
-import gg.aquatic.waves.util.chunk.ChunkId
+import gg.aquatic.common.ChunkId
 import io.papermc.paper.event.packet.PlayerChunkUnloadEvent
 import org.bukkit.Bukkit
 import org.bukkit.Location

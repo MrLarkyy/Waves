@@ -1,5 +1,6 @@
 package gg.aquatic.waves.util.chunk
 
+import gg.aquatic.common.ChunkId
 import gg.aquatic.pakket.Pakket
 import org.bukkit.Chunk
 import org.bukkit.World
