@@ -9,8 +9,8 @@ import gg.aquatic.replace.PlaceholderContext
 import gg.aquatic.snapshotmap.SuspendingSnapshotMap
 import gg.aquatic.waves.hologram.line.TextHologramLine
 import gg.aquatic.waves.hologram.serialize.LineSettings
-import gg.aquatic.waves.util.chunk.chunkId
-import gg.aquatic.waves.util.chunk.trackedBy
+import gg.aquatic.pakket.api.chunkId
+import gg.aquatic.pakket.api.trackedBy
 import org.bukkit.Chunk
 import org.bukkit.Location
 import org.bukkit.entity.Player

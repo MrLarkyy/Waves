@@ -1,7 +1,7 @@
 package gg.aquatic.waves.clientside
 
 import gg.aquatic.waves.audience.AquaticAudience
-import gg.aquatic.waves.util.chunk.isChunkTracked
+import gg.aquatic.pakket.api.isChunkTracked
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.entity.Player
