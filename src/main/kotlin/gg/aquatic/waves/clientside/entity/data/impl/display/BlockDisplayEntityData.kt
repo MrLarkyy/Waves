@@ -8,7 +8,7 @@ import gg.aquatic.pakket.NMSVersion
 import gg.aquatic.pakket.api.nms.entity.DataSerializerTypes
 import gg.aquatic.pakket.api.nms.entity.EntityDataValue
 import gg.aquatic.waves.clientside.entity.data.EntityData
-import gg.aquatic.waves.util.argument.BlockArgument
+import gg.aquatic.blokk.argument.BlockArgument
 import org.bukkit.Material
 import org.bukkit.block.data.BlockData
 import org.bukkit.entity.BlockDisplay
