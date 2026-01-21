@@ -1,16 +1,47 @@
 package gg.aquatic.waves.testing.data
 
+import gg.aquatic.kmenu.coroutine.KMenuCtx
+import gg.aquatic.kmenu.inventory.InventoryType
+import gg.aquatic.kmenu.menu.PrivateMenu
+import gg.aquatic.kmenu.menu.component.Button
+import gg.aquatic.kmenu.privateMenu
 import gg.aquatic.kommand.command
+import gg.aquatic.pakket.Pakket
+import gg.aquatic.pakket.sendPacket
+import gg.aquatic.replace.PlaceholderContext
+import gg.aquatic.stacked.stackedItem
 import gg.aquatic.waves.Config
 import gg.aquatic.waves.Waves
 import gg.aquatic.waves.editor.EditorHandler
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
+import org.bukkit.Material
 import org.bukkit.entity.Player
 
 object TestingEditor {
 
     fun initialize() {
+
+        command("anvil") {
+            execute<Player> {
+                val menu = PrivateMenu(Component.text("Anvil Menu"), InventoryType.ANVIL.apply {
+                    this.onRename = { player, name, inventory ->
+                        player.sendMessage("Renamed to: $name")
+                        val packet = Pakket.handler.createContainerPropertyPacket(126, 0, -1)
+                        player.sendPacket(packet, true)
+                    }
+                }, sender, true)
+
+                KMenuCtx.launch {
+                    menu.addComponent(Button("example", stackedItem(Material.STONE) {
+                        displayName = Component.text("Write: ")
+                    }.getItem(), listOf(0), 1, -1, textUpdater = PlaceholderContext.privateMenu()))
+
+                    menu.open()
+                }
+                true
+            }
+        }
 
         command("edit") {
             execute<Player> {
