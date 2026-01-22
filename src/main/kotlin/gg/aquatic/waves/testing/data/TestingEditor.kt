@@ -1,5 +1,6 @@
 package gg.aquatic.waves.testing.data
 
+import gg.aquatic.common.Config
 import gg.aquatic.kmenu.coroutine.KMenuCtx
 import gg.aquatic.kmenu.inventory.InventoryType
 import gg.aquatic.kmenu.menu.PrivateMenu
@@ -10,7 +11,6 @@ import gg.aquatic.pakket.Pakket
 import gg.aquatic.pakket.sendPacket
 import gg.aquatic.replace.PlaceholderContext
 import gg.aquatic.stacked.stackedItem
-import gg.aquatic.common.Config
 import gg.aquatic.waves.Waves
 import gg.aquatic.waves.editor.EditorHandler
 import net.kyori.adventure.text.Component

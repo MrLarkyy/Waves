@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.util.*
-import kotlin.test.DefaultAsserter.assertNotNull
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
