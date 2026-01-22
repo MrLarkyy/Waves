@@ -2,7 +2,7 @@ package gg.aquatic.waves.kmetrics
 
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
-import gg.aquatic.common.ticker.Ticker
+import gg.aquatic.common.ticker.GlobalTicker
 import gg.aquatic.statistik.StatisticAddEvent
 import kotlinx.coroutines.*
 import org.jetbrains.exposed.sql.Database
@@ -26,25 +26,17 @@ object KMetricsManager {
         .maximumSize(10_000)
         .build()
 
-    private var flushTick = 0
-    private var cleanupTick = 0
-
     fun initialize(db: Database) {
         this.handler = KMetricsDBHandler(db)
         transaction(db) { SchemaUtils.create(KMetricsTable) }
 
-        Ticker {
-            flushTick++
-            if (flushTick >= 20*30) {
-                flushAll()
-                flushTick = 0
-            }
+        GlobalTicker.runRepeatFixedRate(30_000L) {
+            flushAll()
+        }
 
-            if (cleanupTick >= 20 * 60 * 60 * 12) {
-                performCleanup()
-                cleanupTick = 0
-            }
-        }.register()
+        GlobalTicker.runRepeatFixedRate(43_200_000L) {
+            performCleanup()
+        }
     }
 
     fun <T : Any> registerMetric(

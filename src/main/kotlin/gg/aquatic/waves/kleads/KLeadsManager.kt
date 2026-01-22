@@ -1,16 +1,8 @@
 package gg.aquatic.waves.kleads
 
-import gg.aquatic.common.coroutine.VirtualsCtx
-import gg.aquatic.common.ticker.Ticker
-import gg.aquatic.statistik.StatisticAddEvent
-import gg.aquatic.statistik.StatisticHandle
+import gg.aquatic.common.ticker.GlobalTicker
 import gg.aquatic.waves.kmetrics.PeriodType
-import kotlinx.coroutines.*
 import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.transactions.transaction
-import java.math.BigDecimal
-import java.math.RoundingMode
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -24,13 +16,9 @@ object KLeadsManager {
     fun initialize(db: Database) {
         this.handler = KLeadsDBHandler(db)
 
-        Ticker {
-            refreshTick++
-            if (refreshTick >= 60 * 30) { // Refresh every 30 minutes
-                refreshAllLeaderboards()
-                refreshTick = 0
-            }
-        }.register()
+        GlobalTicker.runRepeatFixedDelay(5*60_000L) {
+            refreshAllLeaderboards()
+        }
     }
 
     /**
