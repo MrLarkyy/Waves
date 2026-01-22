@@ -11,8 +11,6 @@ object KLeadsManager {
     private lateinit var handler: KLeadsDBHandler
     private val leaderboards = ConcurrentHashMap<String, Leaderboard>()
 
-    private var refreshTick = 0
-
     fun initialize(db: Database) {
         this.handler = KLeadsDBHandler(db)
 
