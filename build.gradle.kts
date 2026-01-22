@@ -96,6 +96,7 @@ dependencies {
     implementation("gg.aquatic:Statistik:26.0.1")
     implementation("gg.aquatic:KHolograms:26.0.1")
     implementation("gg.aquatic:Clientside:26.0.1")
+    implementation("gg.aquatic:Dispatch:26.0.1")
 
     runtimeDownload("com.github.ben-manes.caffeine:caffeine:3.2.3")
     runtimeDownload("org.reflections:reflections:0.10.2")

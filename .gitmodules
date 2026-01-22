@@ -49,3 +49,6 @@
 [submodule "Clientside"]
 	path = Clientside
 	url = https://github.com/MrLarkyy/Clientside.git
+[submodule "Dispatch"]
+	path = Dispatch
+	url = https://github.com/MrLarkyy/Dispatch.git

@@ -20,7 +20,8 @@ val submodules = listOf(
     "AquaticCommon" to "gg.aquatic:Common",
     "Statistik" to "gg.aquatic:Statistik",
     "KHolograms" to "gg.aquatic:KHolograms",
-    "Clientside" to "gg.aquatic:Clientside"
+    "Clientside" to "gg.aquatic:Clientside",
+    "Dispatch" to "gg.aquatic:Dispatch"
 )
 
 submodules.forEach { (folder, artifact) ->
