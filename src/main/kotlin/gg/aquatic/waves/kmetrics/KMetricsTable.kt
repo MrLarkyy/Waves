@@ -1,10 +1,11 @@
 package gg.aquatic.waves.kmetrics
 
-import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.v1.core.Table
+import org.jetbrains.exposed.v1.core.java.javaUUID
 
 object KMetricsTable : Table("kmetrics_entries") {
     val metricId = varchar("metric_id", 64)
-    val binderUuid = uuid("binder_uuid")
+    val binderUuid = javaUUID("binder_uuid")
     val periodType = enumerationByName("period_type", 16, PeriodType::class)
     val periodId = varchar("period_id", 32)
     val value = decimal("value", 36, 2)

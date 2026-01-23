@@ -1,23 +1,25 @@
 package gg.aquatic.waves.kmetrics
 
 import gg.aquatic.common.coroutine.VirtualsCtx
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.notInList
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.plus
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import org.jetbrains.exposed.sql.upsert
+import kotlinx.coroutines.withContext
+import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.notInList
+import org.jetbrains.exposed.v1.core.plus
+import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.deleteWhere
+import org.jetbrains.exposed.v1.jdbc.select
+import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
+import org.jetbrains.exposed.v1.jdbc.upsert
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.*
 
 class KMetricsDBHandler(private val database: Database) {
 
-    suspend fun batchUpdate(updates: Map<String, Map<UUID, Pair<BigDecimal, String>>>) =
-        newSuspendedTransaction(db = database, context = VirtualsCtx) {
-            if (updates.isEmpty()) return@newSuspendedTransaction
+    suspend fun batchUpdate(updates: Map<String, Map<UUID, Pair<BigDecimal, String>>>) = withContext(VirtualsCtx) {
+        suspendTransaction(db = database) {
+            if (updates.isEmpty()) return@suspendTransaction
 
             val now = LocalDateTime.now()
 
@@ -43,9 +45,10 @@ class KMetricsDBHandler(private val database: Database) {
                 }
             }
         }
+    }
 
-    suspend fun cleanup(type: PeriodType, amountToKeep: Int) =
-        newSuspendedTransaction(db = database, context = VirtualsCtx) {
+    suspend fun cleanup(type: PeriodType, amountToKeep: Int) = withContext<Unit>(VirtualsCtx) {
+        suspendTransaction(db = database) {
             val now = LocalDateTime.now()
             val idsToKeep = mutableListOf<String>()
 
@@ -64,16 +67,19 @@ class KMetricsDBHandler(private val database: Database) {
                         (KMetricsTable.periodId notInList idsToKeep)
             }
         }
+    }
 
     suspend fun getValue(metricId: String, uuid: UUID, type: PeriodType, pId: String): BigDecimal =
-        newSuspendedTransaction(db = database, context = VirtualsCtx) {
-            KMetricsTable.select(KMetricsTable.value)
-                .where {
-                    (KMetricsTable.metricId eq metricId) and
-                            (KMetricsTable.binderUuid eq uuid) and
-                            (KMetricsTable.periodType eq type) and
-                            (KMetricsTable.periodId eq pId)
-                }
-                .singleOrNull()?.get(KMetricsTable.value) ?: BigDecimal.ZERO
+        withContext(VirtualsCtx) {
+            suspendTransaction(db = database) {
+                KMetricsTable.select(KMetricsTable.value)
+                    .where {
+                        (KMetricsTable.metricId eq metricId) and
+                                (KMetricsTable.binderUuid eq uuid) and
+                                (KMetricsTable.periodType eq type) and
+                                (KMetricsTable.periodId eq pId)
+                    }
+                    .singleOrNull()?.get(KMetricsTable.value) ?: BigDecimal.ZERO
+            }
         }
 }

@@ -5,9 +5,9 @@ import com.github.benmanes.caffeine.cache.Caffeine
 import gg.aquatic.common.ticker.GlobalTicker
 import gg.aquatic.statistik.StatisticAddEvent
 import kotlinx.coroutines.*
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.SchemaUtils
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.*

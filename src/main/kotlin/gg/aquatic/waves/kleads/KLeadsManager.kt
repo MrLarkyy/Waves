@@ -2,7 +2,7 @@ package gg.aquatic.waves.kleads
 
 import gg.aquatic.common.ticker.GlobalTicker
 import gg.aquatic.waves.kmetrics.PeriodType
-import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.v1.jdbc.Database
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
