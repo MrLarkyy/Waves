@@ -73,7 +73,7 @@ repositories {
     maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
 }
 
-val exposedVersion = "0.61.0"
+val exposedVersion = "1.0.0"
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     compileOnly("org.slf4j:slf4j-api:2.0.17")
