@@ -86,7 +86,7 @@ dependencies {
     implementation("gg.aquatic:Pakket:26.1.7")
     implementation("gg.aquatic.execute:Execute:26.0.1")
     implementation("gg.aquatic:Kommand:26.0.2")
-    implementation("gg.aquatic:Common:26.0.11")
+    implementation("gg.aquatic:Common:26.0.12")
     implementation("gg.aquatic:Kurrency:26.0.1")
     implementation("gg.aquatic:KLocale:26.0.2")
     implementation("gg.aquatic:KLocale-Paper:26.0.2")
