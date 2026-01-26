@@ -108,7 +108,7 @@ dependencies {
     compileOnly("me.clip:placeholderapi:2.11.7")
 
     // Testing
-    testImplementation("io.mockk:mockk:1.14.7")
+    testImplementation("io.mockk:mockk:1.14.9")
     testImplementation(kotlin("test"))
     testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     testImplementation("com.h2database:h2:2.4.240")
