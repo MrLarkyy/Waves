@@ -1,6 +1,6 @@
 package gg.aquatic.waves.testing.data
 
-import gg.aquatic.stacked.StackedItem
+import gg.aquatic.stacked.impl.StackedItemImpl
 import gg.aquatic.stacked.stackedItem
 import gg.aquatic.waves.editor.Configurable
 import net.kyori.adventure.text.Component
@@ -19,7 +19,7 @@ class ItemData(
 
     val lore = editComponentList("lore", initialLore)
 
-    fun asStacked(): StackedItem {
+    fun asStacked(): StackedItemImpl {
         return stackedItem(material.value) {
             lore += this@ItemData.lore.value.map { it.value }
             amount = this@ItemData.amount.value
