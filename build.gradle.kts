@@ -105,7 +105,7 @@ dependencies {
     compileOnly("net.kyori:adventure-text-serializer-plain:4.26.1")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
     compileOnly("com.ticxo.modelengine:ModelEngine:R4.0.9")
-    compileOnly("me.clip:placeholderapi:2.11.7")
+    compileOnly("me.clip:placeholderapi:2.12.0")
 
     // Testing
     testImplementation("io.mockk:mockk:1.14.9")
