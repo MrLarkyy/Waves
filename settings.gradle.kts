@@ -27,11 +27,18 @@ val submodules = listOf(
 submodules.forEach { (folder, artifact) ->
     includeBuild(folder) {
         dependencySubstitution {
-            if (folder == "KHolograms") {
-                substitute(module("gg.aquatic:KHolograms")).using(project(":core"))
-                substitute(module("gg.aquatic:KHolograms-serialization")).using(project(":serialization"))
-            } else {
-                substitute(module(artifact)).using(project(":"))
+            when (folder) {
+                "KHolograms" -> {
+                    substitute(module("gg.aquatic:KHolograms")).using(project(":core"))
+                    substitute(module("gg.aquatic:KHolograms-serialization")).using(project(":serialization"))
+                }
+                "KMenu" -> {
+                    substitute(module("gg.aquatic:KMenu")).using(project(":core"))
+                    substitute(module("gg.aquatic:KMenu-serialization")).using(project(":serialization"))
+                }
+                else -> {
+                    substitute(module(artifact)).using(project(":"))
+                }
             }
             if (folder == "KLocale") {
                 substitute(module("gg.aquatic:KLocale-Paper")).using(project(":Paper"))
