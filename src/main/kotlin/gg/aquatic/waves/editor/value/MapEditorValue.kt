@@ -9,9 +9,9 @@ import org.bukkit.inventory.ItemStack
 class MapEditorValue<T>(
     override val key: String,
     override var value: MutableList<EditorValue<T>>,
-    val addButtonClick: (player: Player, accept: (EditorValue<T>?) -> Unit) -> Unit,
+    val addButtonClick: suspend (player: Player, accept: suspend (EditorValue<T>?) -> Unit) -> Unit,
     private val iconFactory: (Map<String, T>) -> ItemStack,
-    private val openMapGui: (Player, MapEditorValue<T>, () -> Unit) -> Unit,
+    private val openMapGui: suspend (Player, MapEditorValue<T>, suspend () -> Unit) -> Unit,
     override val visibleIf: () -> Boolean = { true },
     override val defaultValue: MutableList<EditorValue<T>>? = null,
     private val elementFactory: (ConfigurationSection) -> EditorValue<T>
@@ -24,7 +24,7 @@ class MapEditorValue<T>(
         return iconFactory(map)
     }
 
-    override fun onClick(player: Player, clickType: ButtonType, updateParent: () -> Unit) {
+    override suspend fun onClick(player: Player, clickType: ButtonType, updateParent: suspend () -> Unit) {
         openMapGui(player, this, updateParent)
     }
 

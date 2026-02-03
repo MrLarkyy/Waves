@@ -7,7 +7,6 @@ import gg.aquatic.kregistry.RegistryId
 import gg.aquatic.kregistry.RegistryKey
 import org.bukkit.Material
 import org.bukkit.entity.Player
-import java.util.concurrent.CompletableFuture
 
 interface Input {
 
@@ -29,27 +28,27 @@ interface Input {
 
 interface InputHandle {
     val input: Input
-    fun await(player: Player): CompletableFuture<String?>
+    suspend fun await(player: Player): String?
     fun forceCancel(player: Player)
 
-    fun awaitMaterial(player: Player): CompletableFuture<Material?> =
-        await(player).thenApply { it?.let { Material.matchMaterial(it) } }
+    suspend fun awaitMaterial(player: Player): Material? =
+        await(player)?.let { Material.matchMaterial(it) }
 
-    fun awaitInt(player: Player): CompletableFuture<Int?> =
-        await(player).thenApply { it?.toIntOrNull() }
+    suspend fun awaitInt(player: Player): Int? =
+        await(player)?.toIntOrNull()
 
-    fun awaitDouble(player: Player): CompletableFuture<Double?> =
-        await(player).thenApply { it?.toDoubleOrNull() }
+    suspend fun awaitDouble(player: Player): Double? =
+        await(player)?.toDoubleOrNull()
 
-    fun awaitBoolean(player: Player): CompletableFuture<Boolean?> =
-        await(player).thenApply { it?.toBooleanStrictOrNull() }
+    suspend fun awaitBoolean(player: Player): Boolean? =
+        await(player)?.toBooleanStrictOrNull()
 
-    fun awaitMMComponent(player: Player): CompletableFuture<net.kyori.adventure.text.Component?> =
-        await(player).thenApply { it?.toMMComponent() }
+    suspend fun awaitMMComponent(player: Player): net.kyori.adventure.text.Component? =
+        await(player)?.toMMComponent()
 }
 
 class AwaitingInput(
     val player: Player,
-    val future: CompletableFuture<String?>,
+    val continuation: kotlinx.coroutines.CancellableContinuation<String?>,
     val handle: InputHandle
 )

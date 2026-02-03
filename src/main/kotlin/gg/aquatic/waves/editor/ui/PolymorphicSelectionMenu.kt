@@ -17,7 +17,7 @@ class PolymorphicSelectionMenu<T : Configurable<T>>(
     val context: EditorContext,
     title: Component,
     val options: Map<String, () -> T>,
-    val onSelect: (T) -> Unit
+    val onSelect: suspend (T) -> Unit
 ) : ListMenu<String>(
     title = title,
     type = InventoryType.GENERIC9X6,

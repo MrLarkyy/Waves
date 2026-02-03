@@ -12,7 +12,7 @@ import org.bukkit.inventory.ItemStack
 class ListEditorValue<T>(
     override val key: String,
     override var value: MutableList<EditorValue<T>>,
-    val addButtonClick: (player: Player, accept: (EditorValue<T>?) -> Unit) -> Unit,
+    val addButtonClick: suspend (player: Player, accept: suspend (EditorValue<T>?) -> Unit) -> Unit,
     private val iconFactory: (MutableList<EditorValue<T>>) -> ItemStack,
     private val openListGui: ListGuiHandler<T>,
     override val visibleIf: () -> Boolean = { true },
@@ -24,7 +24,7 @@ class ListEditorValue<T>(
 
     override fun getDisplayItem(): ItemStack = iconFactory(value)
 
-    override fun onClick(player: Player, clickType: ButtonType, updateParent: () -> Unit) {
+    override suspend fun onClick(player: Player, clickType: ButtonType, updateParent: suspend () -> Unit) {
         openListGui.open(player, this, updateParent)
     }
 
@@ -77,7 +77,7 @@ class ListEditorValue<T>(
 }
 
 fun interface ListGuiHandler<T> {
-    fun open(player: Player, editor: ListEditorValue<T>, updateParent: () -> Unit)
+    suspend fun open(player: Player, editor: ListEditorValue<T>, updateParent: suspend () -> Unit)
 }
 
 data class ElementBehavior<T>(

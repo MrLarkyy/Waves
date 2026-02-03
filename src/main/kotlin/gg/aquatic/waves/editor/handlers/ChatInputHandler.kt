@@ -17,19 +17,19 @@ class ChatInputHandler<T>(
     private val parser: (String) -> T?
 ) : EditorClickHandler<T> {
 
-    override fun handle(
+    override suspend fun handle(
         player: Player,
         current: T,
         clickType: ButtonType,
-        update: (T?) -> Unit,
+        update: suspend (T?) -> Unit,
     ) {
         player.closeInventory()
         player.sendMessage(prompt)
 
-        ChatInput.createHandle(listOf("cancel")).await(player).thenAccept {
-            if (it != null) {
-                update(parser(it))
-            }
+        val input = ChatInput.createHandle(listOf("cancel")).await(player)
+        if (input != null) {
+            update(parser(input))
+        } else {
             update(null)
         }
     }

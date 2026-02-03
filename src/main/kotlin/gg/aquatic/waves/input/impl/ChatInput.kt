@@ -6,9 +6,10 @@ import gg.aquatic.waves.input.AwaitingInput
 import gg.aquatic.waves.input.Input
 import gg.aquatic.waves.input.InputHandle
 import io.papermc.paper.event.player.AsyncChatEvent
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.bukkit.entity.Player
 import org.bukkit.event.Listener
-import java.util.concurrent.CompletableFuture
+import kotlin.coroutines.resume
 
 object ChatInput : Input {
 
@@ -21,11 +22,7 @@ object ChatInput : Input {
             val awaitingData = awaiting[it.player] ?: return@event
             it.isCancelled = true
             (awaitingData.handle as Handle).handle(it, awaitingData)
-
-            if (awaitingData.future.isDone && awaiting[it.player] == awaitingData) {
-                awaiting.remove(it.player)
-                if (awaiting.isEmpty()) terminate()
-            }
+            if (awaiting.isEmpty()) terminate()
         }
     }
 
@@ -47,22 +44,30 @@ object ChatInput : Input {
     ) : InputHandle {
         override val input: Input = ChatInput
 
-        override fun await(player: Player): CompletableFuture<String?> {
-            val handle = AwaitingInput(player, CompletableFuture(), this)
+        override suspend fun await(player: Player): String? = suspendCancellableCoroutine { cont ->
+            val handle = AwaitingInput(player, cont, this)
             awaiting += player to handle
 
             if (listener == null) {
                 initialize()
             }
 
-            return handle.future
+            cont.invokeOnCancellation {
+                val existing = awaiting[player]
+                if (existing === handle) {
+                    awaiting.remove(player)
+                    if (awaiting.isEmpty()) terminate()
+                }
+            }
         }
 
         fun handle(event: AsyncChatEvent, awaitingInput: AwaitingInput) {
             val content = event.signedMessage().message()
 
             if (content.lowercase() in cancelVariants) {
-                awaitingInput.future.complete(null)
+                if (awaitingInput.continuation.isActive) {
+                    awaitingInput.continuation.resume(null)
+                }
                 awaiting.remove(event.player)
                 return
             }
@@ -73,12 +78,17 @@ object ChatInput : Input {
                 return
             }
 
-            awaitingInput.future.complete(content)
+            if (awaitingInput.continuation.isActive) {
+                awaitingInput.continuation.resume(content)
+            }
+            awaiting.remove(event.player)
         }
 
         override fun forceCancel(player: Player) {
             val handle = awaiting[player] ?: return
-            handle.future.complete(null)
+            if (handle.continuation.isActive) {
+                handle.continuation.resume(null)
+            }
             awaiting -= player
 
             if (awaiting.isEmpty()) {

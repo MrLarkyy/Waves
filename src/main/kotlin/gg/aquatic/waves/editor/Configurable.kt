@@ -2,7 +2,6 @@ package gg.aquatic.waves.editor
 
 import gg.aquatic.common.getSectionList
 import gg.aquatic.common.toMMComponent
-import gg.aquatic.kmenu.coroutine.KMenuCtx
 import gg.aquatic.stacked.stackedItem
 import gg.aquatic.waves.editor.EditorHandler.getEditorContext
 import gg.aquatic.waves.editor.handlers.ChatInputHandler
@@ -129,9 +128,8 @@ abstract class Configurable<A : Configurable<A>> {
             addButtonClick = { player, accept ->
                 player.closeInventory()
                 player.sendMessage(prompt)
-                ChatInput.createHandle(validator = validator).await(player).thenAccept {
-                    accept(it)
-                }
+                val input = ChatInput.createHandle(validator = validator).await(player)
+                accept(input)
             },
             listIcon = listIcon,
             visibleIf = visibleIf
@@ -185,9 +183,8 @@ abstract class Configurable<A : Configurable<A>> {
             addButtonClick = { player, accept ->
                 player.closeInventory()
                 player.sendMessage(prompt)
-                ChatInput.createHandle(validator = validator).await(player).thenAccept {
-                    accept(it?.toMMComponent())
-                }
+                val input = ChatInput.createHandle(validator = validator).await(player)
+                accept(input?.toMMComponent())
             },
             listIcon = listIcon,
             visibleIf = visibleIf
@@ -219,7 +216,7 @@ abstract class Configurable<A : Configurable<A>> {
         key: String,
         initial: Map<String, List<T>> = emptyMap(),
         options: Map<String, () -> T>,
-        addButton: (Player, (key: String?) -> Unit) -> Unit,
+        addButton: suspend (Player, suspend (key: String?) -> Unit) -> Unit,
         mapIcon: (Map<String, List<T>>) -> ItemStack,
         listIcon: (key: String, List<T>) -> ItemStack,
         itemIcon: (T) -> ItemStack,
@@ -276,7 +273,7 @@ abstract class Configurable<A : Configurable<A>> {
         key: String,
         initial: Map<Int, List<T>> = emptyMap(),
         options: Map<String, () -> T>,
-        addButton: (Player, (key: Int?) -> Unit) -> Unit,
+        addButton: suspend (Player, suspend (key: Int?) -> Unit) -> Unit,
         mapIcon: (Map<Int, List<T>>) -> ItemStack,
         listIcon: (key: Int, List<T>) -> ItemStack,
         itemIcon: (T) -> ItemStack,
@@ -403,27 +400,23 @@ abstract class Configurable<A : Configurable<A>> {
             value = initial.map(wrapPolymorphic).toMutableList(),
             addButtonClick = { player, accept ->
                 val context = player.getEditorContext() ?: return@ListEditorValue
-                KMenuCtx.launch {
-                    context.navigate {
-                        PolymorphicSelectionMenu(
-                            context = context,
-                            title = Component.text("Select Type to Add"),
-                            options = options,
-                            onSelect = { newInstance ->
-                                accept(wrapPolymorphic(newInstance))
-                                KMenuCtx.launch { context.goBack() }
-                            }
-                        ).open(player)
-                    }
+                context.navigate {
+                    PolymorphicSelectionMenu(
+                        context = context,
+                        title = Component.text("Select Type to Add"),
+                        options = options,
+                        onSelect = { newInstance ->
+                            accept(wrapPolymorphic(newInstance))
+                            context.goBack()
+                        }
+                    ).open(player)
                 }
             },
             iconFactory = { list -> listIcon(list.map { it.value }) },
             openListGui = { player, editor, update ->
                 val context = player.getEditorContext() ?: return@ListEditorValue
-                KMenuCtx.launch {
-                    context.navigate {
-                        ConfigurableListMenu(context, editor, editor.addButtonClick, update).open(player)
-                    }
+                context.navigate {
+                    ConfigurableListMenu(context, editor, editor.addButtonClick, update).open(player)
                 }
             },
             visibleIf = visibleIf,
@@ -440,7 +433,7 @@ abstract class Configurable<A : Configurable<A>> {
         initial: List<T> = emptyList(),
         serializer: ValueSerializer<T>,
         behavior: ElementBehavior<T>,
-        addButtonClick: (player: Player, accept: (T?) -> Unit) -> Unit,
+        addButtonClick: suspend (player: Player, accept: suspend (T?) -> Unit) -> Unit,
         listIcon: (List<EditorValue<T>>) -> ItemStack,
         guiHandler: ListGuiHandler<T>? = null,
         visibleIf: () -> Boolean = { true }
@@ -449,7 +442,7 @@ abstract class Configurable<A : Configurable<A>> {
             SimpleEditorValue("__value", valData, behavior.icon, behavior.handler, { it }, serializer)
         }
 
-        val addButtonClickWrap: (player: Player, accept: (EditorValue<T>?) -> Unit) -> Unit = { p, accept ->
+        val addButtonClickWrap: suspend (player: Player, accept: suspend (EditorValue<T>?) -> Unit) -> Unit = { p, accept ->
             addButtonClick(p) { accept(it?.let(wrapSimple)) }
         }
 
@@ -464,10 +457,8 @@ abstract class Configurable<A : Configurable<A>> {
 
         val finalGuiHandler = guiHandler ?: ListGuiHandler { player, editor, update ->
             val context = player.getEditorContext() ?: return@ListGuiHandler
-            KMenuCtx.launch {
-                context.navigate {
-                    ConfigurableListMenu(context, editor, editor.addButtonClick, update).open(player)
-                }
+            context.navigate {
+                ConfigurableListMenu(context, editor, editor.addButtonClick, update).open(player)
             }
         }
 
@@ -488,17 +479,15 @@ abstract class Configurable<A : Configurable<A>> {
     protected fun <T> editList(
         key: String,
         elementFactory: (ConfigurationSection) -> EditorValue<T>,
-        addButtonClick: (player: Player, accept: (EditorValue<T>) -> Unit) -> Unit,
+        addButtonClick: suspend (player: Player, accept: suspend (EditorValue<T>) -> Unit) -> Unit,
         listIcon: (List<EditorValue<T>>) -> ItemStack,
         guiHandler: ListGuiHandler<T>? = null,
         visibleIf: () -> Boolean = { true }
     ): ListEditorValue<T> {
         val finalGuiHandler = guiHandler ?: ListGuiHandler { player, editor, update ->
             val context = player.getEditorContext() ?: return@ListGuiHandler
-            KMenuCtx.launch {
-                context.navigate {
-                    ConfigurableListMenu(context, editor, editor.addButtonClick, update).open(player)
-                }
+            context.navigate {
+                ConfigurableListMenu(context, editor, editor.addButtonClick, update).open(player)
             }
         }
 
@@ -517,7 +506,7 @@ abstract class Configurable<A : Configurable<A>> {
         key: String,
         initial: List<T> = emptyList(),
         factory: () -> T,
-        addButton: (Player, (T?) -> Unit) -> Unit = { _, accept -> accept(factory()) },
+        addButton: suspend (Player, suspend (T?) -> Unit) -> Unit = { _, accept -> accept(factory()) },
         listIcon: (List<T>) -> ItemStack,
         itemIcon: (T) -> ItemStack,
         visibleIf: () -> Boolean = { true }
@@ -547,10 +536,8 @@ abstract class Configurable<A : Configurable<A>> {
             iconFactory = { list -> listIcon(list.map { it.value }) },
             openListGui = { player, editor, update ->
                 val context = player.getEditorContext() ?: return@ListEditorValue
-                KMenuCtx.launch {
-                    context.navigate {
-                        ConfigurableListMenu(context, editor, editor.addButtonClick, update).open(player)
-                    }
+                context.navigate {
+                    ConfigurableListMenu(context, editor, editor.addButtonClick, update).open(player)
                 }
             },
             visibleIf = visibleIf,
@@ -565,7 +552,7 @@ abstract class Configurable<A : Configurable<A>> {
         key: String,
         initial: Map<String, T> = emptyMap(),
         factory: () -> T,
-        addButton: (Player, (key: String?, value: T?) -> Unit) -> Unit,
+        addButton: suspend (Player, suspend (key: String?, value: T?) -> Unit) -> Unit,
         listIcon: (Map<String, T>) -> ItemStack,
         itemIcon: (key: String, value: T) -> ItemStack,
         visibleIf: () -> Boolean = { true }
@@ -599,10 +586,8 @@ abstract class Configurable<A : Configurable<A>> {
             iconFactory = listIcon,
             openMapGui = { player, editor, update ->
                 val context = player.getEditorContext() ?: return@MapEditorValue
-                KMenuCtx.launch {
-                    context.navigate {
-                        ConfigurableListMenu(context, editor, editor.addButtonClick, update).open(player)
-                    }
+                context.navigate {
+                    ConfigurableListMenu(context, editor, editor.addButtonClick, update).open(player)
                 }
             },
             visibleIf = visibleIf,
@@ -626,17 +611,15 @@ abstract class Configurable<A : Configurable<A>> {
         return ConfigurableEditorValue(key, this as A, icon)
     }
 
-    protected fun <T> openListMenu(
+    protected suspend fun <T> openListMenu(
         player: Player,
         editor: EditorValue<MutableList<EditorValue<T>>>,
-        addLogic: (Player, (EditorValue<T>?) -> Unit) -> Unit,
-        update: () -> Unit
+        addLogic: suspend (Player, suspend (EditorValue<T>?) -> Unit) -> Unit,
+        update: suspend () -> Unit
     ) {
         val context = player.getEditorContext() ?: return
-        KMenuCtx.launch {
-            context.navigate {
-                ConfigurableListMenu(context, editor, addLogic, update).open(player)
-            }
+        context.navigate {
+            ConfigurableListMenu(context, editor, addLogic, update).open(player)
         }
     }
 

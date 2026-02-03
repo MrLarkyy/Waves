@@ -19,7 +19,7 @@ class SimpleEditorValue<T>(
 
     override fun getDisplayItem(): ItemStack = displayIcon(value)
 
-    override fun onClick(player: Player, clickType: ButtonType, updateParent: () -> Unit) {
+    override suspend fun onClick(player: Player, clickType: ButtonType, updateParent: suspend () -> Unit) {
         clickHandler.handle(player, value, clickType) { newValue ->
             if (newValue != null) {
                 value = newValue

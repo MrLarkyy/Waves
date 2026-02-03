@@ -21,15 +21,14 @@ class BaseCrateData(
             player.closeInventory()
             player.sendMessage("Enter initial material for the item:")
 
-            ChatInput.createHandle(listOf("cancel"))
-                .awaitMaterial(player).thenAccept { material ->
-                    if (material == null) {
-                        accept(null)
-                        player.sendMessage("Cancelled.")
-                        return@thenAccept
-                    }
-                    accept(ItemData(initialMaterial = material))
-                }
+            val material = ChatInput.createHandle(listOf("cancel"))
+                .awaitMaterial(player)
+            if (material == null) {
+                accept(null)
+                player.sendMessage("Cancelled.")
+                return@editConfigurableList
+            }
+            accept(ItemData(initialMaterial = material))
         },
         listIcon = { list ->
             ItemStack(Material.CHEST).apply {
@@ -50,21 +49,19 @@ class BaseCrateData(
             player.closeInventory()
             player.sendMessage("Enter unique Reward ID:")
 
-            ChatInput.createHandle(listOf("cancel")).await(player).thenAccept { id ->
-                if (id == null) {
-                    accept(null, null)
-                    return@thenAccept
-                }
+            val id = ChatInput.createHandle(listOf("cancel")).await(player)
+            if (id == null) {
+                accept(null, null)
+                return@editConfigurableMap
+            }
 
-                player.sendMessage("Enter initial material for '$id':")
-                ChatInput.createHandle(listOf("cancel")).awaitMaterial(player).thenAccept { material ->
-                    if (material != null) {
-                        accept(id, ItemData(initialMaterial = material))
-                    } else {
-                        player.sendMessage("Invalid material! Cancelled.")
-                        accept(null, null)
-                    }
-                }
+            player.sendMessage("Enter initial material for '$id':")
+            val material = ChatInput.createHandle(listOf("cancel")).awaitMaterial(player)
+            if (material != null) {
+                accept(id, ItemData(initialMaterial = material))
+            } else {
+                player.sendMessage("Invalid material! Cancelled.")
+                accept(null, null)
             }
         },
         listIcon = { map ->

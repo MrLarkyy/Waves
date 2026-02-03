@@ -1,7 +1,6 @@
 package gg.aquatic.waves.editor.ui
 
 import gg.aquatic.common.coroutine.BukkitCtx
-import gg.aquatic.kmenu.coroutine.KMenuCtx
 import gg.aquatic.kmenu.inventory.InventoryType
 import gg.aquatic.kmenu.menu.createMenu
 import gg.aquatic.stacked.stackedItem
@@ -17,7 +16,7 @@ object EditorMenuProvider {
         context: EditorContext,
         title: Component,
         values: List<EditorValue<*>>,
-        onSave: () -> Unit
+        onSave: suspend () -> Unit
     ) {
         context.player.createMenu(title, InventoryType.GENERIC9X6) {
             val slots = (10..16) + (19..25) + (28..34)
@@ -31,7 +30,7 @@ object EditorMenuProvider {
                     onClick { event ->
                         withContext(BukkitCtx.ofEntity(context.player)) {
                             editorValue.onClick(context.player, event.buttonType) {
-                                KMenuCtx.launch { context.refresh() }
+                                context.refresh()
                             }
                         }
                     }
@@ -56,7 +55,7 @@ object EditorMenuProvider {
                         displayName = Component.text("Go Back")
                     }.getItem()
                     onClick {
-                        KMenuCtx.launch { context.goBack() }
+                        context.goBack()
                     }
                 }
             }

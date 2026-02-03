@@ -1,6 +1,5 @@
 package gg.aquatic.waves.editor.value
 
-import gg.aquatic.kmenu.coroutine.KMenuCtx
 import gg.aquatic.kmenu.inventory.ButtonType
 import gg.aquatic.waves.editor.Configurable
 import gg.aquatic.waves.editor.EditorContext
@@ -41,60 +40,53 @@ class PolymorphicConfigurableEditorValue<T : Configurable<T>>(
 
     override fun getDisplayItem(): ItemStack = iconFactory(value)
 
-    override fun onClick(player: Player, clickType: ButtonType, updateParent: () -> Unit) {
+    override suspend fun onClick(player: Player, clickType: ButtonType, updateParent: suspend () -> Unit) {
         val context = player.getEditorContext() ?: return
 
         when (clickType) {
             ButtonType.LEFT -> openNestedEditor(context, updateParent)
             ButtonType.RIGHT -> openSelectionMenu(player, context, updateParent)
-            ButtonType.SHIFT_LEFT -> openChatInput(player, context, updateParent)
+            ButtonType.SHIFT_LEFT -> openChatInput(player, updateParent)
             else -> {}
         }
     }
 
-    private fun openNestedEditor(context: EditorContext, updateParent: () -> Unit) {
-        KMenuCtx.launch {
-            context.navigate {
-                EditorMenuProvider.openValueEditor(
-                    context = context,
-                    title = Component.text("Editing: $key"),
-                    values = value.getEditorValues(),
-                    onSave = { updateParent() }
-                )
-            }
+    private suspend fun openNestedEditor(context: EditorContext, updateParent: suspend () -> Unit) {
+        context.navigate {
+            EditorMenuProvider.openValueEditor(
+                context = context,
+                title = Component.text("Editing: $key"),
+                values = value.getEditorValues(),
+                onSave = { updateParent() }
+            )
         }
     }
 
-    private fun openSelectionMenu(player: Player, context: EditorContext, updateParent: () -> Unit) {
-        KMenuCtx.launch {
-            context.navigate {
-                PolymorphicSelectionMenu(
-                    context = context,
-                    title = selectionMenuTitle,
-                    options = options,
-                    onSelect = { newValue ->
-                        value = newValue
-                        updateParent()
-                        // Return to the editor menu after selection
-                        KMenuCtx.launch { context.goBack() }
-                    }
-                ).open(player)
-            }
+    private suspend fun openSelectionMenu(player: Player, context: EditorContext, updateParent: suspend () -> Unit) {
+        context.navigate {
+            PolymorphicSelectionMenu(
+                context = context,
+                title = selectionMenuTitle,
+                options = options,
+                onSelect = { newValue ->
+                    value = newValue
+                    updateParent()
+                    // Return to the editor menu after selection
+                    context.goBack()
+                }
+            ).open(player)
         }
     }
 
-    private fun openChatInput(player: Player, context: EditorContext, updateParent: () -> Unit) {
+    private suspend fun openChatInput(player: Player, updateParent: suspend () -> Unit) {
         player.sendMessage("Enter Type ID (${options.keys.joinToString(", ")}):")
-        ChatInput.createHandle().await(player).thenAccept { input ->
-            if (input == null) return@thenAccept
-            val factory = options[input]
-            if (factory != null) {
-                value = factory()
-                updateParent()
-            } else {
-                player.sendMessage("§cInvalid type! Available: ${options.keys.joinToString(", ")}")
-
-            }
+        val input = ChatInput.createHandle().await(player) ?: return
+        val factory = options[input]
+        if (factory != null) {
+            value = factory()
+            updateParent()
+        } else {
+            player.sendMessage("§cInvalid type! Available: ${options.keys.joinToString(", ")}")
         }
     }
 

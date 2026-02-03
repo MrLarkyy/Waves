@@ -18,7 +18,7 @@ interface EditorValue<T> {
     fun getDisplayItem(): ItemStack
     
     // 2. What happens when the player clicks this icon
-    fun onClick(player: Player, clickType: ButtonType, updateParent: () -> Unit)
+    suspend fun onClick(player: Player, clickType: ButtonType, updateParent: suspend () -> Unit)
     
     // 3. Return a deep-copied version of this editor state
     fun clone(): EditorValue<T>

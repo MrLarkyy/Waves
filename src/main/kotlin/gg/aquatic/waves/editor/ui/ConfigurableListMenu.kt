@@ -1,7 +1,6 @@
 package gg.aquatic.waves.editor.ui
 
 import gg.aquatic.common.coroutine.BukkitCtx
-import gg.aquatic.kmenu.coroutine.KMenuCtx
 import gg.aquatic.kmenu.inventory.ButtonType
 import gg.aquatic.kmenu.inventory.InventoryType
 import gg.aquatic.kmenu.menu.component.Button
@@ -19,8 +18,8 @@ import org.bukkit.inventory.ItemStack
 class ConfigurableListMenu<T>(
     val context: EditorContext,
     val listValue: EditorValue<MutableList<EditorValue<T>>>,
-    val addButtonClick: (Player, (EditorValue<T>?) -> Unit) -> Unit,
-    val updateParent: () -> Unit
+    val addButtonClick: suspend (Player, suspend (EditorValue<T>?) -> Unit) -> Unit,
+    val updateParent: suspend () -> Unit
 ) : ListMenu<EditorValue<T>>(
     title = Component.text("Editing: ${listValue.key}"),
     type = InventoryType.GENERIC9X6,
@@ -50,10 +49,8 @@ class ConfigurableListMenu<T>(
 
                     withContext(BukkitCtx.ofEntity(context.player)) {
                         editor.onClick(context.player, event.buttonType) {
-                            KMenuCtx.launch {
-                                updateParent()
-                                context.refresh()
-                            }
+                            updateParent()
+                            context.refresh()
                         }
                     }
                 }
@@ -78,8 +75,7 @@ class ConfigurableListMenu<T>(
                             rebuildEntries()
                             requestRefresh()
                             updateParent()
-
-                            KMenuCtx.launch { open(player) }
+                            open(player)
                         }
                     }
                 }
@@ -97,9 +93,7 @@ class ConfigurableListMenu<T>(
             updateEvery = -1,
             textUpdater = placeholderContext,
             onClick = {
-                KMenuCtx.launch {
-                    context.goBack()
-                }
+                context.goBack()
             },
             failComponent = null
         )

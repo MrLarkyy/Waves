@@ -1,6 +1,5 @@
 package gg.aquatic.waves.editor.value
 
-import gg.aquatic.kmenu.coroutine.KMenuCtx
 import gg.aquatic.kmenu.inventory.ButtonType
 import gg.aquatic.waves.editor.Configurable
 import gg.aquatic.waves.editor.EditorHandler.getEditorContext
@@ -36,17 +35,15 @@ class ConfigurableEditorValue<T : Configurable<T>>(
 
     override fun getDisplayItem(): ItemStack = iconFactory(value)
 
-    override fun onClick(player: Player, clickType: ButtonType, updateParent: () -> Unit) {
+    override suspend fun onClick(player: Player, clickType: ButtonType, updateParent: suspend () -> Unit) {
         val context = player.getEditorContext() ?: return
-        KMenuCtx.launch {
-            context.navigate {
-                EditorMenuProvider.openValueEditor(
-                    context = context,
-                    title = Component.text("Editing: $key"),
-                    values = value.getEditorValues(),
-                    onSave = { updateParent() }
-                )
-            }
+        context.navigate {
+            EditorMenuProvider.openValueEditor(
+                context = context,
+                title = Component.text("Editing: $key"),
+                values = value.getEditorValues(),
+                onSave = { updateParent() }
+            )
         }
     }
 
