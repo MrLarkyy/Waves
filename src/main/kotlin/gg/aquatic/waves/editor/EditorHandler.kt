@@ -1,15 +1,17 @@
 package gg.aquatic.waves.editor
 
 import gg.aquatic.common.event
-import gg.aquatic.kmenu.coroutine.KMenuCtx
+import gg.aquatic.kmenu.KMenu
 import gg.aquatic.waves.editor.ui.EditorMenuProvider
+import kotlinx.coroutines.launch
 import net.kyori.adventure.text.Component
 import org.bukkit.entity.Player
 import org.bukkit.event.player.PlayerQuitEvent
+import java.util.concurrent.ConcurrentHashMap
 
 object EditorHandler {
 
-    val contexts = HashMap<Player, EditorContext>()
+    val contexts = ConcurrentHashMap<Player, EditorContext>()
 
     fun initialize() {
         event<PlayerQuitEvent> {
@@ -28,7 +30,7 @@ object EditorHandler {
 
         val workingCopy = configurable.copy()
 
-        KMenuCtx.launch {
+        KMenu.scope.launch {
             // Use the new navigate system to set the root
             context.navigate {
                 EditorMenuProvider.openValueEditor(

@@ -2,6 +2,8 @@ package gg.aquatic.waves.editor
 
 import gg.aquatic.common.coroutine.BukkitCtx
 import gg.aquatic.common.coroutine.VirtualsCtx
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.bukkit.entity.Player
 import java.util.*
@@ -11,12 +13,15 @@ class EditorContext(
     var onSave: suspend () -> Unit = {}
 ) {
     internal val path = Stack<suspend () -> Unit>()
+    private val navMutex = Mutex()
 
     /**
      * Navigates to a new menu.
      */
     suspend fun navigate(openLogic: suspend () -> Unit) {
-        path.push(openLogic)
+        navMutex.withLock {
+            path.push(openLogic)
+        }
         openLogic()
     }
 
@@ -24,12 +29,18 @@ class EditorContext(
      * Returns to the previous menu.
      */
     suspend fun goBack() {
-        if (path.size > 1) {
-            path.pop() // Remove current
-            val previous = path.peek()
-            previous() // Open previous
+        val previous = navMutex.withLock {
+            if (path.size > 1) {
+                path.pop()
+                path.peek()
+            } else {
+                path.clear()
+                null
+            }
+        }
+        if (previous != null) {
+            previous()
         } else {
-            path.clear()
             withContext(BukkitCtx.ofEntity(player)) {
                 player.closeInventory()
             }
@@ -40,13 +51,17 @@ class EditorContext(
      * Refreshes the current menu without affecting history.
      */
     suspend fun refresh() {
-        if (path.isNotEmpty()) {
-            path.peek().invoke()
+        val current = navMutex.withLock {
+            if (path.isNotEmpty()) path.peek() else null
         }
+        current?.invoke()
     }
 
     suspend fun save() = withContext(VirtualsCtx) {
         onSave()
-        player.sendMessage("Changes saved successfully!")
+    }.also {
+        withContext(BukkitCtx.ofEntity(player)) {
+            player.sendMessage("Changes saved successfully!")
+        }
     }
 }
