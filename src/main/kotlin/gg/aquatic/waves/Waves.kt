@@ -1,5 +1,6 @@
 package gg.aquatic.waves
 
+import gg.aquatic.common.coroutine.SingleThreadedContext
 import gg.aquatic.common.event
 import gg.aquatic.common.initializeCommon
 import gg.aquatic.execute.Action
@@ -11,7 +12,7 @@ import gg.aquatic.klocale.LocaleManager
 import gg.aquatic.klocale.impl.paper.KLocale
 import gg.aquatic.klocale.impl.paper.PaperMessage
 import gg.aquatic.kmenu.KMenu
-import gg.aquatic.kmenu.coroutine.KMenuCtx
+import gg.aquatic.kmenu.initializeKMenu
 import gg.aquatic.kregistry.Registry
 import gg.aquatic.pakket.Pakket
 import gg.aquatic.stacked.initializeStacked
@@ -43,8 +44,8 @@ object Waves : JavaPlugin() {
         event<PlayerQuitEvent> {
             Pakket.handler.unregisterPacketListener(it.player)
         }
-        initializeStacked(this, KMenuCtx.scope)
-        KMenu.initialize()
+        initializeStacked(this, SingleThreadedContext("stacked").scope)
+        initializeKMenu(this, SingleThreadedContext("kmenu").scope)
         initExecute(this)
         Registry.update {
             Execute.injectExecutables(this)

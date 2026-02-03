@@ -1,7 +1,7 @@
 package gg.aquatic.waves.testing.data
 
 import gg.aquatic.common.Config
-import gg.aquatic.kmenu.coroutine.KMenuCtx
+import gg.aquatic.kmenu.KMenu
 import gg.aquatic.kmenu.inventory.InventoryType
 import gg.aquatic.kmenu.menu.PrivateMenu
 import gg.aquatic.kmenu.menu.component.Button
@@ -13,6 +13,7 @@ import gg.aquatic.replace.PlaceholderContext
 import gg.aquatic.stacked.stackedItem
 import gg.aquatic.waves.Waves
 import gg.aquatic.waves.editor.EditorHandler
+import kotlinx.coroutines.launch
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -32,7 +33,7 @@ object TestingEditor {
                     }
                 }, sender, true)
 
-                KMenuCtx.launch {
+                KMenu.scope.launch {
                     menu.addComponent(Button("example", stackedItem(Material.STONE) {
                         displayName = Component.text("Write: ")
                     }.getItem(), listOf(0), 1, -1, textUpdater = PlaceholderContext.privateMenu()))

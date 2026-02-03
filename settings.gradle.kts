@@ -36,6 +36,11 @@ submodules.forEach { (folder, artifact) ->
                     substitute(module("gg.aquatic:KMenu")).using(project(":core"))
                     substitute(module("gg.aquatic:KMenu-serialization")).using(project(":serialization"))
                 }
+                "Pakket" -> {
+                    substitute(module("gg.aquatic:Pakket")).using(project(":"))
+                    substitute(module("gg.aquatic.pakket:API")).using(project(":API"))
+                    substitute(module("gg.aquatic.pakket.nms:NMS_1_21_9")).using(project(":NMS_1_21_9"))
+                }
                 else -> {
                     substitute(module(artifact)).using(project(":"))
                 }
