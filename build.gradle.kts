@@ -78,7 +78,7 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     compileOnly("org.slf4j:slf4j-api:2.0.17")
 
-    implementation("gg.aquatic:KMenu:26.0.1")
+    implementation("gg.aquatic:KMenu:26.0.3")
     implementation("gg.aquatic.replace:Replace:26.0.3")
     implementation("gg.aquatic:Stacked:26.0.2")
     implementation("gg.aquatic:KRegistry:25.0.2")
