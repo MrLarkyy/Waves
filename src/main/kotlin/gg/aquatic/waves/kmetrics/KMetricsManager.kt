@@ -56,7 +56,7 @@ object KMetricsManager {
             val metricBatch = updateBatch.getOrPut(id) { ConcurrentHashMap() }
             metricBatch.compute(uuid) { _, existing ->
                 if (existing == null) increase to name
-                else (existing.first + increase) to name
+                else existing.first + increase to name
             }
 
             PeriodType.entries.forEach { type ->
