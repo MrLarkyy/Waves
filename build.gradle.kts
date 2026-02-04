@@ -83,7 +83,7 @@ dependencies {
     implementation("gg.aquatic:Stacked:26.0.3")
     implementation("gg.aquatic:KRegistry:25.0.2")
     implementation("gg.aquatic:KEvent:26.0.5")
-    implementation("gg.aquatic:Pakket:26.1.7")
+    implementation("gg.aquatic:Pakket:26.1.10")
     implementation("gg.aquatic.execute:Execute:26.0.1")
     implementation("gg.aquatic:Kommand:26.0.2")
     implementation("gg.aquatic:Common:26.0.13")
