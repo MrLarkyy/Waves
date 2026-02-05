@@ -3,7 +3,7 @@ package gg.aquatic.waves.editor.handlers
 import gg.aquatic.kmenu.inventory.ButtonType
 import gg.aquatic.waves.editor.EditorClickHandler
 import gg.aquatic.waves.input.impl.ChatInput
-import net.kyori.adventure.text.minimessage.MiniMessage
+import gg.aquatic.waves.mm.MMParser
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import java.util.*
@@ -45,12 +45,12 @@ class ChatInputHandler<T>(
 
         // Shorthand for Adventure Components
         fun forComponent(prompt: String) = ChatInputHandler(prompt) {
-            MiniMessage.miniMessage().deserialize(it)
+            MMParser.deserialize(it)
         }
 
         fun forOptionalComponent(prompt: String) = ChatInputHandler(prompt) { str ->
             if (str.lowercase() == "null") Optional.empty()
-            else Optional.of(MiniMessage.miniMessage().deserialize(str))
+            else Optional.of(MMParser.deserialize(str))
         }
 
         fun forInteger(prompt: String, min: Int = Int.MIN_VALUE, max: Int = Int.MAX_VALUE) =

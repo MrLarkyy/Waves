@@ -8,6 +8,7 @@ plugins {
     id("io.github.revxrsal.bukkitkobjects") version "0.0.5"
     id("xyz.jpenilla.gremlin-gradle") version "0.0.9"
     id("co.uzzu.dotenv.gradle") version "4.0.0"
+    id("me.champeau.jmh") version "0.7.3"
     java
     id("xyz.jpenilla.run-paper") version "3.0.2"
     `maven-publish`
@@ -113,6 +114,14 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     testImplementation("com.h2database:h2:2.4.240")
+    testImplementation("net.kyori:adventure-text-serializer-gson:4.26.1")
+    testImplementation("net.kyori:adventure-text-minimessage:4.26.1")
+
+    // JMH
+    jmhImplementation("org.openjdk.jmh:jmh-core:1.37")
+    jmhAnnotationProcessor("org.openjdk.jmh:jmh-generator-annprocess:1.37")
+    jmhImplementation("net.kyori:adventure-api:4.26.1")
+    jmhImplementation("net.kyori:adventure-text-minimessage:4.26.1")
 
     // DB
     runtimeDownload("org.jetbrains.exposed:exposed-core:$exposedVersion")
@@ -127,6 +136,7 @@ dependencies {
 }
 
 configurations {
+    val gsonTest by creating
     runtimeDownload {
         exclude("org.checkerframework", "checker-qual")
         exclude("com.google.code.gson")
@@ -137,6 +147,14 @@ configurations {
     testImplementation {
         extendsFrom(configurations.runtimeDownload.get())
     }
+}
+
+dependencies {
+    add("gsonTest", "com.google.code.gson:gson:2.10.1")
+}
+
+tasks.test {
+    classpath += configurations["gsonTest"]
 }
 
 kotlin {

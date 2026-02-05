@@ -2,9 +2,9 @@ package gg.aquatic.waves.editor
 
 import gg.aquatic.common.getSectionList
 import gg.aquatic.common.toMMString
+import gg.aquatic.waves.mm.MMParser
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Material
 import org.bukkit.Registry
 import org.bukkit.Sound
@@ -108,7 +108,7 @@ object Serializers {
     val STRING = ValueSerializer.Simple("", encode = { it.toString() })
     val COMPONENT = ValueSerializer.Simple(
         Component.empty(),
-        { MiniMessage.miniMessage().deserialize(it.toString()) },
+        { MMParser.deserialize(it.toString()) },
         { it.toMMString() })
     val BOOLEAN = ValueSerializer.Simple(false, encode = { it.toString().toBoolean() })
     val SOUND = ValueSerializer.Simple(Sound.ENTITY_EXPERIENCE_ORB_PICKUP, encode = { Registry.SOUNDS.get(Key.key(it.toString())) }, decode = { Registry.SOUNDS.getKey(it)?.toString() })
