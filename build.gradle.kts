@@ -3,7 +3,7 @@ import xyz.jpenilla.gremlin.gradle.ShadowGremlin
 import xyz.jpenilla.runtask.task.AbstractRun
 
 plugins {
-    kotlin("jvm") version "2.3.0"
+    kotlin("jvm") version "2.3.10"
     id("com.gradleup.shadow") version "9.3.1"
     id("io.github.revxrsal.bukkitkobjects") version "0.0.5"
     id("xyz.jpenilla.gremlin-gradle") version "0.0.9"
