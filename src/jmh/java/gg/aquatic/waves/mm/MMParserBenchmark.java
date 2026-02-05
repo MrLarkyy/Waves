@@ -65,10 +65,6 @@ public class MMParserBenchmark {
     }
 
     private static String longText() {
-        StringBuilder builder = new StringBuilder(256);
-        for (int i = 0; i < 8; i++) {
-            builder.append("This is a longer benchmark string to exercise parsing. ");
-        }
-        return builder.toString();
+        return "This is a longer benchmark string to exercise parsing. ".repeat(8);
     }
 }
