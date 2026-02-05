@@ -150,7 +150,7 @@ configurations {
 }
 
 dependencies {
-    add("gsonTest", "com.google.code.gson:gson:2.10.1")
+    add("gsonTest", "com.google.code.gson:gson:2.13.2")
 }
 
 tasks.test {
