@@ -21,7 +21,7 @@ val submodules = listOf(
     "Statistik" to "gg.aquatic:Statistik",
     "KHolograms" to "gg.aquatic:KHolograms",
     "Clientside" to "gg.aquatic:Clientside",
-    "Dispatch" to "gg.aquatic:Dispatch"
+    "Dispatch" to "gg.aquatic:Dispatch",
 )
 
 submodules.forEach { (folder, artifact) ->
@@ -40,6 +40,10 @@ submodules.forEach { (folder, artifact) ->
                     substitute(module("gg.aquatic:Pakket")).using(project(":"))
                     substitute(module("gg.aquatic.pakket:API")).using(project(":API"))
                     substitute(module("gg.aquatic.pakket.nms:NMS_1_21_9")).using(project(":NMS_1_21_9"))
+                }
+                "Dispatch" -> {
+                    substitute(module("gg.aquatic:Dispatch")).using(project(":"))
+                    substitute(module("gg.aquatic:Dispatch-bukkit")).using(project(":Paper"))
                 }
                 else -> {
                     substitute(module(artifact)).using(project(":"))
