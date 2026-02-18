@@ -5,7 +5,6 @@ import gg.aquatic.common.event
 import gg.aquatic.common.initializeCommon
 import gg.aquatic.execute.Action
 import gg.aquatic.execute.Execute
-import gg.aquatic.execute.action.registerAction
 import gg.aquatic.execute.initExecute
 import gg.aquatic.kholograms.HologramHandler
 import gg.aquatic.klocale.LocaleManager
@@ -46,10 +45,10 @@ object Waves : JavaPlugin(), BootstrapHolder, RegistryHolder {
         event<PlayerQuitEvent> {
             Pakket.handler.unregisterPacketListener(it.player)
         }
-        initializeStacked(this, SingleThreadedContext("stacked").scope)
+        initializeStacked(this, this, SingleThreadedContext("stacked").scope)
         initializeKMenu(this, SingleThreadedContext("kmenu").scope)
-        initExecute(this)
-        Execute.injectExecutables(this)
+        initExecute(this, this)
+        Execute.injectExecutables()
 
         registryBootstrap(this) {
             registry(Action.REGISTRY_KEY) {
@@ -60,7 +59,7 @@ object Waves : JavaPlugin(), BootstrapHolder, RegistryHolder {
 
         InputHandler.initialize(mapOf("chat" to ChatInput))
         AwaitingWorlds.initialize()
-        initializeStatistik()
+        initializeStatistik(this, emptyMap())
         HologramHandler.initialize()
 
         TestingEditor.initialize()
