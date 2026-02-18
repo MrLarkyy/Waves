@@ -1,23 +1,24 @@
 package gg.aquatic.waves.input
 
 import gg.aquatic.common.event
-import gg.aquatic.kregistry.MutableRegistry
-import gg.aquatic.kregistry.Registry
+import gg.aquatic.kregistry.bootstrap.BootstrapHolder
+import gg.aquatic.waves.Waves
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.player.PlayerQuitEvent
 
 object InputHandler {
 
-    fun initialize(inputTypes: Map<String, Input>) {
+    fun initialize(bootstrapHolder: BootstrapHolder, inputTypes: Map<String, Input>) {
         event<PlayerQuitEvent> {
             forceCancel(it.player)
         }
 
-        val registry = MutableRegistry<String, Input>()
-        inputTypes.forEach { (key, value) -> registry.register(key, value) }
-
-        Registry.update { registerRegistry(Input.REGISTRY_KEY, registry.freeze()) }
+        Waves.registryBootstrap(bootstrapHolder) {
+            registry(Input.REGISTRY_KEY) {
+                inputTypes.forEach { (key, value) -> add(key, value) }
+            }
+        }
     }
 
     fun disable() {
@@ -27,7 +28,7 @@ object InputHandler {
     }
 
     fun forceCancel(player: Player) {
-        for (value in Input.REGISTRY.getAll().values) {
+        for (value in Input.REGISTRY.all().values) {
             value.forceCancel(player)
         }
     }

@@ -4,13 +4,14 @@ import gg.aquatic.common.argument.ArgumentContext
 import gg.aquatic.common.argument.ObjectArgument
 import gg.aquatic.common.toMMComponent
 import gg.aquatic.execute.Action
+import gg.aquatic.execute.action.type.PlayerAction
 import gg.aquatic.waves.Waves
 import net.kyori.adventure.bossbar.BossBar
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import java.util.function.Consumer
 
-object BossbarAction : Action<Player> {
+object BossbarAction : PlayerAction() {
 
     override suspend fun execute(
         binder: Player,

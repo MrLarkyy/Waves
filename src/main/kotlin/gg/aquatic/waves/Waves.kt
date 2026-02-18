@@ -57,7 +57,7 @@ object Waves : JavaPlugin(), BootstrapHolder, RegistryHolder {
             }
         }
 
-        InputHandler.initialize(mapOf("chat" to ChatInput))
+        InputHandler.initialize(this, mapOf("chat" to ChatInput))
         AwaitingWorlds.initialize()
         initializeStatistik(this, emptyMap())
         HologramHandler.initialize()

@@ -1,10 +1,10 @@
 package gg.aquatic.waves.input
 
 import gg.aquatic.common.toMMComponent
-import gg.aquatic.kregistry.FrozenRegistry
-import gg.aquatic.kregistry.Registry
-import gg.aquatic.kregistry.RegistryId
-import gg.aquatic.kregistry.RegistryKey
+import gg.aquatic.kregistry.core.Registry
+import gg.aquatic.kregistry.core.RegistryId
+import gg.aquatic.kregistry.core.RegistryKey
+import gg.aquatic.waves.Waves
 import org.bukkit.Material
 import org.bukkit.entity.Player
 
@@ -17,11 +17,11 @@ interface Input {
     }
 
     companion object {
-        val REGISTRY_KEY = RegistryKey<String, Input>(RegistryId("aquatic", "input"))
+        val REGISTRY_KEY = RegistryKey.simple<String, Input>(RegistryId("aquatic", "input"))
 
-        val REGISTRY: FrozenRegistry<String, Input>
+        val REGISTRY: Registry<String, Input>
             get() {
-                return Registry[REGISTRY_KEY]
+                return Waves[REGISTRY_KEY]
             }
     }
 }
