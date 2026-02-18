@@ -20,4 +20,5 @@ object MessageAction : Action<Player> {
     override val arguments: List<ObjectArgument<*>> = listOf(
         MessageArgument("message", EmptyMessage, true),
     )
+    override val type: Class<out Player> = Player::class.java
 }

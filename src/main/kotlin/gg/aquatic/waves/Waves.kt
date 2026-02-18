@@ -11,9 +11,9 @@ import gg.aquatic.kholograms.HologramHandler
 import gg.aquatic.klocale.LocaleManager
 import gg.aquatic.klocale.impl.paper.KLocale
 import gg.aquatic.klocale.impl.paper.PaperMessage
-import gg.aquatic.kmenu.KMenu
 import gg.aquatic.kmenu.initializeKMenu
-import gg.aquatic.kregistry.Registry
+import gg.aquatic.kregistry.bootstrap.BootstrapHolder
+import gg.aquatic.kregistry.bootstrap.RegistryHolder
 import gg.aquatic.pakket.Pakket
 import gg.aquatic.stacked.initializeStacked
 import gg.aquatic.statistik.initializeStatistik
@@ -27,10 +27,12 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.plugin.java.JavaPlugin
 
-object Waves : JavaPlugin() {
+object Waves : JavaPlugin(), BootstrapHolder, RegistryHolder {
+
+    private lateinit var registriesInject: () -> Unit
 
     override fun onLoad() {
-
+        registriesInject = inject()
     }
 
     lateinit var locale: LocaleManager<PaperMessage>
@@ -47,11 +49,12 @@ object Waves : JavaPlugin() {
         initializeStacked(this, SingleThreadedContext("stacked").scope)
         initializeKMenu(this, SingleThreadedContext("kmenu").scope)
         initExecute(this)
-        Registry.update {
-            Execute.injectExecutables(this)
-            replaceRegistry(Action.REGISTRY_KEY) {
-                registerAction("message", MessageAction)
-                registerAction("bossbar", BossbarAction)
+        Execute.injectExecutables(this)
+
+        registryBootstrap(this) {
+            registry(Action.REGISTRY_KEY) {
+                add("message", MessageAction)
+                add("bossbar", BossbarAction)
             }
         }
 
@@ -64,5 +67,6 @@ object Waves : JavaPlugin() {
 
         locale = KLocale.paper {}
 
+        registriesInject()
     }
 }
