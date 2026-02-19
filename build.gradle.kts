@@ -8,7 +8,6 @@ plugins {
     id("io.github.revxrsal.bukkitkobjects") version "0.0.5"
     id("xyz.jpenilla.gremlin-gradle") version "0.0.9"
     id("co.uzzu.dotenv.gradle") version "4.0.0"
-    id("me.champeau.jmh") version "0.7.3"
     java
     id("xyz.jpenilla.run-paper") version "3.0.2"
     `maven-publish`
@@ -100,6 +99,7 @@ dependencies {
     implementation("gg.aquatic:Clientside:26.0.2")
     implementation("gg.aquatic:Dispatch:26.0.4")
     implementation("gg.aquatic:Dispatch-bukkit:26.0.4")
+    implementation("gg.aquatic:QuickMiniMessage:26.0.2")
 
     runtimeDownload("com.github.ben-manes.caffeine:caffeine:3.2.3")
     runtimeDownload("org.reflections:reflections:0.10.2")
@@ -117,12 +117,6 @@ dependencies {
     testImplementation("com.h2database:h2:2.4.240")
     testImplementation("net.kyori:adventure-text-serializer-gson:4.26.1")
     testImplementation("net.kyori:adventure-text-minimessage:4.26.1")
-
-    // JMH
-    jmhImplementation("org.openjdk.jmh:jmh-core:1.37")
-    jmhAnnotationProcessor("org.openjdk.jmh:jmh-generator-annprocess:1.37")
-    jmhImplementation("net.kyori:adventure-api:4.26.1")
-    jmhImplementation("net.kyori:adventure-text-minimessage:4.26.1")
 
     // DB
     runtimeDownload("org.jetbrains.exposed:exposed-core:$exposedVersion")

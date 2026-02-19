@@ -2,7 +2,7 @@ package gg.aquatic.waves.editor
 
 import gg.aquatic.common.getSectionList
 import gg.aquatic.common.toMMString
-import gg.aquatic.waves.mm.MMParser
+import gg.aquatic.quickminimessage.MMParser
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import org.bukkit.Material

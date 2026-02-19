@@ -52,3 +52,6 @@
 [submodule "Dispatch"]
 	path = Dispatch
 	url = https://github.com/MrLarkyy/Dispatch.git
+[submodule "QuickMiniMessage"]
+	path = QuickMiniMessage
+	url = https://github.com/MrLarkyy/QuickMiniMessage.git

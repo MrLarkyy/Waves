@@ -1,9 +1,9 @@
 package gg.aquatic.waves.editor.handlers
 
 import gg.aquatic.kmenu.inventory.ButtonType
+import gg.aquatic.quickminimessage.MMParser
 import gg.aquatic.waves.editor.EditorClickHandler
 import gg.aquatic.waves.input.impl.ChatInput
-import gg.aquatic.waves.mm.MMParser
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import java.util.*

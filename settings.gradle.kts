@@ -22,6 +22,7 @@ val submodules = listOf(
     "KHolograms" to "gg.aquatic:KHolograms",
     "Clientside" to "gg.aquatic:Clientside",
     "Dispatch" to "gg.aquatic:Dispatch",
+    "QuickMiniMessage" to "gg.aquatic:QuickMiniMessage",
 )
 
 submodules.forEach { (folder, artifact) ->
