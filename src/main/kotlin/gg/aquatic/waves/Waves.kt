@@ -18,6 +18,7 @@ import gg.aquatic.stacked.initializeStacked
 import gg.aquatic.statistik.initializeStatistik
 import gg.aquatic.waves.input.InputHandler
 import gg.aquatic.waves.input.impl.ChatInput
+import gg.aquatic.waves.input.initializeInput
 import gg.aquatic.waves.testing.data.TestingEditor
 import gg.aquatic.waves.util.action.BossbarAction
 import gg.aquatic.waves.util.action.MessageAction
@@ -45,9 +46,9 @@ object Waves : JavaPlugin(), BootstrapHolder, RegistryHolder {
         event<PlayerQuitEvent> {
             Pakket.handler.unregisterPacketListener(it.player)
         }
-        initializeStacked(this, this, SingleThreadedContext("stacked").scope)
+        initializeStacked(this, SingleThreadedContext("stacked").scope)
         initializeKMenu(this, SingleThreadedContext("kmenu").scope)
-        initExecute(this, this)
+        initExecute(this)
         Execute.injectExecutables()
 
         registryBootstrap(this) {
@@ -57,15 +58,14 @@ object Waves : JavaPlugin(), BootstrapHolder, RegistryHolder {
             }
         }
 
-        InputHandler.initialize(this, mapOf("chat" to ChatInput))
+        initializeInput(mapOf("chat" to ChatInput))
         AwaitingWorlds.initialize()
-        initializeStatistik(this, emptyMap())
+        initializeStatistik(emptyMap())
         HologramHandler.initialize()
 
         TestingEditor.initialize()
 
         locale = KLocale.paper {}
-
         registriesInject()
     }
 }
