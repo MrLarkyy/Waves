@@ -99,7 +99,7 @@ dependencies {
     implementation("gg.aquatic:Clientside:26.0.2")
     implementation("gg.aquatic:Dispatch:26.0.4")
     implementation("gg.aquatic:Dispatch-bukkit:26.0.4")
-    implementation("gg.aquatic:QuickMiniMessage:26.0.2")
+    implementation("gg.aquatic:QuickMiniMessage:26.0.3")
 
     runtimeDownload("com.github.ben-manes.caffeine:caffeine:3.2.3")
     runtimeDownload("org.reflections:reflections:0.10.2")
