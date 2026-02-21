@@ -16,7 +16,6 @@ import gg.aquatic.kregistry.bootstrap.RegistryHolder
 import gg.aquatic.pakket.Pakket
 import gg.aquatic.stacked.initializeStacked
 import gg.aquatic.statistik.initializeStatistik
-import gg.aquatic.waves.input.InputHandler
 import gg.aquatic.waves.input.impl.ChatInput
 import gg.aquatic.waves.input.initializeInput
 import gg.aquatic.waves.testing.data.TestingEditor

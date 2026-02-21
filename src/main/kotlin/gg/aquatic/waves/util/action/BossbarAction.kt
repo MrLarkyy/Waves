@@ -3,7 +3,6 @@ package gg.aquatic.waves.util.action
 import gg.aquatic.common.argument.ArgumentContext
 import gg.aquatic.common.argument.ObjectArgument
 import gg.aquatic.common.toMMComponent
-import gg.aquatic.execute.Action
 import gg.aquatic.execute.action.type.PlayerAction
 import gg.aquatic.waves.Waves
 import net.kyori.adventure.bossbar.BossBar

@@ -9,7 +9,6 @@ import java.util.*
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.to
 
 class KMetricsTest {
 
