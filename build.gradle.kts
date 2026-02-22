@@ -1,12 +1,11 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import xyz.jpenilla.gremlin.gradle.ShadowGremlin
 import xyz.jpenilla.runtask.task.AbstractRun
 
 plugins {
     kotlin("jvm") version "2.3.10"
     id("com.gradleup.shadow") version "9.3.1"
     id("io.github.revxrsal.bukkitkobjects") version "0.0.5"
-    id("xyz.jpenilla.gremlin-gradle") version "0.0.9"
+    id("gg.aquatic.runtime") version "26.0.7"
     id("co.uzzu.dotenv.gradle") version "4.0.0"
     java
     id("xyz.jpenilla.run-paper") version "3.0.2"
@@ -18,7 +17,7 @@ bukkitKObjects {
 }
 
 group = "gg.aquatic.waves"
-version = "26.0.22"
+version = "26.0.26"
 
 tasks {
     runServer {
@@ -42,11 +41,16 @@ tasks {
     test {
         useJUnitPlatform()
     }
+}
 
-    writeDependencies {
-        repos.add("https://repo.papermc.io/repository/maven-public/")
-        repos.add("https://repo.maven.apache.org/maven2/")
-    }
+dependencyResolution {
+    repo("https://repo.maven.apache.org/maven2/")
+    repo("https://repo.papermc.io/repository/maven-public/")
+    repo("https://jitpack.io")
+    relocate("kotlin", "gg.aquatic.waves.libs.kotlin")
+    relocate("kotlinx", "gg.aquatic.waves.libs.kotlinx")
+    relocate("com.zaxxer.hikari", "gg.aquatic.waves.libs.hikari")
+    relocate("org.bstats", "gg.aquatic.waves.libs.bstats")
 }
 
 tasks.withType(AbstractRun::class) {
@@ -181,27 +185,6 @@ tasks.withType<ShadowJar> {
     mergeServiceFiles()
     filesMatching("META-INF/services/**") {
         duplicatesStrategy = DuplicatesStrategy.INCLUDE
-    }
-}
-
-listOf(tasks.shadowJar, tasks.writeDependencies).forEach { taskProvider ->
-    taskProvider.configure {
-        // Ensure shadowJar is also a fat jar
-        if (this is ShadowJar) {
-            from(sourceSets.main.get().output)
-            configurations = listOf(project.configurations.runtimeClasspath.get())
-            archiveClassifier.set("shaded")
-        }
-
-        fun reloc(pkg: String) {
-            ShadowGremlin.relocate(this, pkg, "gg.aquatic.waves.dependency.$pkg")
-        }
-
-        reloc("kotlinx")
-        reloc("org.jetbrains.kotlin")
-        reloc("kotlin")
-        reloc("org.bstats")
-        reloc("com.zaxxer.hikari")
     }
 }
 

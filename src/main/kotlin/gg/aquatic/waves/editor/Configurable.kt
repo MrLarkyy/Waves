@@ -2,6 +2,7 @@ package gg.aquatic.waves.editor
 
 import gg.aquatic.common.getSectionList
 import gg.aquatic.common.toMMComponent
+import gg.aquatic.dispatch.paper.BukkitCtx
 import gg.aquatic.stacked.stackedItem
 import gg.aquatic.waves.editor.EditorHandler.getEditorContext
 import gg.aquatic.waves.editor.handlers.ChatInputHandler
@@ -10,6 +11,7 @@ import gg.aquatic.waves.editor.ui.PolymorphicSelectionMenu
 import gg.aquatic.waves.editor.value.*
 import gg.aquatic.waves.input.impl.ChatInput
 import gg.aquatic.waves.input.impl.ChatInputValidator
+import kotlinx.coroutines.withContext
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import org.bukkit.Registry
@@ -126,7 +128,9 @@ abstract class Configurable<A : Configurable<A>> {
                 handler = ChatInputHandler.forString(prompt)
             ),
             addButtonClick = { player, accept ->
-                player.closeInventory()
+                withContext(gg.aquatic.common.coroutine.BukkitCtx.ofEntity(player)) {
+                    player.closeInventory()
+                }
                 player.sendMessage(prompt)
                 val input = ChatInput.createHandle(validator = validator).await(player)
                 accept(input)
@@ -181,7 +185,9 @@ abstract class Configurable<A : Configurable<A>> {
                 handler = ChatInputHandler.forComponent(prompt)
             ),
             addButtonClick = { player, accept ->
-                player.closeInventory()
+                withContext(gg.aquatic.common.coroutine.BukkitCtx.ofEntity(player)) {
+                    player.closeInventory()
+                }
                 player.sendMessage(prompt)
                 val input = ChatInput.createHandle(validator = validator).await(player)
                 accept(input?.toMMComponent())

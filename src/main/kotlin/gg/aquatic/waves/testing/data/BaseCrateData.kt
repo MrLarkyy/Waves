@@ -1,7 +1,9 @@
 package gg.aquatic.waves.testing.data
 
+import gg.aquatic.common.coroutine.BukkitCtx
 import gg.aquatic.waves.editor.Configurable
 import gg.aquatic.waves.input.impl.ChatInput
+import kotlinx.coroutines.withContext
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
@@ -18,7 +20,9 @@ class BaseCrateData(
         initial = initialItems,
         factory = { ItemData() },
         addButton = { player, accept ->
-            player.closeInventory()
+            withContext(BukkitCtx.ofEntity(player)) {
+                player.closeInventory()
+            }
             player.sendMessage("Enter initial material for the item:")
 
             val material = ChatInput.createHandle(listOf("cancel"))

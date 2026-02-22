@@ -1,9 +1,11 @@
 package gg.aquatic.waves.editor.handlers
 
+import gg.aquatic.common.coroutine.BukkitCtx
 import gg.aquatic.kmenu.inventory.ButtonType
 import gg.aquatic.quickminimessage.MMParser
 import gg.aquatic.waves.editor.EditorClickHandler
 import gg.aquatic.waves.input.impl.ChatInput
+import kotlinx.coroutines.withContext
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import java.util.*
@@ -23,7 +25,10 @@ class ChatInputHandler<T>(
         clickType: ButtonType,
         update: suspend (T?) -> Unit,
     ) {
-        player.closeInventory()
+        withContext(BukkitCtx.ofEntity(player)) {
+            player.closeInventory()
+        }
+
         player.sendMessage(prompt)
 
         val input = ChatInput.createHandle(listOf("cancel")).await(player)

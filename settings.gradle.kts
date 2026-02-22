@@ -1,6 +1,13 @@
+pluginManagement {
+    repositories {
+        maven { url = uri("https://repo.nekroplex.com/releases") }
+        gradlePluginPortal()
+    }
+}
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
+
 rootProject.name = "Waves"
 
 val submodules = listOf(
