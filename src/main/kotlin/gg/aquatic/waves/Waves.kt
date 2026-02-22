@@ -1,5 +1,6 @@
 package gg.aquatic.waves
 
+import gg.aquatic.clientside.initializeClientside
 import gg.aquatic.common.coroutine.SingleThreadedContext
 import gg.aquatic.common.event
 import gg.aquatic.common.initializeCommon
@@ -57,6 +58,7 @@ object Waves : JavaPlugin(), BootstrapHolder, RegistryHolder {
             }
         }
 
+        initializeClientside()
         initializeInput(mapOf("chat" to ChatInput))
         AwaitingWorlds.initialize()
         initializeStatistik(emptyMap())
