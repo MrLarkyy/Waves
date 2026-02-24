@@ -5,8 +5,7 @@ import gg.aquatic.common.coroutine.SingleThreadedContext
 import gg.aquatic.common.event
 import gg.aquatic.common.initializeCommon
 import gg.aquatic.execute.Action
-import gg.aquatic.execute.Execute
-import gg.aquatic.execute.initExecute
+import gg.aquatic.execute.initializeExecute
 import gg.aquatic.kholograms.HologramHandler
 import gg.aquatic.klocale.LocaleManager
 import gg.aquatic.klocale.impl.paper.KLocale
@@ -48,8 +47,7 @@ object Waves : JavaPlugin(), BootstrapHolder, RegistryHolder {
         }
         initializeStacked(this, SingleThreadedContext("stacked").scope)
         initializeKMenu(this, SingleThreadedContext("kmenu").scope)
-        initExecute(this)
-        Execute.injectExecutables()
+        initializeExecute(this)
 
         registryBootstrap(this) {
             registry(Action.REGISTRY_KEY) {
