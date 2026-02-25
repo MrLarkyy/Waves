@@ -1,6 +1,7 @@
 package gg.aquatic.waves
 
 import gg.aquatic.clientside.initializeClientside
+import gg.aquatic.common.MiniMessageResolver
 import gg.aquatic.common.coroutine.SingleThreadedContext
 import gg.aquatic.common.event
 import gg.aquatic.common.initializeCommon
@@ -14,6 +15,7 @@ import gg.aquatic.kmenu.initializeKMenu
 import gg.aquatic.kregistry.bootstrap.BootstrapHolder
 import gg.aquatic.kregistry.bootstrap.RegistryHolder
 import gg.aquatic.pakket.Pakket
+import gg.aquatic.quickminimessage.MMParser
 import gg.aquatic.stacked.initializeStacked
 import gg.aquatic.statistik.initializeStatistik
 import gg.aquatic.waves.input.impl.ChatInput
@@ -37,7 +39,11 @@ object Waves : JavaPlugin(), BootstrapHolder, RegistryHolder {
     lateinit var locale: LocaleManager<PaperMessage>
 
     override fun onEnable() {
-        initializeCommon(this)
+        val mmResolver = MiniMessageResolver {
+            MMParser.parse(it)
+        }
+
+        initializeCommon(this, mmResolver)
 
         event<PlayerJoinEvent> {
             Pakket.handler.injectPacketListener(it.player)
@@ -45,9 +51,9 @@ object Waves : JavaPlugin(), BootstrapHolder, RegistryHolder {
         event<PlayerQuitEvent> {
             Pakket.handler.unregisterPacketListener(it.player)
         }
-        initializeStacked(this, SingleThreadedContext("stacked").scope)
+        initializeStacked(this, SingleThreadedContext("stacked").scope, mmResolver)
         initializeKMenu(this, SingleThreadedContext("kmenu").scope)
-        initializeExecute(this)
+        initializeExecute(this, mmResolver)
 
         registryBootstrap(this) {
             registry(Action.REGISTRY_KEY) {
