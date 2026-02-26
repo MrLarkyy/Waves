@@ -22,6 +22,8 @@ import gg.aquatic.waves.input.impl.ChatInput
 import gg.aquatic.waves.input.initializeInput
 import gg.aquatic.waves.testing.data.TestingEditor
 import gg.aquatic.waves.util.action.BossbarAction
+import gg.aquatic.waves.util.action.MenuNextPageAction
+import gg.aquatic.waves.util.action.MenuPreviousPageAction
 import gg.aquatic.waves.util.action.MessageAction
 import gg.aquatic.waves.world.AwaitingWorlds
 import org.bukkit.event.player.PlayerJoinEvent
@@ -52,13 +54,15 @@ object Waves : JavaPlugin(), BootstrapHolder, RegistryHolder {
             Pakket.handler.unregisterPacketListener(it.player)
         }
         initializeStacked(this, SingleThreadedContext("stacked").scope, mmResolver)
-        initializeKMenu(this, SingleThreadedContext("kmenu").scope)
+        initializeKMenu(SingleThreadedContext("kmenu").scope)
         initializeExecute(this, mmResolver)
 
         registryBootstrap(this) {
             registry(Action.REGISTRY_KEY) {
                 add("message", MessageAction)
                 add("bossbar", BossbarAction)
+                add("next-page", MenuNextPageAction)
+                add("previous-page", MenuPreviousPageAction)
             }
         }
 
