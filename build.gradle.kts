@@ -3,7 +3,7 @@ import xyz.jpenilla.runtask.task.AbstractRun
 
 plugins {
     kotlin("jvm") version "2.3.10"
-    id("com.gradleup.shadow") version "9.3.1"
+    id("com.gradleup.shadow") version "9.3.2"
     id("io.github.revxrsal.bukkitkobjects") version "0.0.5"
     id("gg.aquatic.runtime") version "26.0.7"
     id("co.uzzu.dotenv.gradle") version "4.0.0"
