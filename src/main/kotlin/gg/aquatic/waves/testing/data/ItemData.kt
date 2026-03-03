@@ -253,5 +253,3 @@ class StackedItemData(
     }
 
 }
-
-typealias ItemData = StackedItemData
