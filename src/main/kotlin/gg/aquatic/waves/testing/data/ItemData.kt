@@ -17,6 +17,9 @@ class ItemData(
     val material = editMaterial("material", initialMaterial, "Enter Material Name:")
     val amount = editInt("amount", initialAmount, "Enter Amount (1-64):")
 
+    val displayName = editOptionalComponent("display-name", initialDisplayName,
+        "Enter Display Name (type null to remove):"
+    )
     val lore = editComponentList("lore", initialLore)
 
     fun asStacked(): StackedItemImpl {

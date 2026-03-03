@@ -2,7 +2,6 @@ package gg.aquatic.waves.editor
 
 import gg.aquatic.common.getSectionList
 import gg.aquatic.common.toMMComponent
-import gg.aquatic.dispatch.paper.BukkitCtx
 import gg.aquatic.stacked.stackedItem
 import gg.aquatic.waves.editor.EditorHandler.getEditorContext
 import gg.aquatic.waves.editor.handlers.ChatInputHandler
@@ -19,8 +18,10 @@ import org.bukkit.Sound
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
+import java.util.Optional
+import kotlin.jvm.optionals.getOrDefault
 
-abstract class Configurable<A : Configurable<A>> {
+abstract class Configurable<Self : Configurable<Self>> {
     private val _editorValues = mutableListOf<EditorValue<*>>()
 
     /**
@@ -229,9 +230,7 @@ abstract class Configurable<A : Configurable<A>> {
         visibleIf: () -> Boolean = { true }
     ): MapEditorValue<MutableList<EditorValue<T>>> {
 
-        // Helper to create the inner ListEditorValue using the existing polymorphic logic
         val createInnerList: (String, List<T>) -> ListEditorValue<T> = { listKey, listValues ->
-            // Temporarily remove from _editorValues because editPolymorphicConfigurableList adds itself there
             val listEditor = editPolymorphicConfigurableList(
                 key = listKey,
                 initial = listValues,
@@ -311,6 +310,28 @@ abstract class Configurable<A : Configurable<A>> {
             key, initial, Serializers.INT,
             { ItemStack(Material.GOLD_NUGGET).apply { amount = it.coerceIn(1, 64) } },
             ChatInputHandler.forInteger(prompt)
+        )
+
+    protected fun editComponent(key: String, initial: Component, prompt: String) =
+        edit(
+            key,
+            initial,
+            Serializers.COMPONENT,
+            { stackedItem(Material.NAME_TAG) {
+                displayName = "Current: ".toMMComponent().append(it)
+            }.getItem() },
+            ChatInputHandler.forComponent(prompt)
+        )
+
+    protected fun editOptionalComponent(key: String, initial: Optional<Component>, prompt: String) =
+        edit(
+            key,
+            initial,
+            Serializers.OPTIONAL_COMPONENT,
+            { stackedItem(Material.NAME_TAG) {
+                displayName = "Current: ".toMMComponent().append(it.getOrDefault(Component.empty()))
+            }.getItem() },
+            ChatInputHandler.forOptionalComponent(prompt)
         )
 
     protected fun editMaterial(key: String, initial: Material, prompt: String) =
@@ -612,9 +633,9 @@ abstract class Configurable<A : Configurable<A>> {
     @Suppress("UNCHECKED_CAST")
     fun asEditorValue(
         key: String,
-        icon: (A) -> ItemStack
-    ): EditorValue<A> {
-        return ConfigurableEditorValue(key, this as A, icon)
+        icon: (Self) -> ItemStack
+    ): EditorValue<Self> {
+        return ConfigurableEditorValue(key, this as Self, icon)
     }
 
     protected suspend fun <T> openListMenu(
@@ -632,7 +653,7 @@ abstract class Configurable<A : Configurable<A>> {
     /**
      * Requirement: Configurables must be able to deep-copy themselves for the editor's "cancel" logic.
      */
-    abstract fun copy(): A
+    abstract fun copy(): Self
 
 
 }

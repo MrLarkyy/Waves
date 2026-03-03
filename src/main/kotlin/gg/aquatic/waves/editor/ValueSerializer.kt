@@ -10,6 +10,8 @@ import org.bukkit.Registry
 import org.bukkit.Sound
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.MemoryConfiguration
+import java.util.Optional
+import kotlin.jvm.optionals.getOrNull
 
 interface ValueSerializer<T> {
     /**
@@ -110,6 +112,10 @@ object Serializers {
         Component.empty(),
         { MMParser.deserialize(it.toString()) },
         { it.toMMString() })
+    val OPTIONAL_COMPONENT = ValueSerializer.Simple(
+        Optional.empty<Component>(),
+        { Optional.ofNullable(MMParser.deserialize(it.toString())) },
+        { it.getOrNull()?.toMMString() })
     val BOOLEAN = ValueSerializer.Simple(false, encode = { it.toString().toBoolean() })
     val SOUND = ValueSerializer.Simple(Sound.ENTITY_EXPERIENCE_ORB_PICKUP, encode = { Registry.SOUNDS.get(Key.key(it.toString())) }, decode = { Registry.SOUNDS.getKey(it)?.toString() })
 
