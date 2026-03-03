@@ -18,8 +18,6 @@ import org.bukkit.Sound
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
-import java.math.BigDecimal
-import java.math.BigInteger
 import java.util.Optional
 import kotlin.jvm.optionals.getOrDefault
 
@@ -70,54 +68,6 @@ abstract class Configurable<Self : Configurable<Self>> {
             },
             ChatInputHandler.forSound(prompt)
         )
-
-    protected fun editFloat(
-        key: String, initial: Float, prompt: String, icon: (Float) -> ItemStack = {
-            stackedItem(Material.GOLD_NUGGET) {
-                displayName = Component.text("$key: $it")
-            }.getItem()
-        }
-    ) =
-        edit(
-            key, initial, Serializers.FLOAT,
-            icon,
-            ChatInputHandler.forFloat(prompt)
-        )
-
-    protected fun editDouble(
-        key: String, initial: Double, prompt: String, icon: (Double) -> ItemStack = {
-            stackedItem(Material.GOLD_NUGGET) {
-                displayName = Component.text("$key: $it")
-            }.getItem()
-        }
-    ) =
-        edit(
-            key, initial, Serializers.DOUBLE, icon, ChatInputHandler.forDouble(prompt)
-        )
-
-    protected fun editLong(
-        key: String, initial: Long, prompt: String, icon: (Long) -> ItemStack = {
-            stackedItem(Material.GOLD_NUGGET) {
-                displayName = Component.text("$key: $it")
-            }.getItem()
-        }
-    ) = edit(key, initial, Serializers.LONG, icon, ChatInputHandler.forLong(prompt))
-
-    protected fun editBigInt(
-        key: String, initial: BigInteger, prompt: String, icon: (BigInteger) -> ItemStack = {
-            stackedItem(Material.GOLD_NUGGET) {
-                displayName = Component.text("$key: $it")
-            }.getItem()
-        }
-    ) = edit(key, initial, Serializers.BIGINT, icon, ChatInputHandler.forBigInt(prompt))
-
-    protected fun editBigDecimal(
-        key: String, initial: BigDecimal, prompt: String, icon: (BigDecimal) -> ItemStack = {
-            stackedItem(Material.GOLD_NUGGET) {
-                displayName = Component.text("$key: $it")
-            }.getItem()
-        }
-    ) = edit(key, initial, Serializers.BIGDECIMAL, icon, ChatInputHandler.forBigDecimal(prompt))
 
     protected fun editStringList(
         key: String,
@@ -238,7 +188,7 @@ abstract class Configurable<Self : Configurable<Self>> {
     /**
      * Specialized DSL for Map<String, List<T>> where T is polymorphic (Action, HologramLine, etc.)
      */
-    protected fun <T : Configurable<T>> editString2PolymorphicListConfigurableMap(
+    fun <T : Configurable<T>> editString2PolymorphicListConfigurableMap(
         key: String,
         initial: Map<String, List<T>> = emptyMap(),
         options: Map<String, () -> T>,
@@ -294,7 +244,7 @@ abstract class Configurable<Self : Configurable<Self>> {
      * Specialized DSL for Map<Int, List<T>> where T is polymorphic.
      */
     @Suppress("unused")
-    protected fun <T : Configurable<T>> editInt2PolymorphicListConfigurableMap(
+    fun <T : Configurable<T>> editInt2PolymorphicListConfigurableMap(
         key: String,
         initial: Map<Int, List<T>> = emptyMap(),
         options: Map<String, () -> T>,
@@ -324,13 +274,6 @@ abstract class Configurable<Self : Configurable<Self>> {
             visibleIf = visibleIf
         )
     }
-
-    protected fun editInt(key: String, initial: Int, prompt: String) =
-        edit(
-            key, initial, Serializers.INT,
-            { ItemStack(Material.GOLD_NUGGET).apply { amount = it.coerceIn(1, 64) } },
-            ChatInputHandler.forInteger(prompt)
-        )
 
     @Suppress("unused")
     protected fun editComponent(key: String, initial: Component, prompt: String) =
@@ -362,7 +305,7 @@ abstract class Configurable<Self : Configurable<Self>> {
      * Unified DSL for any simple value.
      * You define the icon, click logic, and serialization in one place.
      */
-    protected fun <T> edit(
+    fun <T> edit(
         key: String,
         initial: T,
         serializer: ValueSerializer<T>,
@@ -382,7 +325,7 @@ abstract class Configurable<Self : Configurable<Self>> {
     }
 
     @Suppress("unused")
-    protected fun <T : Configurable<T>> editConfigurable(
+    fun <T : Configurable<T>> editConfigurable(
         key: String,
         initial: T,
         icon: (T) -> ItemStack,
@@ -398,7 +341,7 @@ abstract class Configurable<Self : Configurable<Self>> {
     }
 
     @Suppress("unused")
-    protected fun <T : Configurable<T>> editPolymorphicConfigurable(
+    fun <T : Configurable<T>> editPolymorphicConfigurable(
         key: String,
         initial: T,
         options: Map<String, () -> T>,
@@ -420,7 +363,7 @@ abstract class Configurable<Self : Configurable<Self>> {
      * DSL for a list of Configurables where each element can be a different type.
      * When adding a new element, it opens a selection menu to pick the type.
      */
-    protected fun <T : Configurable<T>> editPolymorphicConfigurableList(
+    fun <T : Configurable<T>> editPolymorphicConfigurableList(
         key: String,
         initial: List<T> = emptyList(),
         options: Map<String, () -> T>,
@@ -479,7 +422,7 @@ abstract class Configurable<Self : Configurable<Self>> {
      * Unified DSL for simple Lists (e.g., List<String>, List<Component>).
      * It automatically wraps simple types into EditorValues.
      */
-    protected fun <T> editList(
+    fun <T> editList(
         key: String,
         initial: List<T> = emptyList(),
         serializer: ValueSerializer<T>,
@@ -528,7 +471,7 @@ abstract class Configurable<Self : Configurable<Self>> {
      * It handles the wrapping of elements automatically.
      */
     @Suppress("unused")
-    protected fun <T> editList(
+    fun <T> editList(
         key: String,
         elementFactory: (ConfigurationSection) -> EditorValue<T>,
         addButtonClick: suspend (player: Player, accept: suspend (EditorValue<T>) -> Unit) -> Unit,
@@ -554,7 +497,7 @@ abstract class Configurable<Self : Configurable<Self>> {
      * @param addButton Logic to create a NEW instance (e.g. via ChatInput).
      * @param factory Logic to create an EMPTY instance (used during deserialization).
      */
-    protected fun <T : Configurable<T>> editConfigurableList(
+    fun <T : Configurable<T>> editConfigurableList(
         key: String,
         initial: List<T> = emptyList(),
         factory: () -> T,
@@ -601,7 +544,7 @@ abstract class Configurable<Self : Configurable<Self>> {
     /**
      * Specialized DSL for Maps of Configurables (ConfigurationSection in YAML).
      */
-    protected fun <T : Configurable<T>> editConfigurableMap(
+    fun <T : Configurable<T>> editConfigurableMap(
         key: String,
         initial: Map<String, T> = emptyMap(),
         factory: () -> T,

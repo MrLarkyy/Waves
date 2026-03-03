@@ -60,27 +60,33 @@ class ChatInputHandler<T>(
             else Optional.of(MMParser.deserialize(str))
         }
 
-        fun forInteger(prompt: String, min: Int = Int.MIN_VALUE, max: Int = Int.MAX_VALUE) =
+        fun forInteger(prompt: String, min: Int? = null, max: Int? = null) =
             ChatInputHandler(prompt) {
                 val i = it.toIntOrNull()
                 i?.coerceIn(min, max)
             }
 
-        fun forDouble(prompt: String, min: Double = -Double.MAX_VALUE, max: Double = Double.MAX_VALUE) =
+        fun forDouble(prompt: String, min: Double? = null, max: Double? = null) =
             ChatInputHandler(prompt) {
                 val d = it.toDoubleOrNull()
                 d?.coerceIn(min, max)
             }
 
-        fun forFloat(prompt: String, min: Float = -Float.MAX_VALUE, max: Float = Float.MAX_VALUE) =
+        fun forFloat(prompt: String, min: Float? = null, max: Float? = null) =
             ChatInputHandler(prompt) {
                 val f = it.toFloatOrNull()
                 f?.coerceIn(min, max)
             }
 
-        fun forLong(prompt: String, min: Long = Long.MIN_VALUE, max: Long = Long.MAX_VALUE) =
+        fun forLong(prompt: String, min: Long? = null, max: Long? = null) =
             ChatInputHandler(prompt) {
                 val l = it.toLongOrNull()
+                l?.coerceIn(min, max)
+            }
+
+        fun forShort(prompt: String, min: Short? = null, max: Short? = null) =
+            ChatInputHandler(prompt) {
+                val l = it.toShortOrNull()
                 l?.coerceIn(min, max)
             }
 
@@ -94,6 +100,12 @@ class ChatInputHandler<T>(
             ChatInputHandler(prompt) {
                 val l = it.toBigDecimalOrNull()
                 l?.coerceIn(min, max)
+            }
+
+        fun forByte(prompt: String, min: Byte? = null, max: Byte? = null) =
+            ChatInputHandler(prompt) {
+                val b = it.toByteOrNull()
+                b?.coerceIn(min, max)
             }
 
         fun forBoolean(prompt: String) = ChatInputHandler(prompt) { it.toBooleanStrictOrNull() }
