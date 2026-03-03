@@ -7,7 +7,11 @@ import org.bukkit.Material
 import org.bukkit.Registry
 import org.bukkit.Sound
 import org.bukkit.World
+import org.bukkit.entity.EntityType
+import org.bukkit.inventory.ItemFlag
+import org.bukkit.inventory.ItemRarity
 import org.bukkit.util.Vector
+import java.util.Locale
 import java.util.Optional
 
 val ValueSerializer.Companion.MATERIAL get() = Simple(
@@ -97,6 +101,54 @@ val ValueSerializer.Companion.OPTIONAL_NAMESPACED_KEY get() = Simple(
     decode = { opt -> opt.map { it.toString() }.orElse(null) }
 )
 
+val ValueSerializer.Companion.KEY get() = Simple(
+    Key.key("minecraft", "stone"),
+    encode = { raw -> parseAdventureKey(raw.toString()) },
+    decode = { it.asString() }
+)
+
+val ValueSerializer.Companion.OPTIONAL_KEY get() = Simple(
+    Optional.empty<Key>(),
+    encode = { raw -> Optional.ofNullable(parseAdventureKey(raw.toString())) },
+    decode = { opt -> opt.map { it.asString() }.orElse(null) }
+)
+
+val ValueSerializer.Companion.ITEM_RARITY get() = Simple(
+    ItemRarity.values().first(),
+    encode = { raw -> parseItemRarity(raw.toString()) },
+    decode = { it.name }
+)
+
+val ValueSerializer.Companion.OPTIONAL_ITEM_RARITY get() = Simple(
+    Optional.empty<ItemRarity>(),
+    encode = { raw -> Optional.ofNullable(parseItemRarity(raw.toString())) },
+    decode = { opt -> opt.map { it.name }.orElse(null) }
+)
+
+val ValueSerializer.Companion.ENTITY_TYPE get() = Simple(
+    EntityType.PIG,
+    encode = { raw -> parseEntityType(raw.toString()) },
+    decode = { it.name }
+)
+
+val ValueSerializer.Companion.OPTIONAL_ENTITY_TYPE get() = Simple(
+    Optional.empty<EntityType>(),
+    encode = { raw -> Optional.ofNullable(parseEntityType(raw.toString())) },
+    decode = { opt -> opt.map { it.name }.orElse(null) }
+)
+
+val ValueSerializer.Companion.ITEM_FLAG get() = Simple(
+    ItemFlag.HIDE_ATTRIBUTES,
+    encode = { raw -> parseItemFlag(raw.toString()) },
+    decode = { it.name }
+)
+
+val ValueSerializer.Companion.OPTIONAL_ITEM_FLAG get() = Simple(
+    Optional.empty<ItemFlag>(),
+    encode = { raw -> Optional.ofNullable(parseItemFlag(raw.toString())) },
+    decode = { opt -> opt.map { it.name }.orElse(null) }
+)
+
 private fun parseVector(str: String): Vector? {
     val split = str.split(";")
     return if (split.size == 3) {
@@ -120,24 +172,58 @@ private fun parseBlockVector(str: String): Vector? {
 }
 
 private fun parseColor(str: String): org.bukkit.Color? {
-    return if (str.startsWith("#") && str.length == 7) {
+    val value = str.trim()
+    if (value.isEmpty()) return null
+
+    return if (value.startsWith("#") && value.length == 7) {
         try {
             org.bukkit.Color.fromRGB(
-                str.substring(1, 3).toInt(16),
-                str.substring(3, 5).toInt(16),
-                str.substring(5, 7).toInt(16)
+                value.substring(1, 3).toInt(16),
+                value.substring(3, 5).toInt(16),
+                value.substring(5, 7).toInt(16)
             )
         } catch (_: Exception) { null }
     } else {
-        val split = str.split(";")
+        val split = if (';' in value) value.split(";") else value.split(",")
         if (split.size == 3) {
             org.bukkit.Color.fromRGB(
-                split[0].toIntOrNull() ?: return null,
-                split[1].toIntOrNull() ?: return null,
-                split[2].toIntOrNull() ?: return null
+                split[0].trim().toIntOrNull() ?: return null,
+                split[1].trim().toIntOrNull() ?: return null,
+                split[2].trim().toIntOrNull() ?: return null
             )
         } else null
     }
+}
+
+private fun parseAdventureKey(str: String): Key? {
+    val value = str.trim()
+    if (value.isEmpty()) return null
+
+    val direct = runCatching { Key.key(value) }.getOrNull()
+    if (direct != null) return direct
+
+    if (':' !in value) {
+        return runCatching { Key.key("minecraft", value.lowercase(Locale.ROOT)) }.getOrNull()
+    }
+    return null
+}
+
+private fun parseItemRarity(str: String): ItemRarity? {
+    val value = str.trim()
+    if (value.isEmpty()) return null
+    return runCatching { ItemRarity.valueOf(value.uppercase(Locale.ROOT)) }.getOrNull()
+}
+
+private fun parseEntityType(str: String): EntityType? {
+    val value = str.trim()
+    if (value.isEmpty()) return null
+    return runCatching { EntityType.valueOf(value.uppercase(Locale.ROOT)) }.getOrNull()
+}
+
+private fun parseItemFlag(str: String): ItemFlag? {
+    val value = str.trim()
+    if (value.isEmpty()) return null
+    return runCatching { ItemFlag.valueOf(value.uppercase(Locale.ROOT)) }.getOrNull()
 }
 
 @Suppress("UNCHECKED_CAST")

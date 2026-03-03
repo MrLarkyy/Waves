@@ -6,8 +6,13 @@ import gg.aquatic.quickminimessage.MMParser
 import gg.aquatic.waves.editor.EditorClickHandler
 import gg.aquatic.waves.input.impl.ChatInput
 import kotlinx.coroutines.withContext
+import net.kyori.adventure.key.Key
+import org.bukkit.Color
 import org.bukkit.Material
 import org.bukkit.entity.Player
+import org.bukkit.entity.EntityType
+import org.bukkit.inventory.ItemFlag
+import org.bukkit.inventory.ItemRarity
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.util.Locale
@@ -481,6 +486,71 @@ class ChatInputHandler<T>(
         }
 
         fun forMaterial(prompt: String) = forEnum<Material>(prompt)
+
+        fun forKey(prompt: String) = ChatInputHandler(prompt) { str ->
+            parseAdventureKey(str)
+        }
+
+        fun forOptionalKey(prompt: String) = ChatInputHandler(prompt) { str ->
+            val value = str.trim()
+            if (value.isBlank() || value.equals("null", ignoreCase = true)) {
+                Optional.empty<Key>()
+            } else {
+                parseAdventureKey(value)?.let { Optional.of(it) }
+            }
+        }
+
+        fun forColor(prompt: String) = ChatInputHandler(prompt) { str ->
+            parseColor(str)
+        }
+
+        fun forOptionalColor(prompt: String) = ChatInputHandler(prompt) { str ->
+            val value = str.trim()
+            if (value.isBlank() || value.equals("null", ignoreCase = true)) {
+                Optional.empty<Color>()
+            } else {
+                parseColor(value)?.let { Optional.of(it) }
+            }
+        }
+
+        fun forItemRarity(prompt: String) = ChatInputHandler(prompt) { str ->
+            parseItemRarity(str)
+        }
+
+        fun forOptionalItemRarity(prompt: String) = ChatInputHandler(prompt) { str ->
+            val value = str.trim()
+            if (value.isBlank() || value.equals("null", ignoreCase = true)) {
+                Optional.empty<ItemRarity>()
+            } else {
+                parseItemRarity(value)?.let { Optional.of(it) }
+            }
+        }
+
+        fun forEntityType(prompt: String) = ChatInputHandler(prompt) { str ->
+            parseEntityType(str)
+        }
+
+        fun forOptionalEntityType(prompt: String) = ChatInputHandler(prompt) { str ->
+            val value = str.trim()
+            if (value.isBlank() || value.equals("null", ignoreCase = true)) {
+                Optional.empty<EntityType>()
+            } else {
+                parseEntityType(value)?.let { Optional.of(it) }
+            }
+        }
+
+        fun forItemFlag(prompt: String) = ChatInputHandler(prompt) { str ->
+            parseItemFlag(str)
+        }
+
+        fun forOptionalItemFlag(prompt: String) = ChatInputHandler(prompt) { str ->
+            val value = str.trim()
+            if (value.isBlank() || value.equals("null", ignoreCase = true)) {
+                Optional.empty<ItemFlag>()
+            } else {
+                parseItemFlag(value)?.let { Optional.of(it) }
+            }
+        }
 
         inline fun <reified T : Enum<T>> forEnum(prompt: String) = ChatInputHandler(prompt) { str ->
             try {
