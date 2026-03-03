@@ -1,51 +1,61 @@
 package gg.aquatic.waves.editor.serialize
 
-import java.math.BigDecimal
-import java.math.BigInteger
+import java.util.Optional
 
-val ValueSerializer.Companion.INT get() = ValueSerializer.Simple(1, encode = { it.toString().toIntOrNull() ?: 1 })
-val ValueSerializer.Companion.FLOAT get() = ValueSerializer.Simple(1f, encode = { it.toString().toFloatOrNull() ?: 1f })
-val ValueSerializer.Companion.DOUBLE get() = ValueSerializer.Simple(1.0, encode = { it.toString().toDoubleOrNull() ?: 1.0 })
-val ValueSerializer.Companion.LONG get() = ValueSerializer.Simple(1L, encode = { it.toString().toLongOrNull() ?: 1L })
-val ValueSerializer.Companion.SHORT get() = ValueSerializer.Simple(1, encode = { it.toString().toShortOrNull() ?: 1 })
-val ValueSerializer.Companion.BYTE get() = ValueSerializer.Simple(0, encode = { it.toString().toByteOrNull() ?: 0 })
 val ValueSerializer.Companion.BOOLEAN get() = ValueSerializer.Simple(false, encode = { it.toString().toBoolean() })
 val ValueSerializer.Companion.STRING get() = ValueSerializer.Simple("", encode = { it.toString() })
 
-val ValueSerializer.Companion.BIGINT get() = ValueSerializer.Simple(
-    BigInteger.ONE,
-    encode = { it.toString().toBigIntegerOrNull() },
-    decode = { it.toString() }
+val ValueSerializer.Companion.OPTIONAL_BOOLEAN get() = ValueSerializer.Simple(
+    Optional.empty<Boolean>(),
+    encode = { raw ->
+        val value = raw.toString().trim()
+        if (value.isBlank() || value.equals("null", ignoreCase = true)) Optional.empty()
+        else value.toBooleanStrictOrNull()?.let { Optional.of(it) } ?: Optional.empty()
+    },
+    decode = { it.orElse(null) }
 )
 
-val ValueSerializer.Companion.BIGDECIMAL get() = ValueSerializer.Simple(
-    BigDecimal.ONE,
-    encode = { it.toString().toBigDecimalOrNull() },
-    decode = { it.toString() }
+val ValueSerializer.Companion.OPTIONAL_STRING get() = ValueSerializer.Simple(
+    Optional.empty<String>(),
+    encode = { raw ->
+        val value = raw.toString().trim()
+        if (value.isBlank() || value.equals("null", ignoreCase = true)) Optional.empty() else Optional.of(value)
+    },
+    decode = { it.orElse(null) }
 )
 
-val ValueSerializer.Companion.UINT get() = ValueSerializer.Simple(
-    1u,
-    encode = { it.toString().toUIntOrNull() ?: 1u },
-    decode = { it.toLong() }
+val ValueSerializer.Companion.BOOLEAN_LIST get() = ValueSerializer.Simple(
+    emptyList<Boolean>(),
+    encode = { raw -> parseList(raw) { it.toBooleanStrictOrNull() } },
+    decode = { it }
+)
+val ValueSerializer.Companion.STRING_LIST get() = ValueSerializer.Simple(
+    emptyList<String>(),
+    encode = { raw -> parseList(raw) { it } },
+    decode = { it }
 )
 
-val ValueSerializer.Companion.ULONG get() = ValueSerializer.Simple(
-    1uL,
-    encode = { it.toString().toULongOrNull() ?: 1uL },
-    decode = { it.toString() }
+val ValueSerializer.Companion.OPTIONAL_BOOLEAN_LIST get() = ValueSerializer.Simple(
+    Optional.empty<List<Boolean>>(),
+    encode = { raw ->
+        val list = parseList(raw) { it.toBooleanStrictOrNull() }
+        if (list.isEmpty()) Optional.empty() else Optional.of(list)
+    },
+    decode = { it.orElse(null) }
 )
-
-val ValueSerializer.Companion.USHORT get() = ValueSerializer.Simple(
-    1u.toUShort(),
-    encode = { it.toString().toUShortOrNull() ?: 1u.toUShort() },
-    decode = { it.toInt() }
-)
-
-val ValueSerializer.Companion.UBYTE get() = ValueSerializer.Simple(
-    0u.toUByte(),
-    encode = { it.toString().toUByteOrNull() ?: 0u.toUByte() },
-    decode = { it.toInt() }
+val ValueSerializer.Companion.OPTIONAL_STRING_LIST get() = ValueSerializer.Simple(
+    Optional.empty<List<String>>(),
+    encode = { raw ->
+        val list = parseList(raw) { it }
+        if (list.isEmpty()) Optional.empty() else Optional.of(list)
+    },
+    decode = { it.orElse(null) }
 )
 
 inline fun <reified T : Enum<T>> ValueSerializer.Companion.enum() = ValueSerializer.EnumSerializer(T::class.java)
+
+private fun <T> parseList(raw: Any, parser: (String) -> T?): List<T> {
+    @Suppress("UNCHECKED_CAST")
+    val list = raw as? List<Any?> ?: return emptyList()
+    return list.mapNotNull { parser(it.toString()) }
+}
