@@ -79,13 +79,4 @@ class BaseCrateData(
             }
         }
     )
-
-    override fun copy(): BaseCrateData {
-        return BaseCrateData(
-            id,
-            displayName,
-            items.value.map { it.value.copy() },
-            rewards.value.associate { it.key to it.value.copy() }
-        )
-    }
 }

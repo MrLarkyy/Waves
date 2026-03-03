@@ -28,12 +28,4 @@ class ItemData(
             amount = this@ItemData.amount.value
         }
     }
-
-    override fun copy(): ItemData {
-        return ItemData().also { copy ->
-            copy.material.value = this.material.value
-            copy.amount.value = this.amount.value
-            copy.lore.value = this.lore.value.map { it.clone() }.toMutableList()
-        }
-    }
 }

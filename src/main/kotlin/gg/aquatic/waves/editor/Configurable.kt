@@ -18,6 +18,8 @@ import org.bukkit.Sound
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
+import java.math.BigDecimal
+import java.math.BigInteger
 import java.util.Optional
 import kotlin.jvm.optionals.getOrDefault
 
@@ -100,6 +102,22 @@ abstract class Configurable<Self : Configurable<Self>> {
             }.getItem()
         }
     ) = edit(key, initial, Serializers.LONG, icon, ChatInputHandler.forLong(prompt))
+
+    protected fun editBigInt(
+        key: String, initial: BigInteger, prompt: String, icon: (BigInteger) -> ItemStack = {
+            stackedItem(Material.GOLD_NUGGET) {
+                displayName = Component.text("$key: $it")
+            }.getItem()
+        }
+    ) = edit(key, initial, Serializers.BIGINT, icon, ChatInputHandler.forBigInt(prompt))
+
+    protected fun editBigDecimal(
+        key: String, initial: BigDecimal, prompt: String, icon: (BigDecimal) -> ItemStack = {
+            stackedItem(Material.GOLD_NUGGET) {
+                displayName = Component.text("$key: $it")
+            }.getItem()
+        }
+    ) = edit(key, initial, Serializers.BIGDECIMAL, icon, ChatInputHandler.forBigDecimal(prompt))
 
     protected fun editStringList(
         key: String,
@@ -198,6 +216,7 @@ abstract class Configurable<Self : Configurable<Self>> {
         )
     }
 
+    @Suppress("unused")
     protected fun editBoolean(
         key: String,
         initial: Boolean,
@@ -262,7 +281,7 @@ abstract class Configurable<Self : Configurable<Self>> {
             visibleIf = visibleIf,
             elementFactory = { section ->
                 val instanceList = section.getSectionList("").map { sec ->
-                    val instance = options.values.first()().copy()
+                    val instance = options.values.first()()
                     instance.deserialize(sec)
                     instance
                 }
@@ -274,6 +293,7 @@ abstract class Configurable<Self : Configurable<Self>> {
     /**
      * Specialized DSL for Map<Int, List<T>> where T is polymorphic.
      */
+    @Suppress("unused")
     protected fun <T : Configurable<T>> editInt2PolymorphicListConfigurableMap(
         key: String,
         initial: Map<Int, List<T>> = emptyMap(),
@@ -312,6 +332,7 @@ abstract class Configurable<Self : Configurable<Self>> {
             ChatInputHandler.forInteger(prompt)
         )
 
+    @Suppress("unused")
     protected fun editComponent(key: String, initial: Component, prompt: String) =
         edit(
             key,
@@ -360,6 +381,7 @@ abstract class Configurable<Self : Configurable<Self>> {
         ).also { _editorValues.add(it) }
     }
 
+    @Suppress("unused")
     protected fun <T : Configurable<T>> editConfigurable(
         key: String,
         initial: T,
@@ -369,11 +391,13 @@ abstract class Configurable<Self : Configurable<Self>> {
         return ConfigurableEditorValue(
             key = key,
             value = initial,
+            factory = { initial },
             iconFactory = icon,
             visibleIf = visibleIf
         ).also { _editorValues.add(it) }
     }
 
+    @Suppress("unused")
     protected fun <T : Configurable<T>> editPolymorphicConfigurable(
         key: String,
         initial: T,
@@ -417,7 +441,7 @@ abstract class Configurable<Self : Configurable<Self>> {
         val elementFactory: (ConfigurationSection) -> EditorValue<T> = { section ->
             // Note: For polymorphic loading, we'd ideally need a type hint in the section.
             // Assuming the base factory or a copy-logic can handle it via deserialize.
-            val instance = options.values.first()().copy()
+            val instance = options.values.first()()
             instance.deserialize(section)
             wrapPolymorphic(instance)
         }
@@ -503,6 +527,7 @@ abstract class Configurable<Self : Configurable<Self>> {
      * Unified DSL for Lists.
      * It handles the wrapping of elements automatically.
      */
+    @Suppress("unused")
     protected fun <T> editList(
         key: String,
         elementFactory: (ConfigurationSection) -> EditorValue<T>,
@@ -542,6 +567,7 @@ abstract class Configurable<Self : Configurable<Self>> {
             ConfigurableEditorValue(
                 key = "__value",
                 value = configurable,
+                factory = factory,
                 iconFactory = { itemIcon(it) }
             )
         }
@@ -588,6 +614,7 @@ abstract class Configurable<Self : Configurable<Self>> {
             ConfigurableEditorValue(
                 key = entryKey,
                 value = configurable,
+                factory = factory,
                 iconFactory = { itemIcon(entryKey, it) }
             )
         }
@@ -635,7 +662,7 @@ abstract class Configurable<Self : Configurable<Self>> {
         key: String,
         icon: (Self) -> ItemStack
     ): EditorValue<Self> {
-        return ConfigurableEditorValue(key, this as Self, icon)
+        return ConfigurableEditorValue(key, this as Self, { this }, icon)
     }
 
     protected suspend fun <T> openListMenu(
@@ -649,11 +676,5 @@ abstract class Configurable<Self : Configurable<Self>> {
             ConfigurableListMenu(context, editor, addLogic, update).open(player)
         }
     }
-
-    /**
-     * Requirement: Configurables must be able to deep-copy themselves for the editor's "cancel" logic.
-     */
-    abstract fun copy(): Self
-
 
 }
