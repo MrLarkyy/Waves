@@ -13,6 +13,7 @@ import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.MemoryConfiguration
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
+import kotlin.reflect.KClass
 
 class PolymorphicConfigurableEditorValue<T : Configurable<T>>(
     override val key: String,
@@ -23,6 +24,15 @@ class PolymorphicConfigurableEditorValue<T : Configurable<T>>(
     override val visibleIf: () -> Boolean = { true },
     override val defaultValue: T? = null
 ) : EditorValue<T> {
+    private val defaultFactory = options.values.first()
+    private val optionTypes by lazy {
+        options.mapValues { (_, factory) -> factory().let { instance -> instance::class to factory } }
+    }
+
+    private fun factoryFor(value: T): () -> T {
+        val valueType: KClass<out T> = value::class
+        return optionTypes.values.firstOrNull { (type, _) -> type == valueType }?.second ?: defaultFactory
+    }
 
     override val serializer = object : ValueSerializer<T> {
         override fun serialize(section: ConfigurationSection, path: String, value: T) {
@@ -32,7 +42,7 @@ class PolymorphicConfigurableEditorValue<T : Configurable<T>>(
 
         override fun deserialize(section: ConfigurationSection, path: String): T {
             val sub = section.getConfigurationSection(path) ?: MemoryConfiguration()
-            val instance = value.copy()
+            val instance = factoryFor(value).invoke()
             instance.deserialize(sub)
             return instance
         }
@@ -90,7 +100,13 @@ class PolymorphicConfigurableEditorValue<T : Configurable<T>>(
         }
     }
 
-    override fun clone(): EditorValue<T> = PolymorphicConfigurableEditorValue(key, value.copy(), options, iconFactory, selectionMenuTitle, visibleIf, defaultValue)
+    override fun clone(): EditorValue<T> {
+        val cloned = factoryFor(value).invoke()
+        val temp = MemoryConfiguration()
+        value.serialize(temp)
+        cloned.deserialize(temp)
+        return PolymorphicConfigurableEditorValue(key, cloned, options, iconFactory, selectionMenuTitle, visibleIf, defaultValue)
+    }
 
     override fun save(section: ConfigurationSection) {
         if (!visibleIf()) return

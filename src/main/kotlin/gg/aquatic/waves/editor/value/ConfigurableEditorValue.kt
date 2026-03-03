@@ -14,6 +14,7 @@ import org.bukkit.inventory.ItemStack
 class ConfigurableEditorValue<T : Configurable<T>>(
     override val key: String,
     override var value: T,
+    private val factory: () -> T,
     private val iconFactory: (T) -> ItemStack,
     override val visibleIf: () -> Boolean = { true },
     override val defaultValue: T? = null
@@ -27,7 +28,7 @@ class ConfigurableEditorValue<T : Configurable<T>>(
 
         override fun deserialize(section: ConfigurationSection, path: String): T {
             val sub = section.getConfigurationSection(path) ?: MemoryConfiguration()
-            val instance = value.copy() // Start with a copy or fresh instance
+            val instance = factory()
             instance.deserialize(sub)
             return instance
         }
@@ -48,7 +49,11 @@ class ConfigurableEditorValue<T : Configurable<T>>(
     }
 
     override fun clone(): EditorValue<T> {
-        return ConfigurableEditorValue(key, value.copy(), iconFactory, visibleIf, defaultValue)
+        val cloned = factory()
+        val temp = MemoryConfiguration()
+        value.serialize(temp)
+        cloned.deserialize(temp)
+        return ConfigurableEditorValue(key, cloned, factory, iconFactory, visibleIf, defaultValue)
     }
 
     override fun save(section: ConfigurationSection) {
