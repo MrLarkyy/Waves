@@ -3,7 +3,9 @@ package gg.aquatic.waves.testing.data
 import gg.aquatic.stacked.impl.StackedItemImpl
 import gg.aquatic.stacked.stackedItem
 import gg.aquatic.waves.editor.Configurable
+import gg.aquatic.waves.editor.edit.editComponentList
 import gg.aquatic.waves.editor.edit.editInt
+import gg.aquatic.waves.editor.edit.editOptionalComponent
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import java.util.*

@@ -6,9 +6,7 @@ import gg.aquatic.stacked.stackedItem
 import gg.aquatic.waves.editor.EditorHandler.getEditorContext
 import gg.aquatic.waves.editor.handlers.ChatInputHandler
 import gg.aquatic.waves.editor.serialize.BOOLEAN
-import gg.aquatic.waves.editor.serialize.COMPONENT
 import gg.aquatic.waves.editor.serialize.MATERIAL
-import gg.aquatic.waves.editor.serialize.OPTIONAL_COMPONENT
 import gg.aquatic.waves.editor.serialize.SOUND
 import gg.aquatic.waves.editor.serialize.STRING
 import gg.aquatic.waves.editor.serialize.ValueSerializer
@@ -25,8 +23,6 @@ import org.bukkit.Sound
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
-import java.util.Optional
-import kotlin.jvm.optionals.getOrDefault
 
 abstract class Configurable<Self : Configurable<Self>> {
     private val _editorValues = mutableListOf<EditorValue<*>>()
@@ -132,46 +128,6 @@ abstract class Configurable<Self : Configurable<Self>> {
         icon = icon,
         handler = ChatInputHandler.forEnum<T>(prompt)
     )
-
-    protected fun editComponentList(
-        key: String,
-        initial: List<Component> = emptyList(),
-        prompt: String = "Enter line:",
-        validator: ChatInputValidator? = null,
-        icon: (Component) -> ItemStack = { comp ->
-            ItemStack(Material.PAPER).apply {
-                editMeta { it.displayName(comp) }
-            }
-        },
-        listIcon: (List<EditorValue<Component>>) -> ItemStack = { list ->
-            stackedItem(Material.BOOK) {
-                displayName = Component.text("Edit $key (${list.size} lines")
-                lore.addAll(listOf("", "Lines:").map { it.toMMComponent() })
-                lore.addAll(list.map { it.value })
-            }.getItem()
-        },
-        visibleIf: () -> Boolean = { true }
-    ): ListEditorValue<Component> {
-        return editList(
-            key = key,
-            initial = initial,
-            serializer = ValueSerializer.COMPONENT,
-            behavior = ElementBehavior(
-                icon = icon,
-                handler = ChatInputHandler.forComponent(prompt)
-            ),
-            addButtonClick = { player, accept ->
-                withContext(gg.aquatic.common.coroutine.BukkitCtx.ofEntity(player)) {
-                    player.closeInventory()
-                }
-                player.sendMessage(prompt)
-                val input = ChatInput.createHandle(validator = validator).await(player)
-                accept(input?.toMMComponent())
-            },
-            listIcon = listIcon,
-            visibleIf = visibleIf
-        )
-    }
 
     @Suppress("unused")
     protected fun editBoolean(
@@ -281,29 +237,6 @@ abstract class Configurable<Self : Configurable<Self>> {
             visibleIf = visibleIf
         )
     }
-
-    @Suppress("unused")
-    protected fun editComponent(key: String, initial: Component, prompt: String) =
-        edit(
-            key,
-            initial,
-            ValueSerializer.COMPONENT,
-            { stackedItem(Material.NAME_TAG) {
-                displayName = "Current: ".toMMComponent().append(it)
-            }.getItem() },
-            ChatInputHandler.forComponent(prompt)
-        )
-
-    protected fun editOptionalComponent(key: String, initial: Optional<Component>, prompt: String) =
-        edit(
-            key,
-            initial,
-            ValueSerializer.OPTIONAL_COMPONENT,
-            { stackedItem(Material.NAME_TAG) {
-                displayName = "Current: ".toMMComponent().append(it.getOrDefault(Component.empty()))
-            }.getItem() },
-            ChatInputHandler.forOptionalComponent(prompt)
-        )
 
     protected fun editMaterial(key: String, initial: Material, prompt: String) =
         edit(key, initial, ValueSerializer.MATERIAL, { ItemStack(it) }, ChatInputHandler.forMaterial(prompt))
