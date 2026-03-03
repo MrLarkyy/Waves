@@ -8,6 +8,8 @@ import gg.aquatic.waves.input.impl.ChatInput
 import kotlinx.coroutines.withContext
 import org.bukkit.Material
 import org.bukkit.entity.Player
+import java.math.BigDecimal
+import java.math.BigInteger
 import java.util.*
 
 /**
@@ -79,6 +81,18 @@ class ChatInputHandler<T>(
         fun forLong(prompt: String, min: Long = Long.MIN_VALUE, max: Long = Long.MAX_VALUE) =
             ChatInputHandler(prompt) {
                 val l = it.toLongOrNull()
+                l?.coerceIn(min, max)
+            }
+
+        fun forBigInt(prompt: String, min: BigInteger? = null, max: BigInteger? = null) =
+            ChatInputHandler(prompt) {
+                val l = it.toBigIntegerOrNull()
+                l?.coerceIn(min, max)
+            }
+
+        fun forBigDecimal(prompt: String, min: BigDecimal? = null, max: BigDecimal? = null) =
+            ChatInputHandler(prompt) {
+                val l = it.toBigDecimalOrNull()
                 l?.coerceIn(min, max)
             }
 
