@@ -122,5 +122,57 @@ fun Configurable<*>.editByte(
         stackedItem(Material.GOLD_NUGGET) { displayName = Component.text("$key: $it") }.getItem()
     }
 ): SimpleEditorValue<Byte> = edit(
-    key, initial, Serializers.BYTE, icon, ChatInputHandler.forByte(prompt, min, max)
+    key, initial, ValueSerializer.BYTE, icon, ChatInputHandler.forByte(prompt, min, max)
+)
+
+fun Configurable<*>.editUInt(
+    key: String,
+    initial: UInt,
+    prompt: String,
+    min: UInt? = null,
+    max: UInt? = null,
+    icon: (UInt) -> ItemStack = {
+        stackedItem(Material.GOLD_NUGGET) { displayName = Component.text("$key: $it") }.getItem()
+    }
+): SimpleEditorValue<UInt> = edit(
+    key, initial, ValueSerializer.UINT, icon, ChatInputHandler.forUInt(prompt, min, max)
+)
+
+fun Configurable<*>.editULong(
+    key: String,
+    initial: ULong,
+    prompt: String,
+    min: ULong? = null,
+    max: ULong? = null,
+    icon: (ULong) -> ItemStack = {
+        stackedItem(Material.GOLD_NUGGET) { displayName = Component.text("$key: $it") }.getItem()
+    }
+): SimpleEditorValue<ULong> = edit(
+    key, initial, ValueSerializer.ULONG, icon, ChatInputHandler.forULong(prompt, min, max)
+)
+
+fun Configurable<*>.editUShort(
+    key: String,
+    initial: UShort,
+    prompt: String,
+    min: UShort? = null,
+    max: UShort? = null,
+    icon: (UShort) -> ItemStack = {
+        stackedItem(Material.GOLD_NUGGET) { displayName = Component.text("$key: $it") }.getItem()
+    }
+): SimpleEditorValue<UShort> = edit(
+    key, initial, ValueSerializer.USHORT, icon, ChatInputHandler.forUShort(prompt, min, max)
+)
+
+fun Configurable<*>.editUByte(
+    key: String,
+    initial: UByte,
+    prompt: String,
+    min: UByte? = null,
+    max: UByte? = null,
+    icon: (UByte) -> ItemStack = {
+        stackedItem(Material.GOLD_NUGGET) { displayName = Component.text("$key: $it") }.getItem()
+    }
+): SimpleEditorValue<UByte> = edit(
+    key, initial, ValueSerializer.UBYTE, icon, ChatInputHandler.forUByte(prompt, min, max)
 )
