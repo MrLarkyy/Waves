@@ -51,11 +51,13 @@ object TestingEditor {
                 val config = Config("test.yml", Waves)
                 config.loadSync()
 
-                val cfg = config.configuration
-
-                val itemData = BaseCrateData("test", Component.text("Test Crate"), listOf())
-                itemData.deserialize(cfg)
-                EditorHandler.startEditing(sender, Component.text("Item Edit"), itemData) {
+                EditorHandler.startEditing(sender, Component.text("Item Edit"), loadFresh = {
+                    config.loadSync()
+                    BaseCrateData("test", Component.text("Test Crate"), listOf()).also {
+                        it.deserialize(config.configuration)
+                    }
+                }) {
+                    val cfg = config.configuration
                     it.serialize(cfg)
                     config.saveSync()
                     sender.sendMessage("Saved: ${cfg.saveToString()}")

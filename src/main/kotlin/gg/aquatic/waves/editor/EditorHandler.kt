@@ -22,13 +22,13 @@ object EditorHandler {
     fun <T : Configurable<T>> startEditing(
         player: Player,
         title: Component,
-        configurable: T,
+        loadFresh: () -> T,
         onSave: (T) -> Unit
     ) {
         val context = EditorContext(player)
         contexts[player] = context
 
-        val workingCopy = configurable.copy()
+        val workingCopy = loadFresh()
 
         KMenu.scope.launch {
             // Use the new navigate system to set the root
