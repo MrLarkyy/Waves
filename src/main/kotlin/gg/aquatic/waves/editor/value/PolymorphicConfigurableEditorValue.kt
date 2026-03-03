@@ -4,7 +4,7 @@ import gg.aquatic.kmenu.inventory.ButtonType
 import gg.aquatic.waves.editor.Configurable
 import gg.aquatic.waves.editor.EditorContext
 import gg.aquatic.waves.editor.EditorHandler.getEditorContext
-import gg.aquatic.waves.editor.ValueSerializer
+import gg.aquatic.waves.editor.serialize.ValueSerializer
 import gg.aquatic.waves.editor.ui.EditorMenuProvider
 import gg.aquatic.waves.editor.ui.PolymorphicSelectionMenu
 import gg.aquatic.waves.input.impl.ChatInput

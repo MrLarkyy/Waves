@@ -3,7 +3,7 @@ package gg.aquatic.waves.editor.value
 import gg.aquatic.kmenu.inventory.ButtonType
 import gg.aquatic.waves.editor.Configurable
 import gg.aquatic.waves.editor.EditorHandler.getEditorContext
-import gg.aquatic.waves.editor.ValueSerializer
+import gg.aquatic.waves.editor.serialize.ValueSerializer
 import gg.aquatic.waves.editor.ui.EditorMenuProvider
 import net.kyori.adventure.text.Component
 import org.bukkit.configuration.ConfigurationSection

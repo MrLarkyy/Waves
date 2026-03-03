@@ -5,6 +5,13 @@ import gg.aquatic.common.toMMComponent
 import gg.aquatic.stacked.stackedItem
 import gg.aquatic.waves.editor.EditorHandler.getEditorContext
 import gg.aquatic.waves.editor.handlers.ChatInputHandler
+import gg.aquatic.waves.editor.serialize.BOOLEAN
+import gg.aquatic.waves.editor.serialize.COMPONENT
+import gg.aquatic.waves.editor.serialize.MATERIAL
+import gg.aquatic.waves.editor.serialize.OPTIONAL_COMPONENT
+import gg.aquatic.waves.editor.serialize.SOUND
+import gg.aquatic.waves.editor.serialize.STRING
+import gg.aquatic.waves.editor.serialize.ValueSerializer
 import gg.aquatic.waves.editor.ui.ConfigurableListMenu
 import gg.aquatic.waves.editor.ui.PolymorphicSelectionMenu
 import gg.aquatic.waves.editor.value.*
@@ -40,21 +47,21 @@ abstract class Configurable<Self : Configurable<Self>> {
     ) = edit(
         key = key,
         initial = initial,
-        serializer = Serializers.STRING,
+        serializer = ValueSerializer.STRING,
         icon = icon,
         handler = { _, _, _, _ -> /* Do nothing, it's read-only */ }
     )
 
     protected fun editString(key: String, initial: String, prompt: String) =
         edit(
-            key, initial, Serializers.STRING,
+            key, initial, ValueSerializer.STRING,
             { ItemStack(Material.PAPER).apply { editMeta { m -> m.displayName(Component.text(it)) } } },
             ChatInputHandler.forString(prompt)
         )
 
     protected fun editSound(key: String, initial: Sound, prompt: String) =
         edit(
-            key, initial, Serializers.SOUND,
+            key, initial, ValueSerializer.SOUND,
             {
                 stackedItem(Material.JUKEBOX) {
                     displayName = Component.text(
@@ -91,7 +98,7 @@ abstract class Configurable<Self : Configurable<Self>> {
         return editList(
             key = key,
             initial = initial,
-            serializer = Serializers.STRING,
+            serializer = ValueSerializer.STRING,
             behavior = ElementBehavior(
                 icon = icon,
                 handler = ChatInputHandler.forString(prompt)
@@ -148,7 +155,7 @@ abstract class Configurable<Self : Configurable<Self>> {
         return editList(
             key = key,
             initial = initial,
-            serializer = Serializers.COMPONENT,
+            serializer = ValueSerializer.COMPONENT,
             behavior = ElementBehavior(
                 icon = icon,
                 handler = ChatInputHandler.forComponent(prompt)
@@ -178,7 +185,7 @@ abstract class Configurable<Self : Configurable<Self>> {
     ) = edit(
         key = key,
         initial = initial,
-        serializer = Serializers.BOOLEAN,
+        serializer = ValueSerializer.BOOLEAN,
         icon = icon,
         handler = { _, editor, _, update ->
             update(!editor)
@@ -280,7 +287,7 @@ abstract class Configurable<Self : Configurable<Self>> {
         edit(
             key,
             initial,
-            Serializers.COMPONENT,
+            ValueSerializer.COMPONENT,
             { stackedItem(Material.NAME_TAG) {
                 displayName = "Current: ".toMMComponent().append(it)
             }.getItem() },
@@ -291,7 +298,7 @@ abstract class Configurable<Self : Configurable<Self>> {
         edit(
             key,
             initial,
-            Serializers.OPTIONAL_COMPONENT,
+            ValueSerializer.OPTIONAL_COMPONENT,
             { stackedItem(Material.NAME_TAG) {
                 displayName = "Current: ".toMMComponent().append(it.getOrDefault(Component.empty()))
             }.getItem() },
@@ -299,7 +306,7 @@ abstract class Configurable<Self : Configurable<Self>> {
         )
 
     protected fun editMaterial(key: String, initial: Material, prompt: String) =
-        edit(key, initial, Serializers.MATERIAL, { ItemStack(it) }, ChatInputHandler.forMaterial(prompt))
+        edit(key, initial, ValueSerializer.MATERIAL, { ItemStack(it) }, ChatInputHandler.forMaterial(prompt))
 
     /**
      * Unified DSL for any simple value.

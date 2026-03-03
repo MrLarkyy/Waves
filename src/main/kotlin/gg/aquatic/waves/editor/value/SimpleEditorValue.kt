@@ -2,7 +2,7 @@ package gg.aquatic.waves.editor.value
 
 import gg.aquatic.kmenu.inventory.ButtonType
 import gg.aquatic.waves.editor.EditorClickHandler
-import gg.aquatic.waves.editor.ValueSerializer
+import gg.aquatic.waves.editor.serialize.ValueSerializer
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 

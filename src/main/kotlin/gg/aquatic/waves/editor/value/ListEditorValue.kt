@@ -3,7 +3,7 @@ package gg.aquatic.waves.editor.value
 import gg.aquatic.common.createConfigurationSectionFromMap
 import gg.aquatic.kmenu.inventory.ButtonType
 import gg.aquatic.waves.editor.EditorClickHandler
-import gg.aquatic.waves.editor.ValueSerializer
+import gg.aquatic.waves.editor.serialize.ValueSerializer
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.MemoryConfiguration
 import org.bukkit.entity.Player
