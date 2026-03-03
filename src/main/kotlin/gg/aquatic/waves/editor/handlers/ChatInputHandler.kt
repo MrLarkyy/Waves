@@ -108,6 +108,26 @@ class ChatInputHandler<T>(
                 b?.coerceIn(min, max)
             }
 
+        fun forUInt(prompt: String, min: UInt? = null, max: UInt? = null) =
+            ChatInputHandler(prompt) {
+                it.toUIntOrNull()?.coerceIn(min, max)
+            }
+
+        fun forULong(prompt: String, min: ULong? = null, max: ULong? = null) =
+            ChatInputHandler(prompt) {
+                it.toULongOrNull()?.coerceIn(min, max)
+            }
+
+        fun forUShort(prompt: String, min: UShort? = null, max: UShort? = null) =
+            ChatInputHandler(prompt) {
+                it.toUShortOrNull()?.coerceIn(min, max)
+            }
+
+        fun forUByte(prompt: String, min: UByte? = null, max: UByte? = null) =
+            ChatInputHandler(prompt) {
+                it.toUByteOrNull()?.coerceIn(min, max)
+            }
+
         fun forBoolean(prompt: String) = ChatInputHandler(prompt) { it.toBooleanStrictOrNull() }
 
         fun forMaterial(prompt: String) = forEnum<Material>(prompt)
