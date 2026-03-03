@@ -10,6 +10,8 @@ import org.bukkit.Registry
 import org.bukkit.Sound
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.MemoryConfiguration
+import java.math.BigDecimal
+import java.math.BigInteger
 import java.util.Optional
 import kotlin.jvm.optionals.getOrNull
 
@@ -107,6 +109,8 @@ object Serializers {
     val FLOAT = ValueSerializer.Simple(1f, encode = { it.toString().toFloatOrNull() ?: 1f })
     val DOUBLE = ValueSerializer.Simple(1.0, encode = { it.toString().toDoubleOrNull() ?: 1.0 })
     val LONG = ValueSerializer.Simple(1L, encode = { it.toString().toLongOrNull() ?: 1L })
+    val BIGINT = ValueSerializer.Simple(BigInteger.valueOf(1), encode = { it.toString().toBigIntegerOrNull() }, decode = { it.toString() })
+    val BIGDECIMAL = ValueSerializer.Simple(BigDecimal.valueOf(1), encode = { it.toString().toBigDecimalOrNull() }, decode = { it.toString() })
     val STRING = ValueSerializer.Simple("", encode = { it.toString() })
     val COMPONENT = ValueSerializer.Simple(
         Component.empty(),
