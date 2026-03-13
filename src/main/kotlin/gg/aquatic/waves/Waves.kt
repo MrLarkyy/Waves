@@ -25,7 +25,6 @@ import gg.aquatic.waves.util.action.BossbarAction
 import gg.aquatic.waves.util.action.MenuNextPageAction
 import gg.aquatic.waves.util.action.MenuPreviousPageAction
 import gg.aquatic.waves.util.action.MessageAction
-import gg.aquatic.waves.world.AwaitingWorlds
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.plugin.java.JavaPlugin
@@ -68,7 +67,6 @@ object Waves : JavaPlugin(), BootstrapHolder, RegistryHolder {
 
         initializeClientside()
         initializeInput(mapOf("chat" to ChatInput))
-        AwaitingWorlds.initialize()
         initializeStatistik(emptyMap())
         HologramHandler.initialize()
 
