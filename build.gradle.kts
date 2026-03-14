@@ -101,7 +101,7 @@ dependencies {
     implementation("gg.aquatic:Statistik:26.0.1")
     implementation("gg.aquatic:KHolograms:26.0.1")
     implementation("gg.aquatic:Clientside:26.0.2")
-    implementation("gg.aquatic:Dispatch:26.0.4")
+    implementation("gg.aquatic:Dispatch:26.0.5")
     implementation("gg.aquatic:Dispatch-bukkit:26.0.4")
     implementation("gg.aquatic:QuickMiniMessage:26.0.3")
 
