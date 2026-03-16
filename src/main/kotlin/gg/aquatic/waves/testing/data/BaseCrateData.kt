@@ -11,14 +11,14 @@ import org.bukkit.inventory.ItemStack
 class BaseCrateData(
     val id: String,
     val displayName: Component,
-    initialItems: List<ItemData> = emptyList(),
-    initialRewards: Map<String, ItemData> = emptyMap()
+    initialItems: List<StackedItemData> = emptyList(),
+    initialRewards: Map<String, StackedItemData> = emptyMap()
 ) : Configurable<BaseCrateData>() {
 
     val items = editConfigurableList(
         key = "items",
         initial = initialItems,
-        factory = { ItemData() },
+        factory = { StackedItemData() },
         addButton = { player, accept ->
             withContext(BukkitCtx.ofEntity(player)) {
                 player.closeInventory()
@@ -32,7 +32,7 @@ class BaseCrateData(
                 player.sendMessage("Cancelled.")
                 return@editConfigurableList
             }
-            accept(ItemData(initialMaterial = material))
+            accept(StackedItemData(initialMaterial = material))
         },
         listIcon = { list ->
             ItemStack(Material.CHEST).apply {
@@ -48,7 +48,7 @@ class BaseCrateData(
     val rewards = editConfigurableMap(
         key = "rewards",
         initial = initialRewards,
-        factory = { ItemData() },
+        factory = { StackedItemData() },
         addButton = { player, accept ->
             player.closeInventory()
             player.sendMessage("Enter unique Reward ID:")
@@ -62,7 +62,7 @@ class BaseCrateData(
             player.sendMessage("Enter initial material for '$id':")
             val material = ChatInput.createHandle(listOf("cancel")).awaitMaterial(player)
             if (material != null) {
-                accept(id, ItemData(initialMaterial = material))
+                accept(id, StackedItemData(initialMaterial = material))
             } else {
                 player.sendMessage("Invalid material! Cancelled.")
                 accept(null, null)
