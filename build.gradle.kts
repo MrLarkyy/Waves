@@ -86,7 +86,7 @@ dependencies {
     implementation("gg.aquatic:KMenu-serialization:26.0.4")
     implementation("gg.aquatic.replace:Replace:26.0.3")
     implementation("gg.aquatic:Stacked:26.0.4")
-    implementation("gg.aquatic:KRegistry:25.0.2")
+    implementation("gg.aquatic:KRegistry:25.0.3")
     implementation("gg.aquatic:KEvent:26.0.5")
     implementation("gg.aquatic:Pakket:26.1.10")
     implementation("gg.aquatic.execute:Execute:26.0.2")
