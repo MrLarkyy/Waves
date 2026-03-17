@@ -6,7 +6,7 @@ plugins {
     kotlin("plugin.serialization") version "2.3.20"
     id("com.gradleup.shadow") version "9.4.0"
     id("io.github.revxrsal.bukkitkobjects") version "0.0.5"
-    id("gg.aquatic.runtime") version "26.0.9"
+    id("gg.aquatic.runtime") version "26.0.11"
     id("co.uzzu.dotenv.gradle") version "4.0.0"
     java
     id("xyz.jpenilla.run-paper") version "3.0.2"
