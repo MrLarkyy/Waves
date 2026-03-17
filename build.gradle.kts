@@ -3,9 +3,10 @@ import xyz.jpenilla.runtask.task.AbstractRun
 
 plugins {
     kotlin("jvm") version "2.3.20"
+    kotlin("plugin.serialization") version "2.3.20"
     id("com.gradleup.shadow") version "9.4.0"
     id("io.github.revxrsal.bukkitkobjects") version "0.0.5"
-    id("gg.aquatic.runtime") version "26.0.7"
+    id("gg.aquatic.runtime") version "26.0.9"
     id("co.uzzu.dotenv.gradle") version "4.0.0"
     java
     id("xyz.jpenilla.run-paper") version "3.0.2"
@@ -17,7 +18,7 @@ bukkitKObjects {
 }
 
 group = "gg.aquatic.waves"
-version = "26.0.35"
+version = "26.0.36-SNAPSHOT"
 
 tasks {
     runServer {
@@ -132,6 +133,7 @@ dependencies {
     runtimeDownload("org.jetbrains.kotlin:kotlin-stdlib:2.3.20")
     runtimeDownload("org.jetbrains.kotlin:kotlin-reflect:2.3.20")
     runtimeDownload("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
 }
 
 configurations {
