@@ -134,7 +134,7 @@ dependencies {
     runtimeDownload("org.jetbrains.kotlin:kotlin-stdlib:2.3.20")
     runtimeDownload("org.jetbrains.kotlin:kotlin-reflect:2.3.20")
     runtimeDownload("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
-    runtimeDownload("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    runtimeDownload("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
 }
 
 configurations {
