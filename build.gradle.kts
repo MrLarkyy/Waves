@@ -1,4 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.api.publish.maven.tasks.PublishToMavenLocal
 import xyz.jpenilla.runtask.task.AbstractRun
 
 plugins {
@@ -6,7 +7,7 @@ plugins {
     kotlin("plugin.serialization") version "2.3.20"
     id("com.gradleup.shadow") version "9.4.0"
     id("io.github.revxrsal.bukkitkobjects") version "0.0.5"
-    id("gg.aquatic.runtime") version "26.0.9"
+    id("gg.aquatic.runtime") version "26.0.11"
     id("co.uzzu.dotenv.gradle") version "4.0.0"
     java
     id("xyz.jpenilla.run-paper") version "3.0.2"
@@ -18,7 +19,7 @@ bukkitKObjects {
 }
 
 group = "gg.aquatic.waves"
-version = "26.0.37-SNAPSHOT"
+version = "26.0.41-SNAPSHOT"
 
 tasks {
     runServer {
@@ -133,7 +134,7 @@ dependencies {
     runtimeDownload("org.jetbrains.kotlin:kotlin-stdlib:2.3.20")
     runtimeDownload("org.jetbrains.kotlin:kotlin-reflect:2.3.20")
     runtimeDownload("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    runtimeDownload("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
 }
 
 configurations {
@@ -168,6 +169,21 @@ val regularJar = tasks.register<ShadowJar>("regularJar") {
     from(sourceSets.main.get().output)
     archiveBaseName.set("Waves")
     archiveClassifier.set("")
+    includedDependencies.setFrom(project.provider {
+        val workspacePath = rootDir.absoluteFile.normalize().toPath()
+        buildList<java.io.File> {
+            configurations.get().forEach { configuration ->
+                configuration.resolvedConfiguration.resolvedArtifacts.forEach { artifact ->
+                    val artifactPath = artifact.file.absoluteFile.normalize().toPath()
+                    val isAquaticModule = artifact.moduleVersion.id.group.startsWith("gg.aquatic")
+                    val isLocalCompositeArtifact = artifactPath.startsWith(workspacePath)
+                    if (isAquaticModule || isLocalCompositeArtifact) {
+                        add(artifact.file)
+                    }
+                }
+            }
+        }
+    })
 }
 
 tasks.withType<ShadowJar> {
@@ -188,6 +204,12 @@ tasks.withType<ShadowJar> {
     filesMatching("META-INF/services/**") {
         duplicatesStrategy = DuplicatesStrategy.INCLUDE
     }
+}
+
+tasks.withType<PublishToMavenLocal>().configureEach {
+    dependsOn(tasks.jar)
+    dependsOn(regularJar)
+    dependsOn(tasks.shadowJar)
 }
 
 val maven_username = if (env.isPresent("MAVEN_USERNAME")) env.fetch("MAVEN_USERNAME") else ""

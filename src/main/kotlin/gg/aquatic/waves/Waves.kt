@@ -1,5 +1,10 @@
 package gg.aquatic.waves
 
+import gg.aquatic.blokk.factory.BlockFactory
+import gg.aquatic.blokk.factory.IAFactory
+import gg.aquatic.blokk.factory.NexoFactory
+import gg.aquatic.blokk.factory.OraxenFactory
+import gg.aquatic.blokk.initializeBlokk
 import gg.aquatic.clientside.initializeClientside
 import gg.aquatic.common.MiniMessageResolver
 import gg.aquatic.common.coroutine.SingleThreadedContext
@@ -45,6 +50,7 @@ object Waves : JavaPlugin(), BootstrapHolder, RegistryHolder {
         }
 
         initializeCommon(this, mmResolver)
+        initializeBlokk(this, createBlockFactories())
 
         event<PlayerJoinEvent> {
             Pakket.handler.injectPacketListener(it.player)
@@ -74,5 +80,19 @@ object Waves : JavaPlugin(), BootstrapHolder, RegistryHolder {
 
         locale = KLocale.paper {}
         registriesInject()
+    }
+
+    private fun createBlockFactories(): Map<String, BlockFactory> {
+        val factories = linkedMapOf<String, BlockFactory>()
+        if (server.pluginManager.getPlugin("ItemsAdder") != null) {
+            factories["ia"] = IAFactory
+        }
+        if (server.pluginManager.getPlugin("Oraxen") != null) {
+            factories["oraxen"] = OraxenFactory
+        }
+        if (server.pluginManager.getPlugin("Nexo") != null) {
+            factories["nexo"] = NexoFactory
+        }
+        return factories
     }
 }
