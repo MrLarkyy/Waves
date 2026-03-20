@@ -1,5 +1,6 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.publish.maven.tasks.PublishToMavenLocal
+import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
 import xyz.jpenilla.runtask.task.AbstractRun
 
 plugins {
@@ -19,7 +20,7 @@ bukkitKObjects {
 }
 
 group = "gg.aquatic.waves"
-version = "26.0.41-SNAPSHOT"
+version = "26.0.43-SNAPSHOT"
 
 tasks {
     runServer {
@@ -207,6 +208,12 @@ tasks.withType<ShadowJar> {
 }
 
 tasks.withType<PublishToMavenLocal>().configureEach {
+    dependsOn(tasks.jar)
+    dependsOn(regularJar)
+    dependsOn(tasks.shadowJar)
+}
+
+tasks.withType<PublishToMavenRepository>().configureEach {
     dependsOn(tasks.jar)
     dependsOn(regularJar)
     dependsOn(tasks.shadowJar)
