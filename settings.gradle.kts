@@ -18,7 +18,7 @@ val submodules = listOf(
     "Stacked" to "gg.aquatic:Stacked",
     "Execute" to "gg.aquatic.execute:Execute",
     "Replace" to "gg.aquatic.replace:Replace",
-    "Kommand" to "gg.aquatic:Kommand",
+    "Kommand" to "gg.aquatic.kommand:kommand-paper",
     "KLocale" to "gg.aquatic:KLocale",
     "Kurrency" to "gg.aquatic:Kurrency",
     "Blokk" to "gg.aquatic:Blokk",
@@ -52,6 +52,12 @@ submodules.forEach { (folder, artifact) ->
                 "Dispatch" -> {
                     substitute(module("gg.aquatic:Dispatch")).using(project(":"))
                     substitute(module("gg.aquatic:Dispatch-bukkit")).using(project(":Paper"))
+                }
+                "Kommand" -> {
+                    substitute(module("gg.aquatic:Kommand")).using(project(":kommand-paper"))
+                    substitute(module("gg.aquatic.kommand:kommand-paper")).using(project(":kommand-paper"))
+                    substitute(module("gg.aquatic.kommand:kommand-core")).using(project(":kommand-core"))
+                    substitute(module("gg.aquatic.kommand:kommand-velocity")).using(project(":kommand-velocity"))
                 }
                 else -> {
                     substitute(module(artifact)).using(project(":"))
