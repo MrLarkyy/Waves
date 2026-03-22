@@ -10,6 +10,7 @@ import gg.aquatic.waves.input.impl.ChatInput
 import gg.aquatic.waves.serialization.editor.meta.EditorFieldContext
 import gg.aquatic.waves.serialization.editor.meta.EditorItemStyling
 import gg.aquatic.waves.serialization.editor.meta.EditorSchema
+import gg.aquatic.waves.serialization.editor.meta.DefaultEditorFieldAdapter
 import gg.aquatic.waves.serialization.editor.meta.FieldEditResult
 import gg.aquatic.waves.serialization.editor.meta.FieldMeta
 import gg.aquatic.kmenu.KMenu
@@ -30,12 +31,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.doubleOrNull
-import kotlinx.serialization.json.encodeToJsonElement
-import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.longOrNull
-import kotlinx.serialization.json.decodeFromJsonElement
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -135,11 +131,18 @@ object SerializableEditor {
                             return@onClick
                         }
 
-                        val adapterResult = entry.meta?.adapter?.edit(context.player, entry.toFieldContext(document.root()))
-                            ?: FieldEditResult.NoChange
-                        if (adapterResult is FieldEditResult.Updated) {
-                            document.set(entry.path, adapterResult.value)
-                            context.refresh()
+                        val adapter = entry.meta?.adapter
+                        if (adapter != null && adapter !== DefaultEditorFieldAdapter) {
+                            when (val adapterResult = adapter.edit(context.player, entry.toFieldContext(document.root()))) {
+                                is FieldEditResult.Updated -> {
+                                    document.set(entry.path, adapterResult.value)
+                                    context.refresh()
+                                }
+
+                                FieldEditResult.NoChange -> {
+                                    context.refresh()
+                                }
+                            }
                             return@onClick
                         }
 
@@ -230,7 +233,11 @@ object SerializableEditor {
                         } else {
                             defaultElement(document.json, resolvedDescriptor.getElementDescriptor(0), useNullForNullable = false)
                         }
-                        document.addToList(path, created)
+                        if (created is JsonArray && resolvedDescriptor.getElementDescriptor(0).kind != StructureKind.LIST) {
+                            document.addAllToList(path, created)
+                        } else {
+                            document.addToList(path, created)
+                        }
                         context.refresh()
                     }
                 }
@@ -706,6 +713,11 @@ object SerializableEditor {
         fun addToList(path: List<PathSegment>, value: JsonElement) {
             val current = get(path) as? JsonArray ?: JsonArray(emptyList())
             set(path, JsonArray(current + value))
+        }
+
+        fun addAllToList(path: List<PathSegment>, values: JsonArray) {
+            val current = get(path) as? JsonArray ?: JsonArray(emptyList())
+            set(path, JsonArray(current + values))
         }
 
         fun putToMap(path: List<PathSegment>, key: String, value: JsonElement) {

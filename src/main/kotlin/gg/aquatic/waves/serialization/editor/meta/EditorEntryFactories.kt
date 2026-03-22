@@ -3,8 +3,11 @@ package gg.aquatic.waves.serialization.editor.meta
 import gg.aquatic.common.coroutine.BukkitCtx
 import gg.aquatic.waves.input.impl.ChatInput
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonPrimitive
 
 object EditorEntryFactories {
 
@@ -32,16 +35,36 @@ object EditorEntryFactories {
         prompt: String,
         min: Int? = null,
         max: Int? = null,
-    ): EntryFactory = text(
-        prompt = prompt,
-        validator = { raw ->
-            val parsed = raw.toIntOrNull() ?: return@text "Invalid integer."
-            if (min != null && parsed < min) return@text "Value must be at least $min."
-            if (max != null && parsed > max) return@text "Value must be at most $max."
-            null
-        },
-        transform = { JsonPrimitive(it.toInt()) }
-    )
+        unique: Boolean = false,
+    ): EntryFactory = EntryFactory { player, context ->
+        withContext(BukkitCtx.ofEntity(player)) {
+            player.closeInventory()
+        }
+        player.sendMessage(prompt)
+        val input = ChatInput.createHandle(listOf("cancel")).await(player) ?: return@EntryFactory null
+        val error = validateIntegerBatch(input, min, max)
+        if (error != null) {
+            player.sendMessage(error)
+            return@EntryFactory null
+        }
+
+        val values = parseIntegerBatch(input)
+        val filteredValues = if (unique) {
+            val existing = (context.value as? JsonArray)
+                ?.mapNotNull { element -> element.jsonPrimitive.intOrNull }
+                ?.toHashSet()
+                ?: hashSetOf()
+            values.filter { value -> existing.add(value) }
+        } else {
+            values
+        }
+
+        when (filteredValues.size) {
+            0 -> null
+            1 -> JsonPrimitive(filteredValues.single())
+            else -> JsonArray(filteredValues.map(::JsonPrimitive))
+        }
+    }
 
     fun float(
         prompt: String,
@@ -85,5 +108,41 @@ object EditorEntryFactories {
             }
             key to valueFactory(key)
         }
+    }
+
+    private fun validateIntegerBatch(raw: String, min: Int?, max: Int?): String? {
+        val values = runCatching { parseIntegerBatch(raw) }.getOrElse { return it.message ?: "Invalid integer range." }
+        values.forEach { parsed ->
+            if (min != null && parsed < min) return "Value must be at least $min."
+            if (max != null && parsed > max) return "Value must be at most $max."
+        }
+        return null
+    }
+
+    private fun parseIntegerBatch(raw: String): List<Int> {
+        val input = raw.trim()
+        if (input.isEmpty()) {
+            throw IllegalArgumentException("Invalid integer.")
+        }
+
+        return input.split(',')
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .flatMap { token ->
+                val rangeSeparator = token.indexOf('-')
+                if (rangeSeparator <= 0 || rangeSeparator == token.lastIndex) {
+                    val single = token.toIntOrNull() ?: throw IllegalArgumentException("Invalid integer.")
+                    return@flatMap listOf(single)
+                }
+
+                val start = token.substring(0, rangeSeparator).trim().toIntOrNull()
+                    ?: throw IllegalArgumentException("Invalid integer range.")
+                val end = token.substring(rangeSeparator + 1).trim().toIntOrNull()
+                    ?: throw IllegalArgumentException("Invalid integer range.")
+                if (end < start) {
+                    throw IllegalArgumentException("Range end must be at least range start.")
+                }
+                (start..end).toList()
+            }
     }
 }
