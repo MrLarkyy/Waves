@@ -95,7 +95,7 @@ dependencies {
     implementation("gg.aquatic.execute:Execute:26.0.2")
     implementation("gg.aquatic.kommand:kommand-paper:26.1.0")
     implementation("gg.aquatic:Common:26.0.16")
-    implementation("gg.aquatic:Kurrency:26.0.3")
+    implementation("gg.aquatic:Kurrency:26.0.7")
     implementation("gg.aquatic:KLocale:26.0.2")
     implementation("gg.aquatic:KLocale-Paper:26.0.2")
     implementation("gg.aquatic:Blokk:26.0.2")
