@@ -3,7 +3,7 @@ package gg.aquatic.waves.editor.serialize
 import gg.aquatic.common.toMMString
 import gg.aquatic.quickminimessage.MMParser
 import net.kyori.adventure.text.Component
-import java.util.Optional
+import java.util.*
 
 val ValueSerializer.Companion.COMPONENT get() = ValueSerializer.Simple(
     Component.empty(),

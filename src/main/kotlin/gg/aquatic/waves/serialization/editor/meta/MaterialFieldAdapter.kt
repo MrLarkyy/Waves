@@ -3,7 +3,7 @@ package gg.aquatic.waves.serialization.editor.meta
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import org.bukkit.Material
-import java.util.Locale
+import java.util.*
 
 data class MaterialFieldConfig(
     override val prompt: String = "Enter material:",

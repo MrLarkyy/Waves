@@ -5,12 +5,7 @@ import gg.aquatic.common.toMMComponent
 import gg.aquatic.stacked.stackedItem
 import gg.aquatic.waves.editor.Configurable
 import gg.aquatic.waves.editor.handlers.ChatInputHandler
-import gg.aquatic.waves.editor.serialize.BOOLEAN
-import gg.aquatic.waves.editor.serialize.OPTIONAL_BOOLEAN
-import gg.aquatic.waves.editor.serialize.OPTIONAL_BOOLEAN_LIST
-import gg.aquatic.waves.editor.serialize.OPTIONAL_STRING
-import gg.aquatic.waves.editor.serialize.OPTIONAL_STRING_LIST
-import gg.aquatic.waves.editor.serialize.ValueSerializer
+import gg.aquatic.waves.editor.serialize.*
 import gg.aquatic.waves.editor.value.EditorValue
 import gg.aquatic.waves.editor.value.ElementBehavior
 import gg.aquatic.waves.editor.value.ListEditorValue
@@ -20,7 +15,7 @@ import kotlinx.coroutines.withContext
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
-import java.util.Optional
+import java.util.*
 
 fun Configurable<*>.editOptionalBoolean(
     key: String,

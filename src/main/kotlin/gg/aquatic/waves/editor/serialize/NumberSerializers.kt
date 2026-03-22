@@ -2,7 +2,7 @@ package gg.aquatic.waves.editor.serialize
 
 import java.math.BigDecimal
 import java.math.BigInteger
-import java.util.Optional
+import java.util.*
 
 val ValueSerializer.Companion.INT get() = ValueSerializer.Simple(1, encode = { it.toString().toIntOrNull() ?: 1 })
 val ValueSerializer.Companion.FLOAT get() = ValueSerializer.Simple(1f, encode = { it.toString().toFloatOrNull() ?: 1f })

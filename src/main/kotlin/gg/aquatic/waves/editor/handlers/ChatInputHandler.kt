@@ -9,14 +9,13 @@ import kotlinx.coroutines.withContext
 import net.kyori.adventure.key.Key
 import org.bukkit.Color
 import org.bukkit.Material
-import org.bukkit.entity.Player
 import org.bukkit.entity.EntityType
+import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemRarity
 import java.math.BigDecimal
 import java.math.BigInteger
-import java.util.Locale
-import java.util.Optional
+import java.util.*
 
 /**
  * A handler that prompts the player in chat.

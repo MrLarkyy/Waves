@@ -5,11 +5,7 @@ import gg.aquatic.common.toMMComponent
 import gg.aquatic.stacked.stackedItem
 import gg.aquatic.waves.editor.EditorHandler.getEditorContext
 import gg.aquatic.waves.editor.handlers.ChatInputHandler
-import gg.aquatic.waves.editor.serialize.BOOLEAN
-import gg.aquatic.waves.editor.serialize.MATERIAL
-import gg.aquatic.waves.editor.serialize.SOUND
-import gg.aquatic.waves.editor.serialize.STRING
-import gg.aquatic.waves.editor.serialize.ValueSerializer
+import gg.aquatic.waves.editor.serialize.*
 import gg.aquatic.waves.editor.ui.ConfigurableListMenu
 import gg.aquatic.waves.editor.ui.PolymorphicSelectionMenu
 import gg.aquatic.waves.editor.value.*

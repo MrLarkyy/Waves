@@ -1,6 +1,4 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.gradle.api.publish.maven.tasks.PublishToMavenLocal
-import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
 import xyz.jpenilla.runtask.task.AbstractRun
 
 plugins {

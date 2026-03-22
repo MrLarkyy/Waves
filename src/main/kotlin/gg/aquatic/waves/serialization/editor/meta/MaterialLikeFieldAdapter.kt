@@ -4,7 +4,7 @@ import gg.aquatic.stacked.StackedItem
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import org.bukkit.Material
-import java.util.Locale
+import java.util.*
 
 data class MaterialLikeFieldConfig(
     override val prompt: String = "Enter material or Factory:ItemId:",

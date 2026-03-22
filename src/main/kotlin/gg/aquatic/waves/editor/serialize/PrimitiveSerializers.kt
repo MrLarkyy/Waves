@@ -1,6 +1,6 @@
 package gg.aquatic.waves.editor.serialize
 
-import java.util.Optional
+import java.util.*
 
 val ValueSerializer.Companion.BOOLEAN get() = ValueSerializer.Simple(false, encode = { it.toString().toBoolean() })
 val ValueSerializer.Companion.STRING get() = ValueSerializer.Simple("", encode = { it.toString() })

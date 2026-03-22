@@ -18,7 +18,7 @@ import kotlinx.coroutines.withContext
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
-import java.util.Optional
+import java.util.*
 import kotlin.jvm.optionals.getOrDefault
 
 fun Configurable<*>.editComponent(

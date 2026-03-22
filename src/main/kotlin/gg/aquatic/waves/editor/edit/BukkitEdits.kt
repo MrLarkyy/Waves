@@ -6,16 +6,7 @@ import gg.aquatic.stacked.stackedItem
 import gg.aquatic.waves.editor.Configurable
 import gg.aquatic.waves.editor.EditorClickHandler
 import gg.aquatic.waves.editor.handlers.ChatInputHandler
-import gg.aquatic.waves.editor.serialize.COLOR
-import gg.aquatic.waves.editor.serialize.ENTITY_TYPE
-import gg.aquatic.waves.editor.serialize.ITEM_FLAG
-import gg.aquatic.waves.editor.serialize.ITEM_RARITY
-import gg.aquatic.waves.editor.serialize.KEY
-import gg.aquatic.waves.editor.serialize.OPTIONAL_COLOR
-import gg.aquatic.waves.editor.serialize.OPTIONAL_ENTITY_TYPE
-import gg.aquatic.waves.editor.serialize.OPTIONAL_ITEM_RARITY
-import gg.aquatic.waves.editor.serialize.OPTIONAL_KEY
-import gg.aquatic.waves.editor.serialize.ValueSerializer
+import gg.aquatic.waves.editor.serialize.*
 import gg.aquatic.waves.editor.value.EditorValue
 import gg.aquatic.waves.editor.value.ElementBehavior
 import gg.aquatic.waves.editor.value.ListEditorValue
@@ -30,7 +21,7 @@ import org.bukkit.entity.EntityType
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemRarity
 import org.bukkit.inventory.ItemStack
-import java.util.Optional
+import java.util.*
 
 fun Configurable<*>.editKey(
     key: String,
