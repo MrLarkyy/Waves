@@ -108,10 +108,20 @@ object SerializableEditor {
                 button("entry_${index}_${entry.label}", entrySlots[index]) {
                     item = entryIcon(entry)
                     onClick { event ->
-                        if (event.buttonType == ButtonType.DROP && entry.removable) {
-                            document.remove(entry.path)
-                            context.refresh()
-                            return@onClick
+                        if (event.buttonType == ButtonType.DROP) {
+                            when {
+                                entry.removable -> {
+                                    document.remove(entry.path)
+                                    context.refresh()
+                                    return@onClick
+                                }
+
+                                entry.descriptor.isNullable -> {
+                                    document.set(entry.path, JsonNull)
+                                    context.refresh()
+                                    return@onClick
+                                }
+                            }
                         }
 
                         val adapter = entry.meta?.adapter
@@ -502,19 +512,25 @@ object SerializableEditor {
     ) { defaultEntryIcon(entry) } ?: defaultEntryIcon(entry)
 
     private fun defaultEntryIcon(entry: EditorEntry) = when (entry.kind) {
-        NodeKind.OBJECT -> stackedItem(Material.CHEST) {
+        NodeKind.OBJECT -> stackedItem(entry.meta?.iconMaterial ?: objectMaterial(entry)) {
             displayName = EditorItemStyling.title(entry.label)
             if (entry.meta?.description?.isNotEmpty() == true) {
                 lore += EditorItemStyling.section("Description")
                 lore += entry.meta.description.map(EditorItemStyling::hint)
             }
+            if (entry.element == JsonNull) {
+                lore += EditorItemStyling.valueLine("State: ", "unset")
+            }
             polymorphicType(entry.element)?.let { type ->
                 lore += EditorItemStyling.valueLine("Type: ", prettify(type))
             }
-            lore += EditorItemStyling.hint("Open object")
+            lore += EditorItemStyling.hint(if (entry.element == JsonNull) "Click to create" else "Open object")
+            if (entry.descriptor.isNullable) {
+                lore += EditorItemStyling.hint("Press Q to clear")
+            }
         }.getItem()
 
-        NodeKind.LIST -> stackedItem(Material.BOOKSHELF) {
+        NodeKind.LIST -> stackedItem(entry.meta?.iconMaterial ?: listMaterial(entry)) {
             displayName = EditorItemStyling.title(entry.label)
             if (entry.meta?.description?.isNotEmpty() == true) {
                 lore += EditorItemStyling.section("Description")
@@ -522,9 +538,12 @@ object SerializableEditor {
             }
             lore += EditorItemStyling.hint("Open list")
             lore += EditorItemStyling.valueLine("Summary: ", summary(entry.element))
+            if (entry.descriptor.isNullable) {
+                lore += EditorItemStyling.hint("Press Q to clear")
+            }
         }.getItem()
 
-        NodeKind.MAP -> stackedItem(Material.CHEST_MINECART) {
+        NodeKind.MAP -> stackedItem(entry.meta?.iconMaterial ?: mapMaterial(entry)) {
             displayName = EditorItemStyling.title(entry.label)
             if (entry.meta?.description?.isNotEmpty() == true) {
                 lore += EditorItemStyling.section("Description")
@@ -532,9 +551,12 @@ object SerializableEditor {
             }
             lore += EditorItemStyling.hint("Open map")
             lore += EditorItemStyling.valueLine("Summary: ", summary(entry.element))
+            if (entry.descriptor.isNullable) {
+                lore += EditorItemStyling.hint("Press Q to clear")
+            }
         }.getItem()
 
-        NodeKind.BOOLEAN -> stackedItem(if (entry.element.jsonPrimitive.booleanOrNull == true) Material.LIME_DYE else Material.GRAY_DYE) {
+        NodeKind.BOOLEAN -> stackedItem(entry.meta?.iconMaterial ?: if (entry.element.jsonPrimitive.booleanOrNull == true) Material.LIME_DYE else Material.GRAY_DYE) {
             displayName = EditorItemStyling.title(entry.label)
             if (entry.meta?.description?.isNotEmpty() == true) {
                 lore += EditorItemStyling.section("Description")
@@ -544,7 +566,7 @@ object SerializableEditor {
             lore += EditorItemStyling.hint("Click to toggle")
         }.getItem()
 
-        NodeKind.STRING -> stackedItem(Material.PAPER) {
+        NodeKind.STRING -> stackedItem(entry.meta?.iconMaterial ?: stringMaterial(entry)) {
             val raw = summary(entry.element)
             displayName = EditorItemStyling.title(entry.label)
             if (entry.meta?.description?.isNotEmpty() == true) {
@@ -555,7 +577,7 @@ object SerializableEditor {
             lore += EditorItemStyling.formattedPreview(raw)
         }.getItem()
 
-        NodeKind.NUMBER -> stackedItem(Material.GOLD_NUGGET) {
+        NodeKind.NUMBER -> stackedItem(entry.meta?.iconMaterial ?: numberMaterial(entry)) {
             displayName = EditorItemStyling.title(entry.label)
             if (entry.meta?.description?.isNotEmpty() == true) {
                 lore += EditorItemStyling.section("Description")
@@ -564,7 +586,7 @@ object SerializableEditor {
             lore += EditorItemStyling.valueLine("Value: ", summary(entry.element))
         }.getItem()
 
-        NodeKind.ENUM -> stackedItem(Material.COMPARATOR) {
+        NodeKind.ENUM -> stackedItem(entry.meta?.iconMaterial ?: enumMaterial(entry)) {
             displayName = EditorItemStyling.title(entry.label)
             if (entry.meta?.description?.isNotEmpty() == true) {
                 lore += EditorItemStyling.section("Description")
@@ -627,6 +649,82 @@ object SerializableEditor {
 
     private fun prettify(raw: String): String {
         return raw.replace('-', ' ').replace('_', ' ')
+    }
+
+    private fun objectMaterial(entry: EditorEntry): Material {
+        val key = entry.label.lowercase()
+        return when {
+            "hologram" in key -> Material.END_CRYSTAL
+            "preview" in key -> Material.ENDER_EYE
+            "item" in key -> Material.ITEM_FRAME
+            "reward" in key -> Material.CHEST
+            "button" in key -> Material.STONE_BUTTON
+            "condition" in key -> Material.TRIPWIRE_HOOK
+            "action" in key -> Material.BLAZE_POWDER
+            "price" in key -> Material.GOLD_INGOT
+            "rarit" in key -> Material.NETHER_STAR
+            else -> Material.BOOK
+        }
+    }
+
+    private fun listMaterial(entry: EditorEntry): Material {
+        val key = entry.label.lowercase()
+        return when {
+            "slot" in key -> Material.HOPPER
+            "line" in key || "lore" in key -> Material.WRITABLE_BOOK
+            "action" in key -> Material.BLAZE_POWDER
+            "condition" in key -> Material.TRIPWIRE_HOOK
+            "interactable" in key -> Material.ARMOR_STAND
+            "price" in key -> Material.GOLD_INGOT
+            else -> Material.BOOKSHELF
+        }
+    }
+
+    private fun mapMaterial(entry: EditorEntry): Material {
+        val key = entry.label.lowercase()
+        return when {
+            "reward" in key -> Material.CHEST_MINECART
+            "rarit" in key -> Material.NETHER_STAR
+            "button" in key -> Material.STONE_BUTTON
+            else -> Material.LECTERN
+        }
+    }
+
+    private fun stringMaterial(entry: EditorEntry): Material {
+        val key = entry.label.lowercase()
+        return when {
+            "name" in key || "title" in key -> Material.NAME_TAG
+            "material" in key -> Material.BRICKS
+            "permission" in key -> Material.TRIPWIRE_HOOK
+            "message" in key || "text" in key -> Material.PAPER
+            "crate" in key || "id" in key -> Material.COMPASS
+            "command" in key -> Material.COMMAND_BLOCK
+            "sound" in key -> Material.NOTE_BLOCK
+            else -> Material.PAPER
+        }
+    }
+
+    private fun numberMaterial(entry: EditorEntry): Material {
+        val key = entry.label.lowercase()
+        return when {
+            "slot" in key -> Material.HOPPER
+            "chance" in key -> Material.EMERALD
+            "distance" in key || "range" in key -> Material.SPYGLASS
+            "amount" in key -> Material.COPPER_INGOT
+            "scale" in key -> Material.AMETHYST_SHARD
+            "duration" in key || "interpolation" in key -> Material.CLOCK
+            else -> Material.GOLD_NUGGET
+        }
+    }
+
+    private fun enumMaterial(entry: EditorEntry): Material {
+        val key = entry.label.lowercase()
+        return when {
+            "billboard" in key || "transform" in key -> Material.ITEM_FRAME
+            "face" in key -> Material.COMPASS
+            "type" in key -> Material.COMPARATOR
+            else -> Material.REPEATER
+        }
     }
 
     private fun polymorphicType(element: JsonElement): String? {
