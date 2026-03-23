@@ -1,6 +1,7 @@
 package gg.aquatic.waves.serialization.editor.meta
 
 import kotlinx.serialization.KSerializer
+import org.bukkit.Material
 import kotlin.reflect.KProperty1
 
 abstract class EditableModel<T>(
@@ -30,6 +31,7 @@ class TypedEditorSchemaBuilder<T>(
         displayName: String? = null,
         description: List<String> = emptyList(),
         prompt: String? = null,
+        iconMaterial: Material? = null,
         adapter: EditorFieldAdapter = DefaultEditorFieldAdapter,
         visibleWhen: (EditorFieldContext) -> Boolean = { true },
     ) {
@@ -38,6 +40,7 @@ class TypedEditorSchemaBuilder<T>(
             displayName = displayName,
             description = description,
             prompt = prompt,
+            iconMaterial = iconMaterial,
             adapter = adapter,
             visibleWhen = combineVisibleWhen(visibleWhen)
         )
@@ -50,6 +53,7 @@ class TypedEditorSchemaBuilder<T>(
         displayName: String? = null,
         description: List<String> = emptyList(),
         prompt: String? = null,
+        iconMaterial: Material? = null,
         visibleWhen: (EditorFieldContext) -> Boolean = { true },
     ) {
         delegate.field(
@@ -59,6 +63,7 @@ class TypedEditorSchemaBuilder<T>(
             displayName = displayName,
             description = description,
             prompt = prompt,
+            iconMaterial = iconMaterial,
             visibleWhen = combineVisibleWhen(visibleWhen)
         )
     }
@@ -82,6 +87,7 @@ class TypedEditorSchemaBuilder<T>(
         displayName: String? = null,
         description: List<String> = emptyList(),
         prompt: String? = null,
+        iconMaterial: Material? = null,
         adapter: EditorFieldAdapter = DefaultEditorFieldAdapter,
         visibleWhen: (EditorFieldContext) -> Boolean = { true },
         newValueFactory: EntryFactory? = null,
@@ -92,6 +98,7 @@ class TypedEditorSchemaBuilder<T>(
             displayName = displayName,
             description = description,
             prompt = prompt,
+            iconMaterial = iconMaterial,
             adapter = adapter,
             visibleWhen = combineVisibleWhen(visibleWhen),
             newValueFactory = newValueFactory
@@ -106,6 +113,7 @@ class TypedEditorSchemaBuilder<T>(
         displayName: String? = null,
         description: List<String> = emptyList(),
         prompt: String? = null,
+        iconMaterial: Material? = null,
         adapter: EditorFieldAdapter = DefaultEditorFieldAdapter,
         visibleWhen: (EditorFieldContext) -> Boolean = { true },
         newMapEntryFactory: MapEntryFactory? = null,
@@ -117,6 +125,7 @@ class TypedEditorSchemaBuilder<T>(
             displayName = displayName,
             description = description,
             prompt = prompt,
+            iconMaterial = iconMaterial,
             adapter = adapter,
             visibleWhen = combineVisibleWhen(visibleWhen),
             newMapEntryFactory = newMapEntryFactory,
@@ -150,6 +159,7 @@ class TypedNestedSchemaBuilder<T>(
         displayName: String? = null,
         description: List<String> = emptyList(),
         prompt: String? = null,
+        iconMaterial: Material? = null,
         adapter: EditorFieldAdapter = DefaultEditorFieldAdapter,
         visibleWhen: (EditorFieldContext) -> Boolean = { true },
     ) {
@@ -158,6 +168,7 @@ class TypedNestedSchemaBuilder<T>(
             displayName = displayName,
             description = description,
             prompt = prompt,
+            iconMaterial = iconMaterial,
             adapter = adapter,
             visibleWhen = combineVisibleWhen(visibleWhen)
         )
@@ -170,6 +181,7 @@ class TypedNestedSchemaBuilder<T>(
         displayName: String? = null,
         description: List<String> = emptyList(),
         prompt: String? = null,
+        iconMaterial: Material? = null,
         visibleWhen: (EditorFieldContext) -> Boolean = { true },
     ) {
         delegate.field(
@@ -179,6 +191,7 @@ class TypedNestedSchemaBuilder<T>(
             displayName = displayName,
             description = description,
             prompt = prompt,
+            iconMaterial = iconMaterial,
             visibleWhen = combineVisibleWhen(visibleWhen)
         )
     }
@@ -202,6 +215,7 @@ class TypedNestedSchemaBuilder<T>(
         displayName: String? = null,
         description: List<String> = emptyList(),
         prompt: String? = null,
+        iconMaterial: Material? = null,
         adapter: EditorFieldAdapter = DefaultEditorFieldAdapter,
         visibleWhen: (EditorFieldContext) -> Boolean = { true },
         newValueFactory: EntryFactory? = null,
@@ -212,6 +226,7 @@ class TypedNestedSchemaBuilder<T>(
             displayName = displayName,
             description = description,
             prompt = prompt,
+            iconMaterial = iconMaterial,
             adapter = adapter,
             visibleWhen = combineVisibleWhen(visibleWhen),
             newValueFactory = newValueFactory
@@ -226,6 +241,7 @@ class TypedNestedSchemaBuilder<T>(
         displayName: String? = null,
         description: List<String> = emptyList(),
         prompt: String? = null,
+        iconMaterial: Material? = null,
         adapter: EditorFieldAdapter = DefaultEditorFieldAdapter,
         visibleWhen: (EditorFieldContext) -> Boolean = { true },
         newMapEntryFactory: MapEntryFactory? = null,
@@ -237,6 +253,7 @@ class TypedNestedSchemaBuilder<T>(
             displayName = displayName,
             description = description,
             prompt = prompt,
+            iconMaterial = iconMaterial,
             adapter = adapter,
             visibleWhen = combineVisibleWhen(visibleWhen),
             newMapEntryFactory = newMapEntryFactory,

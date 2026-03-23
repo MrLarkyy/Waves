@@ -3,6 +3,7 @@ package gg.aquatic.waves.serialization.editor.meta
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.json.JsonElement
+import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 
 data class EditorFieldContext(
@@ -58,6 +59,7 @@ data class FieldMeta(
     val displayName: String? = null,
     val description: List<String> = emptyList(),
     val prompt: String? = null,
+    val iconMaterial: Material? = null,
     val adapter: EditorFieldAdapter = DefaultEditorFieldAdapter,
     val visibleWhen: (EditorFieldContext) -> Boolean = { true },
     val newValueFactory: EntryFactory? = null,
@@ -100,6 +102,7 @@ class EditorSchemaBuilder<T>(
         displayName: String? = null,
         description: List<String> = emptyList(),
         prompt: String? = null,
+        iconMaterial: Material? = null,
         adapter: EditorFieldAdapter = DefaultEditorFieldAdapter,
         visibleWhen: (EditorFieldContext) -> Boolean = { true },
         newValueFactory: EntryFactory? = null,
@@ -111,6 +114,7 @@ class EditorSchemaBuilder<T>(
             displayName = displayName,
             description = description,
             prompt = prompt,
+            iconMaterial = iconMaterial,
             adapter = adapter,
             visibleWhen = visibleWhen,
             newValueFactory = newValueFactory,
@@ -126,6 +130,7 @@ class EditorSchemaBuilder<T>(
         displayName: String? = null,
         description: List<String> = emptyList(),
         prompt: String? = null,
+        iconMaterial: Material? = null,
         visibleWhen: (EditorFieldContext) -> Boolean = { true },
         newValueFactory: EntryFactory? = null,
         newMapEntryFactory: MapEntryFactory? = null,
@@ -136,6 +141,7 @@ class EditorSchemaBuilder<T>(
             displayName = displayName,
             description = description,
             prompt = prompt,
+            iconMaterial = iconMaterial,
             adapter = adapter.bind(config),
             visibleWhen = visibleWhen,
             newValueFactory = newValueFactory,
