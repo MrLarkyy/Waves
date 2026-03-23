@@ -35,12 +35,16 @@ abstract class BaseTextInputFieldAdapter<C : BaseTextInputFieldAdapter.Config> :
         withContext(BukkitCtx.ofEntity(player)) {
             player.closeInventory()
         }
-        player.sendMessage(config.prompt)
+        EditorChatMessages.sendPrompt(
+            player = player,
+            prompt = config.prompt,
+            allowNull = context.descriptor.isNullable
+        )
         val input = ChatInput.createHandle(listOf("cancel")).await(player) ?: return FieldEditResult.NoChange
         return parse(input.trim(), context, config).fold(
             onSuccess = { FieldEditResult.Updated(it) },
             onFailure = {
-                player.sendMessage(it.message ?: "Invalid value.")
+                EditorChatMessages.sendError(player, it.message ?: "Invalid value.")
                 FieldEditResult.NoChange
             }
         )

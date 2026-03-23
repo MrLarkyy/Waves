@@ -250,10 +250,14 @@ object SerializableEditor {
         }
 
         val prompt = buildPrompt(entry)
-        player.sendMessage(prompt)
+        EditorChatMessages.sendPrompt(
+            player = player,
+            prompt = prompt,
+            allowNull = entry.descriptor.isNullable
+        )
         val input = ChatInput.createHandle(listOf("cancel")).await(player) ?: return
         val parsed = parsePrimitive(input, entry.descriptor) ?: run {
-            player.sendMessage("Invalid value.")
+            EditorChatMessages.sendError(player, "Invalid value.")
             return
         }
 
@@ -290,7 +294,7 @@ object SerializableEditor {
             player.closeInventory()
         }
 
-        player.sendMessage(containerMeta?.mapKeyPrompt ?: "Enter entry key:")
+        EditorChatMessages.sendPrompt(player, containerMeta?.mapKeyPrompt ?: "Enter entry key:")
         val key = ChatInput.createHandle(listOf("cancel")).await(player)?.trim().orEmpty()
         if (key.isEmpty()) return
 

@@ -16,11 +16,11 @@ object EditorEntryFactories {
             withContext(BukkitCtx.ofEntity(player)) {
                 player.closeInventory()
             }
-            player.sendMessage(prompt)
+            EditorChatMessages.sendPrompt(player, prompt)
             val input = ChatInput.createHandle(listOf("cancel")).await(player) ?: return@EntryFactory null
             val error = validator(input)
             if (error != null) {
-                player.sendMessage(error)
+                EditorChatMessages.sendError(player, error)
                 return@EntryFactory null
             }
             transform(input)
@@ -36,11 +36,15 @@ object EditorEntryFactories {
         withContext(BukkitCtx.ofEntity(player)) {
             player.closeInventory()
         }
-        player.sendMessage(prompt)
+        EditorChatMessages.sendPrompt(
+            player,
+            prompt,
+            extraHints = listOf("You can use ranges like '0-8' or lists like '0,2,4'.")
+        )
         val input = ChatInput.createHandle(listOf("cancel")).await(player) ?: return@EntryFactory null
         val error = validateIntegerBatch(input, min, max)
         if (error != null) {
-            player.sendMessage(error)
+            EditorChatMessages.sendError(player, error)
             return@EntryFactory null
         }
 
@@ -94,12 +98,12 @@ object EditorEntryFactories {
             withContext(BukkitCtx.ofEntity(player)) {
                 player.closeInventory()
             }
-            player.sendMessage(keyPrompt)
+            EditorChatMessages.sendPrompt(player, keyPrompt)
             val key = ChatInput.createHandle(listOf("cancel")).await(player)?.trim().orEmpty()
             if (key.isEmpty()) return@MapEntryFactory null
             val error = keyValidator(key)
             if (error != null) {
-                player.sendMessage(error)
+                EditorChatMessages.sendError(player, error)
                 return@MapEntryFactory null
             }
             key to valueFactory(key)
