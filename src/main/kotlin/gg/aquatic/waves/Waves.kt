@@ -27,6 +27,7 @@ import gg.aquatic.waves.input.impl.ChatInput
 import gg.aquatic.waves.input.initializeInput
 import gg.aquatic.waves.testing.data.TestingEditor
 import gg.aquatic.waves.util.action.BossbarAction
+import gg.aquatic.waves.util.action.GiveItemAction
 import gg.aquatic.waves.util.action.MenuNextPageAction
 import gg.aquatic.waves.util.action.MenuPreviousPageAction
 import gg.aquatic.waves.util.action.MessageAction
@@ -65,6 +66,7 @@ object Waves : JavaPlugin(), BootstrapHolder, RegistryHolder {
         registryBootstrap(this) {
             registry(Action.REGISTRY_KEY) {
                 add("message", MessageAction)
+                add("give-item", GiveItemAction)
                 add("bossbar", BossbarAction)
                 add("next-page", MenuNextPageAction)
                 add("previous-page", MenuPreviousPageAction)
