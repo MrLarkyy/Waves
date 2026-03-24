@@ -21,6 +21,18 @@ import gg.aquatic.kregistry.bootstrap.BootstrapHolder
 import gg.aquatic.kregistry.bootstrap.RegistryHolder
 import gg.aquatic.pakket.Pakket
 import gg.aquatic.quickminimessage.MMParser
+import gg.aquatic.stacked.ItemFactory
+import gg.aquatic.stacked.factory.Base64Factory
+import gg.aquatic.stacked.factory.CraftEngineFactory
+import gg.aquatic.stacked.factory.EcoFactory
+import gg.aquatic.stacked.factory.EIFactory
+import gg.aquatic.stacked.factory.HDBFactory
+import gg.aquatic.stacked.factory.IAFactory as ItemIAFactory
+import gg.aquatic.stacked.factory.MMFactory
+import gg.aquatic.stacked.factory.MMOFactory
+import gg.aquatic.stacked.factory.NexoFactory as ItemNexoFactory
+import gg.aquatic.stacked.factory.OraxenFactory as ItemOraxenFactory
+import gg.aquatic.stacked.factory.RegistryFactory
 import gg.aquatic.stacked.initializeStacked
 import gg.aquatic.statistik.initializeStatistik
 import gg.aquatic.waves.input.impl.ChatInput
@@ -59,7 +71,7 @@ object Waves : JavaPlugin(), BootstrapHolder, RegistryHolder {
         event<PlayerQuitEvent> {
             Pakket.handler.unregisterPacketListener(it.player)
         }
-        initializeStacked(this, SingleThreadedContext("stacked").scope, mmResolver)
+        initializeStacked(this, SingleThreadedContext("stacked").scope, mmResolver, createItemFactories())
         initializeKMenu(SingleThreadedContext("kmenu").scope)
         initializeExecute(this, mmResolver)
 
@@ -94,6 +106,40 @@ object Waves : JavaPlugin(), BootstrapHolder, RegistryHolder {
         }
         if (server.pluginManager.getPlugin("Nexo") != null) {
             factories["nexo"] = NexoFactory
+        }
+        return factories
+    }
+
+    private fun createItemFactories(): Map<String, ItemFactory> {
+        val factories = linkedMapOf<String, ItemFactory>()
+        factories["base64"] = Base64Factory
+        factories["registry"] = RegistryFactory
+        if (server.pluginManager.getPlugin("ItemsAdder") != null) {
+            factories["ia"] = ItemIAFactory
+        }
+        if (server.pluginManager.getPlugin("Oraxen") != null) {
+            factories["oraxen"] = ItemOraxenFactory
+        }
+        if (server.pluginManager.getPlugin("Nexo") != null) {
+            factories["nexo"] = ItemNexoFactory
+        }
+        if (server.pluginManager.getPlugin("MythicMobs") != null) {
+            factories["mm"] = MMFactory
+        }
+        if (server.pluginManager.getPlugin("MMOItems") != null) {
+            factories["mmo"] = MMOFactory
+        }
+        if (server.pluginManager.getPlugin("HeadDatabase") != null) {
+            factories["hdb"] = HDBFactory
+        }
+        if (server.pluginManager.getPlugin("eco") != null || server.pluginManager.getPlugin("Eco") != null) {
+            factories["eco"] = EcoFactory
+        }
+        if (server.pluginManager.getPlugin("CraftEngine") != null) {
+            factories["craftengine"] = CraftEngineFactory
+        }
+        if (server.pluginManager.getPlugin("ExecutableItems") != null) {
+            factories["ei"] = EIFactory
         }
         return factories
     }

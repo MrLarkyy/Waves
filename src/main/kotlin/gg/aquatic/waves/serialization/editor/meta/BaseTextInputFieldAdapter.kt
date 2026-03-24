@@ -41,7 +41,14 @@ abstract class BaseTextInputFieldAdapter<C : BaseTextInputFieldAdapter.Config> :
             allowNull = context.descriptor.isNullable
         )
         val input = ChatInput.createHandle(listOf("cancel")).await(player) ?: return FieldEditResult.NoChange
-        return parse(input.trim(), context, config).fold(
+        val prepared = prepareInput(player, input.trim(), context, config).fold(
+            onSuccess = { it },
+            onFailure = {
+                EditorChatMessages.sendError(player, it.message ?: "Invalid value.")
+                return FieldEditResult.NoChange
+            }
+        )
+        return parse(prepared, context, config).fold(
             onSuccess = { FieldEditResult.Updated(it) },
             onFailure = {
                 EditorChatMessages.sendError(player, it.message ?: "Invalid value.")
@@ -49,6 +56,13 @@ abstract class BaseTextInputFieldAdapter<C : BaseTextInputFieldAdapter.Config> :
             }
         )
     }
+
+    protected open suspend fun prepareInput(
+        player: Player,
+        raw: String,
+        context: EditorFieldContext,
+        config: C
+    ): Result<String> = Result.success(raw)
 
     protected abstract suspend fun parse(raw: String, context: EditorFieldContext, config: C): Result<JsonElement>
 }
