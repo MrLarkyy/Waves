@@ -3,6 +3,7 @@ package gg.aquatic.waves.serialization.editor.meta
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.json.JsonElement
+import gg.aquatic.kmenu.inventory.ButtonType
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 
@@ -18,7 +19,9 @@ data class EditorFieldContext(
 
 sealed interface FieldEditResult {
     data object NoChange : FieldEditResult
+    data object PassThrough : FieldEditResult
     data class Updated(val value: JsonElement) : FieldEditResult
+    data class UpdatedRoot(val value: JsonElement) : FieldEditResult
 }
 
 fun interface EntryFactory {
@@ -33,12 +36,25 @@ interface EditorFieldAdapter {
     fun createItem(context: EditorFieldContext, defaultItem: () -> ItemStack): ItemStack = defaultItem()
 
     suspend fun edit(player: org.bukkit.entity.Player, context: EditorFieldContext): FieldEditResult = FieldEditResult.NoChange
+
+    suspend fun edit(
+        player: org.bukkit.entity.Player,
+        context: EditorFieldContext,
+        buttonType: ButtonType
+    ): FieldEditResult = edit(player, context)
 }
 
 interface ConfigurableFieldAdapter<C : Any> {
     fun createItem(context: EditorFieldContext, config: C, defaultItem: () -> ItemStack): ItemStack = defaultItem()
 
     suspend fun edit(player: org.bukkit.entity.Player, context: EditorFieldContext, config: C): FieldEditResult = FieldEditResult.NoChange
+
+    suspend fun edit(
+        player: org.bukkit.entity.Player,
+        context: EditorFieldContext,
+        config: C,
+        buttonType: ButtonType
+    ): FieldEditResult = edit(player, context, config)
 }
 
 fun <C : Any> ConfigurableFieldAdapter<C>.bind(config: C): EditorFieldAdapter {
@@ -50,6 +66,14 @@ fun <C : Any> ConfigurableFieldAdapter<C>.bind(config: C): EditorFieldAdapter {
 
         override suspend fun edit(player: org.bukkit.entity.Player, context: EditorFieldContext): FieldEditResult {
             return delegate.edit(player, context, config)
+        }
+
+        override suspend fun edit(
+            player: org.bukkit.entity.Player,
+            context: EditorFieldContext,
+            buttonType: ButtonType
+        ): FieldEditResult {
+            return delegate.edit(player, context, config, buttonType)
         }
     }
 }
@@ -83,7 +107,7 @@ interface EditorSchema<T> {
     val fields: List<FieldMeta>
 
     fun resolve(context: EditorFieldContext): FieldMeta? {
-        return fields.lastOrNull { it.matches(context.pathSegments) && it.visibleWhen(context) }
+        return fields.lastOrNull { it.matches(context.pathSegments) }
     }
 
     fun resolveDescriptor(context: EditorFieldContext): SerialDescriptor? = null

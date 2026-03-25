@@ -46,6 +46,33 @@ class TypedEditorSchemaBuilder<T>(
         )
     }
 
+    fun fieldPattern(
+        patternSuffix: String = "",
+        displayName: String? = null,
+        description: List<String> = emptyList(),
+        prompt: String? = null,
+        iconMaterial: Material? = null,
+        adapter: EditorFieldAdapter = DefaultEditorFieldAdapter,
+        visibleWhen: (EditorFieldContext) -> Boolean = { true },
+        newValueFactory: EntryFactory? = null,
+        newMapEntryFactory: MapEntryFactory? = null,
+        mapKeyPrompt: String? = null,
+    ) {
+        val pattern = (prefix + patternSuffix.split('.').filter { it.isNotBlank() }).joinToString(".")
+        delegate.field(
+            pattern = pattern,
+            displayName = displayName,
+            description = description,
+            prompt = prompt,
+            iconMaterial = iconMaterial,
+            adapter = adapter,
+            visibleWhen = combineVisibleWhen(visibleWhen),
+            newValueFactory = newValueFactory,
+            newMapEntryFactory = newMapEntryFactory,
+            mapKeyPrompt = mapKeyPrompt
+        )
+    }
+
     fun <V, C : Any> field(
         property: KProperty1<T, V>,
         adapter: ConfigurableFieldAdapter<C>,
@@ -171,6 +198,33 @@ class TypedNestedSchemaBuilder<T>(
             iconMaterial = iconMaterial,
             adapter = adapter,
             visibleWhen = combineVisibleWhen(visibleWhen)
+        )
+    }
+
+    fun fieldPattern(
+        patternSuffix: String = "",
+        displayName: String? = null,
+        description: List<String> = emptyList(),
+        prompt: String? = null,
+        iconMaterial: Material? = null,
+        adapter: EditorFieldAdapter = DefaultEditorFieldAdapter,
+        visibleWhen: (EditorFieldContext) -> Boolean = { true },
+        newValueFactory: EntryFactory? = null,
+        newMapEntryFactory: MapEntryFactory? = null,
+        mapKeyPrompt: String? = null,
+    ) {
+        val pattern = (prefix + patternSuffix.split('.').filter { it.isNotBlank() }).joinToString(".")
+        delegate.field(
+            pattern = pattern,
+            displayName = displayName,
+            description = description,
+            prompt = prompt,
+            iconMaterial = iconMaterial,
+            adapter = adapter,
+            visibleWhen = combineVisibleWhen(visibleWhen),
+            newValueFactory = newValueFactory,
+            newMapEntryFactory = newMapEntryFactory,
+            mapKeyPrompt = mapKeyPrompt
         )
     }
 

@@ -126,17 +126,33 @@ object SerializableEditor {
 
                         val adapter = entry.meta?.adapter
                         if (adapter != null && adapter !== DefaultEditorFieldAdapter) {
-                            when (val adapterResult = adapter.edit(context.player, entry.toFieldContext(document.root()))) {
+                            when (
+                                val adapterResult = adapter.edit(
+                                    context.player,
+                                    entry.toFieldContext(document.root()),
+                                    event.buttonType
+                                )
+                            ) {
                                 is FieldEditResult.Updated -> {
                                     document.set(entry.path, adapterResult.value)
                                     context.refresh()
+                                    return@onClick
+                                }
+
+                                is FieldEditResult.UpdatedRoot -> {
+                                    document.replaceRoot(adapterResult.value)
+                                    context.refresh()
+                                    return@onClick
+                                }
+
+                                FieldEditResult.PassThrough -> {
                                 }
 
                                 FieldEditResult.NoChange -> {
                                     context.refresh()
+                                    return@onClick
                                 }
                             }
-                            return@onClick
                         }
 
                         when (entry.kind) {
@@ -771,6 +787,10 @@ object SerializableEditor {
         private var root: JsonElement = json.encodeToJsonElement(serializer, value)
 
         fun root(): JsonElement = root
+
+        fun replaceRoot(value: JsonElement) {
+            root = value
+        }
 
         fun decode(): T {
             return json.decodeFromJsonElement(serializer, root)

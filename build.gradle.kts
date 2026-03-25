@@ -18,7 +18,7 @@ bukkitKObjects {
 }
 
 group = "gg.aquatic.waves"
-version = "26.0.48-SNAPSHOT"
+version = "26.0.49-SNAPSHOT"
 
 tasks {
     runServer {
