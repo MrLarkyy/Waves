@@ -74,16 +74,33 @@ object SerializableEditor {
         schema: EditorSchema<T>?,
         onSave: suspend () -> Unit
     ) {
+        val editorState = prepareNodeEditorState(document, path, descriptor, label, schema)
+        val menuTitle = if (path.isEmpty()) title else Component.text(label.take(32))
+        val entrySlots = (0..44).toList()
+
+        context.player.createMenu(menuTitle, InventoryType.GENERIC9X6) {
+            editorState.entries.take(entrySlots.size).forEachIndexed { index, entry ->
+                button("entry_${index}_${entry.label}", entrySlots[index]) {
+                    item = entryIcon(entry)
+                    onClick { event ->
+                        handleEntryClick(context, title, document, entry, schema, onSave, event.buttonType)
+                    }
+                }
+            }
+
+            addEditorControls(context, document, path, label, descriptor, editorState.resolvedDescriptor, schema, onSave)
+        }.open(context.player)
+    }
+
+    private fun <T> prepareNodeEditorState(
+        document: SerializableEditorDocument<T>,
+        path: List<PathSegment>,
+        descriptor: SerialDescriptor,
+        label: String,
+        schema: EditorSchema<T>?
+    ): NodeEditorState {
         val current = document.get(path)
-        val currentContext = EditorFieldContext(
-            label = label,
-            path = path.toSchemaPath(),
-            pathSegments = path.toSchemaSegments(),
-            description = emptyList(),
-            descriptor = descriptor,
-            value = current,
-            root = document.root()
-        )
+        val currentContext = buildFieldContext(label, path, descriptor, current, document.root())
         val resolvedDescriptor = if (descriptor.kind is PolymorphicKind) {
             schema?.resolveDescriptor(currentContext) ?: descriptor
         } else {
@@ -99,172 +116,193 @@ object SerializableEditor {
             document.set(path, normalized)
         }
 
-        val menuTitle = if (path.isEmpty()) title else Component.text(label.take(32))
-        val entries = nodeEntries(path, resolvedDescriptor, normalized, document.root(), schema, document.json)
-        val entrySlots = (0..44).toList()
-
-        context.player.createMenu(menuTitle, InventoryType.GENERIC9X6) {
-            entries.take(entrySlots.size).forEachIndexed { index, entry ->
-                button("entry_${index}_${entry.label}", entrySlots[index]) {
-                    item = entryIcon(entry)
-                    onClick { event ->
-                        if (event.buttonType == ButtonType.DROP) {
-                            when {
-                                entry.removable -> {
-                                    document.remove(entry.path)
-                                    context.refresh()
-                                    return@onClick
-                                }
-
-                                entry.descriptor.isNullable -> {
-                                    document.set(entry.path, JsonNull)
-                                    context.refresh()
-                                    return@onClick
-                                }
-                            }
-                        }
-
-                        val adapter = entry.meta?.adapter
-                        if (adapter != null && adapter !== DefaultEditorFieldAdapter) {
-                            when (
-                                val adapterResult = adapter.edit(
-                                    context.player,
-                                    entry.toFieldContext(document.root()),
-                                    event.buttonType
-                                )
-                            ) {
-                                is FieldEditResult.Updated -> {
-                                    document.set(entry.path, adapterResult.value)
-                                    context.refresh()
-                                    return@onClick
-                                }
-
-                                is FieldEditResult.UpdatedRoot -> {
-                                    document.replaceRoot(adapterResult.value)
-                                    context.refresh()
-                                    return@onClick
-                                }
-
-                                FieldEditResult.PassThrough -> {
-                                }
-
-                                FieldEditResult.NoChange -> {
-                                    context.refresh()
-                                    return@onClick
-                                }
-                            }
-                        }
-
-                        when (entry.kind) {
-                            NodeKind.OBJECT, NodeKind.LIST, NodeKind.MAP -> {
-                                context.navigate {
-                                    openNodeEditor(
-                                        context = context,
-                                        title = title,
-                                        document = document,
-                                        path = entry.path,
-                                        descriptor = entry.descriptor,
-                                        label = entry.label,
-                                        schema = schema,
-                                        onSave = onSave
-                                    )
-                                }
-                            }
-
-                            NodeKind.BOOLEAN -> {
-                                val currentValue = document.get(entry.path).jsonPrimitive.booleanOrNull ?: false
-                                document.set(entry.path, JsonPrimitive(!currentValue))
-                                context.refresh()
-                            }
-
-                            NodeKind.STRING,
-                            NodeKind.NUMBER,
-                            NodeKind.ENUM -> {
-                                editPrimitiveValue(context.player, document, entry)
-                                context.refresh()
-                            }
-                        }
-                    }
-                }
-            }
-
-            button("save", 45) {
-                item = stackedItem(Material.LIME_DYE) {
-                    displayName = Component.text("Save")
-                }.getItem()
-                onClick {
-                    onSave()
-                }
-            }
-
-            if (path.isNotEmpty()) {
-                button("back", 46) {
-                    item = stackedItem(Material.ARROW) {
-                        displayName = Component.text("Back")
-                    }.getItem()
-                    onClick {
-                        context.goBack()
-                    }
-                }
-            }
-
-            if (resolvedDescriptor.kind == StructureKind.LIST) {
-                button("add_list", 47) {
-                    item = stackedItem(Material.NETHER_STAR) {
-                        displayName = Component.text("Add Entry")
-                    }.getItem()
-                    onClick {
-                        val contextValue = document.get(path)
-                        val baseFieldContext = EditorFieldContext(
-                            label = label,
-                            path = path.toSchemaPath(),
-                            pathSegments = path.toSchemaSegments(),
-                            description = emptyList(),
-                            descriptor = descriptor,
-                            value = contextValue,
-                            root = document.root()
-                        )
-                        val containerMeta = schema?.resolve(baseFieldContext)
-                        val fieldContext = EditorFieldContext(
-                            label = label,
-                            path = path.toSchemaPath(),
-                            pathSegments = path.toSchemaSegments(),
-                            description = containerMeta?.description.orEmpty(),
-                            descriptor = descriptor,
-                            value = contextValue,
-                            root = document.root()
-                        )
-                        val created = if (containerMeta?.newValueFactory != null) {
-                            containerMeta.newValueFactory.create(context.player, fieldContext) ?: run {
-                                context.refresh()
-                                return@onClick
-                            }
-                        } else {
-                            defaultElement(document.json, resolvedDescriptor.getElementDescriptor(0), useNullForNullable = false)
-                        }
-                        if (created is JsonArray && resolvedDescriptor.getElementDescriptor(0).kind != StructureKind.LIST) {
-                            document.addAllToList(path, created)
-                        } else {
-                            document.addToList(path, created)
-                        }
-                        context.refresh()
-                    }
-                }
-            }
-
-            if (resolvedDescriptor.kind == StructureKind.MAP) {
-                button("add_map", 47) {
-                    item = stackedItem(Material.NETHER_STAR) {
-                        displayName = Component.text("Add Entry")
-                    }.getItem()
-                    onClick {
-                        addMapEntry(context.player, document, path, resolvedDescriptor, schema, label)
-                        context.refresh()
-                    }
-                }
-            }
-        }.open(context.player)
+        return NodeEditorState(
+            resolvedDescriptor = resolvedDescriptor,
+            entries = nodeEntries(path, resolvedDescriptor, normalized, document.root(), schema, document.json)
+        )
     }
+
+    private suspend fun <T> handleEntryClick(
+        context: EditorContext,
+        title: Component,
+        document: SerializableEditorDocument<T>,
+        entry: EditorEntry,
+        schema: EditorSchema<T>?,
+        onSave: suspend () -> Unit,
+        buttonType: ButtonType
+    ) {
+        if (buttonType == ButtonType.DROP && handleDropAction(document, entry, context)) {
+            return
+        }
+
+        if (handleAdapterAction(document, entry, context, buttonType)) {
+            return
+        }
+
+        when (entry.kind) {
+            NodeKind.OBJECT, NodeKind.LIST, NodeKind.MAP -> context.navigate {
+                openNodeEditor(context, title, document, entry.path, entry.descriptor, entry.label, schema, onSave)
+            }
+
+            NodeKind.BOOLEAN -> {
+                val currentValue = document.get(entry.path).jsonPrimitive.booleanOrNull ?: false
+                document.set(entry.path, JsonPrimitive(!currentValue))
+                context.refresh()
+            }
+
+            NodeKind.STRING, NodeKind.NUMBER, NodeKind.ENUM -> {
+                editPrimitiveValue(context.player, document, entry)
+                context.refresh()
+            }
+        }
+    }
+
+    private suspend fun <T> handleDropAction(
+        document: SerializableEditorDocument<T>,
+        entry: EditorEntry,
+        context: EditorContext
+    ): Boolean {
+        return when {
+            entry.removable -> {
+                document.remove(entry.path)
+                context.refresh()
+                true
+            }
+
+            entry.descriptor.isNullable -> {
+                document.set(entry.path, JsonNull)
+                context.refresh()
+                true
+            }
+
+            else -> false
+        }
+    }
+
+    private suspend fun <T> handleAdapterAction(
+        document: SerializableEditorDocument<T>,
+        entry: EditorEntry,
+        context: EditorContext,
+        buttonType: ButtonType
+    ): Boolean {
+        val adapter = entry.meta?.adapter
+        if (adapter == null || adapter === DefaultEditorFieldAdapter) {
+            return false
+        }
+
+        return when (val result = adapter.edit(context.player, entry.toFieldContext(document.root()), buttonType)) {
+            is FieldEditResult.Updated -> {
+                document.set(entry.path, result.value)
+                context.refresh()
+                true
+            }
+
+            is FieldEditResult.UpdatedRoot -> {
+                document.replaceRoot(result.value)
+                context.refresh()
+                true
+            }
+
+            FieldEditResult.NoChange -> {
+                context.refresh()
+                true
+            }
+
+            FieldEditResult.PassThrough -> false
+        }
+    }
+
+    private fun <T> gg.aquatic.kmenu.menu.PrivateMenuBuilder.addEditorControls(
+        context: EditorContext,
+        document: SerializableEditorDocument<T>,
+        path: List<PathSegment>,
+        label: String,
+        descriptor: SerialDescriptor,
+        resolvedDescriptor: SerialDescriptor,
+        schema: EditorSchema<T>?,
+        onSave: suspend () -> Unit
+    ) {
+        button("save", 45) {
+            item = stackedItem(Material.LIME_DYE) {
+                displayName = Component.text("Save")
+            }.getItem()
+            onClick { onSave() }
+        }
+
+        if (path.isNotEmpty()) {
+            button("back", 46) {
+                item = stackedItem(Material.ARROW) {
+                    displayName = Component.text("Back")
+                }.getItem()
+                onClick { context.goBack() }
+            }
+        }
+
+        if (resolvedDescriptor.kind == StructureKind.LIST) {
+            button("add_list", 47) {
+                item = addEntryItem()
+                onClick {
+                    addListEntry(context.player, document, path, label, descriptor, resolvedDescriptor, schema)
+                    context.refresh()
+                }
+            }
+        }
+
+        if (resolvedDescriptor.kind == StructureKind.MAP) {
+            button("add_map", 47) {
+                item = addEntryItem()
+                onClick {
+                    addMapEntry(context.player, document, path, resolvedDescriptor, schema, label)
+                    context.refresh()
+                }
+            }
+        }
+    }
+
+    private fun addEntryItem() = stackedItem(Material.NETHER_STAR) {
+        displayName = Component.text("Add Entry")
+    }.getItem()
+
+    private suspend fun <T> addListEntry(
+        player: Player,
+        document: SerializableEditorDocument<T>,
+        path: List<PathSegment>,
+        label: String,
+        descriptor: SerialDescriptor,
+        resolvedDescriptor: SerialDescriptor,
+        schema: EditorSchema<T>?
+    ) {
+        val contextValue = document.get(path)
+        val baseFieldContext = buildFieldContext(label, path, descriptor, contextValue, document.root())
+        val containerMeta = schema?.resolve(baseFieldContext)
+        val fieldContext = baseFieldContext.copy(description = containerMeta?.description.orEmpty())
+        val created = if (containerMeta?.newValueFactory != null) {
+            containerMeta.newValueFactory.create(player, fieldContext) ?: return
+        } else {
+            defaultElement(document.json, resolvedDescriptor.getElementDescriptor(0), useNullForNullable = false)
+        }
+        if (created is JsonArray && resolvedDescriptor.getElementDescriptor(0).kind != StructureKind.LIST) {
+            document.addAllToList(path, created)
+        } else {
+            document.addToList(path, created)
+        }
+    }
+
+    private fun buildFieldContext(
+        label: String,
+        path: List<PathSegment>,
+        descriptor: SerialDescriptor,
+        value: JsonElement,
+        root: JsonElement
+    ) = EditorFieldContext(
+        label = label,
+        path = path.toSchemaPath(),
+        pathSegments = path.toSchemaSegments(),
+        description = emptyList(),
+        descriptor = descriptor,
+        value = value,
+        root = root
+    )
 
     private suspend fun <T> editPrimitiveValue(
         player: Player,
@@ -528,12 +566,7 @@ object SerializableEditor {
     ) { defaultEntryIcon(entry) } ?: defaultEntryIcon(entry)
 
     private fun defaultEntryIcon(entry: EditorEntry) = when (entry.kind) {
-        NodeKind.OBJECT -> stackedItem(entry.meta?.iconMaterial ?: objectMaterial(entry)) {
-            displayName = EditorItemStyling.title(entry.label)
-            if (entry.meta?.description?.isNotEmpty() == true) {
-                lore += EditorItemStyling.section("Description")
-                lore += entry.meta.description.map(EditorItemStyling::hint)
-            }
+        NodeKind.OBJECT -> buildEntryIcon(entry, entry.meta?.iconMaterial ?: objectMaterial(entry)) {
             if (entry.element == JsonNull) {
                 lore += EditorItemStyling.valueLine("State: ", "unset")
             }
@@ -541,75 +574,65 @@ object SerializableEditor {
                 lore += EditorItemStyling.valueLine("Type: ", prettify(type))
             }
             lore += EditorItemStyling.hint(if (entry.element == JsonNull) "Click to create" else "Open object")
-            if (entry.descriptor.isNullable) {
-                lore += EditorItemStyling.hint("Press Q to clear")
-            }
-        }.getItem()
+            appendClearHint(entry)
+        }
 
-        NodeKind.LIST -> stackedItem(entry.meta?.iconMaterial ?: listMaterial(entry)) {
-            displayName = EditorItemStyling.title(entry.label)
-            if (entry.meta?.description?.isNotEmpty() == true) {
-                lore += EditorItemStyling.section("Description")
-                lore += entry.meta.description.map(EditorItemStyling::hint)
-            }
+        NodeKind.LIST -> buildEntryIcon(entry, entry.meta?.iconMaterial ?: listMaterial(entry)) {
             lore += EditorItemStyling.hint("Open list")
             lore += EditorItemStyling.valueLine("Summary: ", summary(entry.element))
-            if (entry.descriptor.isNullable) {
-                lore += EditorItemStyling.hint("Press Q to clear")
-            }
-        }.getItem()
+            appendClearHint(entry)
+        }
 
-        NodeKind.MAP -> stackedItem(entry.meta?.iconMaterial ?: mapMaterial(entry)) {
-            displayName = EditorItemStyling.title(entry.label)
-            if (entry.meta?.description?.isNotEmpty() == true) {
-                lore += EditorItemStyling.section("Description")
-                lore += entry.meta.description.map(EditorItemStyling::hint)
-            }
+        NodeKind.MAP -> buildEntryIcon(entry, entry.meta?.iconMaterial ?: mapMaterial(entry)) {
             lore += EditorItemStyling.hint("Open map")
             lore += EditorItemStyling.valueLine("Summary: ", summary(entry.element))
-            if (entry.descriptor.isNullable) {
-                lore += EditorItemStyling.hint("Press Q to clear")
-            }
-        }.getItem()
+            appendClearHint(entry)
+        }
 
-        NodeKind.BOOLEAN -> stackedItem(entry.meta?.iconMaterial ?: if (entry.element.jsonPrimitive.booleanOrNull == true) Material.LIME_DYE else Material.GRAY_DYE) {
-            displayName = EditorItemStyling.title(entry.label)
-            if (entry.meta?.description?.isNotEmpty() == true) {
-                lore += EditorItemStyling.section("Description")
-                lore += entry.meta.description.map(EditorItemStyling::hint)
-            }
+        NodeKind.BOOLEAN -> buildEntryIcon(
+            entry,
+            entry.meta?.iconMaterial ?: if (entry.element.jsonPrimitive.booleanOrNull == true) Material.LIME_DYE else Material.GRAY_DYE
+        ) {
             lore += EditorItemStyling.valueLine("Value: ", summary(entry.element))
             lore += EditorItemStyling.hint("Click to toggle")
-        }.getItem()
+        }
 
-        NodeKind.STRING -> stackedItem(entry.meta?.iconMaterial ?: stringMaterial(entry)) {
+        NodeKind.STRING -> buildEntryIcon(entry, entry.meta?.iconMaterial ?: stringMaterial(entry)) {
             val raw = summary(entry.element)
-            displayName = EditorItemStyling.title(entry.label)
-            if (entry.meta?.description?.isNotEmpty() == true) {
-                lore += EditorItemStyling.section("Description")
-                lore += entry.meta.description.map(EditorItemStyling::hint)
-            }
             lore += EditorItemStyling.valueLine("Value: ", raw)
             lore += EditorItemStyling.formattedPreview(raw)
-        }.getItem()
+        }
 
-        NodeKind.NUMBER -> stackedItem(entry.meta?.iconMaterial ?: numberMaterial(entry)) {
-            displayName = EditorItemStyling.title(entry.label)
-            if (entry.meta?.description?.isNotEmpty() == true) {
-                lore += EditorItemStyling.section("Description")
-                lore += entry.meta.description.map(EditorItemStyling::hint)
-            }
+        NodeKind.NUMBER -> buildEntryIcon(entry, entry.meta?.iconMaterial ?: numberMaterial(entry)) {
             lore += EditorItemStyling.valueLine("Value: ", summary(entry.element))
-        }.getItem()
+        }
 
-        NodeKind.ENUM -> stackedItem(entry.meta?.iconMaterial ?: enumMaterial(entry)) {
-            displayName = EditorItemStyling.title(entry.label)
-            if (entry.meta?.description?.isNotEmpty() == true) {
-                lore += EditorItemStyling.section("Description")
-                lore += entry.meta.description.map(EditorItemStyling::hint)
-            }
+        NodeKind.ENUM -> buildEntryIcon(entry, entry.meta?.iconMaterial ?: enumMaterial(entry)) {
             lore += EditorItemStyling.valueLine("Value: ", summary(entry.element))
-        }.getItem()
+        }
+    }
+
+    private fun buildEntryIcon(
+        entry: EditorEntry,
+        material: Material,
+        block: gg.aquatic.stacked.StackedItemBuilder.() -> Unit
+    ) = stackedItem(material) {
+        displayName = EditorItemStyling.title(entry.label)
+        appendDescription(entry)
+        block()
+    }.getItem()
+
+    private fun gg.aquatic.stacked.StackedItemBuilder.appendDescription(entry: EditorEntry) {
+        if (entry.meta?.description?.isNotEmpty() == true) {
+            lore += EditorItemStyling.section("Description")
+            lore += entry.meta.description.map(EditorItemStyling::hint)
+        }
+    }
+
+    private fun gg.aquatic.stacked.StackedItemBuilder.appendClearHint(entry: EditorEntry) {
+        if (entry.descriptor.isNullable) {
+            lore += EditorItemStyling.hint("Press Q to clear")
+        }
     }
 
     private fun summary(element: JsonElement): String {
@@ -762,6 +785,11 @@ object SerializableEditor {
         val removable: Boolean,
         val kind: NodeKind,
         val meta: FieldMeta?,
+    )
+
+    private data class NodeEditorState(
+        val resolvedDescriptor: SerialDescriptor,
+        val entries: List<EditorEntry>,
     )
 
     private enum class NodeKind {

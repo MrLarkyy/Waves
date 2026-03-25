@@ -19,166 +19,10 @@ abstract class EditableModel<T>(
     protected abstract fun TypedEditorSchemaBuilder<T>.define()
 }
 
-class TypedEditorSchemaBuilder<T>(
-    serializer: KSerializer<T>,
-    private val delegate: EditorSchemaBuilder<T> = EditorSchemaBuilder(serializer),
-    private val prefix: List<String> = emptyList(),
-    private val visibility: (EditorFieldContext) -> Boolean = { true },
-) : EditorSchema<T> by delegate {
-
-    fun <V> field(
-        property: KProperty1<T, V>,
-        displayName: String? = null,
-        description: List<String> = emptyList(),
-        prompt: String? = null,
-        iconMaterial: Material? = null,
-        adapter: EditorFieldAdapter = DefaultEditorFieldAdapter,
-        visibleWhen: (EditorFieldContext) -> Boolean = { true },
-    ) {
-        delegate.field(
-            pattern = (prefix + property.name).joinToString("."),
-            displayName = displayName,
-            description = description,
-            prompt = prompt,
-            iconMaterial = iconMaterial,
-            adapter = adapter,
-            visibleWhen = combineVisibleWhen(visibleWhen)
-        )
-    }
-
-    fun fieldPattern(
-        patternSuffix: String = "",
-        displayName: String? = null,
-        description: List<String> = emptyList(),
-        prompt: String? = null,
-        iconMaterial: Material? = null,
-        adapter: EditorFieldAdapter = DefaultEditorFieldAdapter,
-        visibleWhen: (EditorFieldContext) -> Boolean = { true },
-        newValueFactory: EntryFactory? = null,
-        newMapEntryFactory: MapEntryFactory? = null,
-        mapKeyPrompt: String? = null,
-    ) {
-        val pattern = (prefix + patternSuffix.split('.').filter { it.isNotBlank() }).joinToString(".")
-        delegate.field(
-            pattern = pattern,
-            displayName = displayName,
-            description = description,
-            prompt = prompt,
-            iconMaterial = iconMaterial,
-            adapter = adapter,
-            visibleWhen = combineVisibleWhen(visibleWhen),
-            newValueFactory = newValueFactory,
-            newMapEntryFactory = newMapEntryFactory,
-            mapKeyPrompt = mapKeyPrompt
-        )
-    }
-
-    fun <V, C : Any> field(
-        property: KProperty1<T, V>,
-        adapter: ConfigurableFieldAdapter<C>,
-        config: C,
-        displayName: String? = null,
-        description: List<String> = emptyList(),
-        prompt: String? = null,
-        iconMaterial: Material? = null,
-        visibleWhen: (EditorFieldContext) -> Boolean = { true },
-    ) {
-        delegate.field(
-            pattern = (prefix + property.name).joinToString("."),
-            adapter = adapter,
-            config = config,
-            displayName = displayName,
-            description = description,
-            prompt = prompt,
-            iconMaterial = iconMaterial,
-            visibleWhen = combineVisibleWhen(visibleWhen)
-        )
-    }
-
-    fun <V> group(
-        property: KProperty1<T, V>,
-        block: TypedNestedSchemaBuilder<V>.() -> Unit
-    ) {
-        TypedNestedSchemaBuilder<V>(delegate, prefix + property.name, visibility).apply(block)
-    }
-
-    fun <V : Any> optionalGroup(
-        property: KProperty1<T, V?>,
-        block: TypedNestedSchemaBuilder<V>.() -> Unit
-    ) {
-        TypedNestedSchemaBuilder<V>(delegate, prefix + property.name, visibility).apply(block)
-    }
-
-    fun <V> list(
-        property: KProperty1<T, List<V>>,
-        displayName: String? = null,
-        description: List<String> = emptyList(),
-        prompt: String? = null,
-        iconMaterial: Material? = null,
-        adapter: EditorFieldAdapter = DefaultEditorFieldAdapter,
-        visibleWhen: (EditorFieldContext) -> Boolean = { true },
-        newValueFactory: EntryFactory? = null,
-        block: (TypedNestedSchemaBuilder<V>.() -> Unit)? = null
-    ) {
-        delegate.field(
-            pattern = (prefix + property.name).joinToString("."),
-            displayName = displayName,
-            description = description,
-            prompt = prompt,
-            iconMaterial = iconMaterial,
-            adapter = adapter,
-            visibleWhen = combineVisibleWhen(visibleWhen),
-            newValueFactory = newValueFactory
-        )
-        block?.let {
-            TypedNestedSchemaBuilder<V>(delegate, prefix + property.name + "*", visibility).apply(it)
-        }
-    }
-
-    fun <V> map(
-        property: KProperty1<T, Map<String, V>>,
-        displayName: String? = null,
-        description: List<String> = emptyList(),
-        prompt: String? = null,
-        iconMaterial: Material? = null,
-        adapter: EditorFieldAdapter = DefaultEditorFieldAdapter,
-        visibleWhen: (EditorFieldContext) -> Boolean = { true },
-        newMapEntryFactory: MapEntryFactory? = null,
-        mapKeyPrompt: String? = null,
-        block: (TypedNestedSchemaBuilder<V>.() -> Unit)? = null
-    ) {
-        delegate.field(
-            pattern = (prefix + property.name).joinToString("."),
-            displayName = displayName,
-            description = description,
-            prompt = prompt,
-            iconMaterial = iconMaterial,
-            adapter = adapter,
-            visibleWhen = combineVisibleWhen(visibleWhen),
-            newMapEntryFactory = newMapEntryFactory,
-            mapKeyPrompt = mapKeyPrompt
-        )
-        block?.let {
-            TypedNestedSchemaBuilder<V>(delegate, prefix + property.name + "*", visibility).apply(it)
-        }
-    }
-
-    fun <S> include(
-        visibleWhen: (EditorFieldContext) -> Boolean = { true },
-        block: TypedNestedSchemaBuilder<S>.() -> Unit
-    ) {
-        TypedNestedSchemaBuilder<S>(delegate, prefix, combineVisibleWhen(visibleWhen)).apply(block)
-    }
-
-    private fun combineVisibleWhen(visibleWhen: (EditorFieldContext) -> Boolean): (EditorFieldContext) -> Boolean {
-        return { context -> visibility(context) && visibleWhen(context) }
-    }
-}
-
-class TypedNestedSchemaBuilder<T>(
-    private val delegate: EditorSchemaBuilder<*>,
-    private val prefix: List<String>,
-    private val visibility: (EditorFieldContext) -> Boolean = { true },
+abstract class BaseTypedSchemaBuilder<T>(
+    protected val delegate: EditorSchemaBuilder<*>,
+    protected val prefix: List<String> = emptyList(),
+    protected val visibility: (EditorFieldContext) -> Boolean = { true },
 ) {
 
     fun <V> field(
@@ -325,10 +169,23 @@ class TypedNestedSchemaBuilder<T>(
         TypedNestedSchemaBuilder<S>(delegate, prefix, combineVisibleWhen(visibleWhen)).apply(block)
     }
 
-    private fun combineVisibleWhen(visibleWhen: (EditorFieldContext) -> Boolean): (EditorFieldContext) -> Boolean {
+    protected fun combineVisibleWhen(visibleWhen: (EditorFieldContext) -> Boolean): (EditorFieldContext) -> Boolean {
         return { context -> visibility(context) && visibleWhen(context) }
     }
 }
+
+class TypedEditorSchemaBuilder<T>(
+    serializer: KSerializer<T>,
+    private val typedDelegate: EditorSchemaBuilder<T> = EditorSchemaBuilder(serializer),
+    prefix: List<String> = emptyList(),
+    visibility: (EditorFieldContext) -> Boolean = { true },
+) : BaseTypedSchemaBuilder<T>(typedDelegate, prefix, visibility), EditorSchema<T> by typedDelegate
+
+class TypedNestedSchemaBuilder<T>(
+    delegate: EditorSchemaBuilder<*>,
+    prefix: List<String>,
+    visibility: (EditorFieldContext) -> Boolean = { true },
+) : BaseTypedSchemaBuilder<T>(delegate, prefix, visibility)
 
 fun <T> typedEditorSchema(
     serializer: KSerializer<T>,
