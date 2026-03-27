@@ -1,0 +1,16 @@
+kurrency:
+  database:
+    url: "jdbc:sqlite:plugins/Waves/kurrency.db"
+    driver: "org.sqlite.JDBC"
+    user: ""
+    password: ""
+  cache:
+    local-ttl-minutes: 10
+    redis:
+      enabled: false
+      host: "127.0.0.1"
+      port: 6379
+      user: ""
+      password: ""
+      database: 0
+      ttl-seconds: 1800
