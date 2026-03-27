@@ -4,7 +4,7 @@ import xyz.jpenilla.runtask.task.AbstractRun
 plugins {
     kotlin("jvm") version "2.3.20"
     kotlin("plugin.serialization") version "2.3.20"
-    id("com.gradleup.shadow") version "9.4.0"
+    id("com.gradleup.shadow") version "9.4.1"
     id("io.github.revxrsal.bukkitkobjects") version "0.0.5"
     id("gg.aquatic.runtime") version "26.0.11"
     id("co.uzzu.dotenv.gradle") version "4.0.0"
