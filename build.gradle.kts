@@ -128,7 +128,7 @@ dependencies {
     runtimeDownload("org.jetbrains.exposed:exposed-core:$exposedVersion")
     runtimeDownload("org.jetbrains.exposed:exposed-dao:$exposedVersion")
     runtimeDownload("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
-    runtimeDownload("redis.clients:jedis:7.4.0")
+    runtimeDownload("redis.clients:jedis:7.4.1")
     runtimeDownload("com.zaxxer:HikariCP:7.0.2")
     runtimeDownload("org.xerial:sqlite-jdbc:3.51.3.0")
 
