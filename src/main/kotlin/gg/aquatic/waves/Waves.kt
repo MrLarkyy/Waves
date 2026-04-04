@@ -53,7 +53,7 @@ import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.plugin.java.JavaPlugin
 import redis.clients.jedis.DefaultJedisClientConfig
 import redis.clients.jedis.HostAndPort
-import redis.clients.jedis.UnifiedJedis
+import redis.clients.jedis.RedisClient
 
 object Waves : JavaPlugin(), BootstrapHolder, RegistryHolder {
 
@@ -129,13 +129,16 @@ object Waves : JavaPlugin(), BootstrapHolder, RegistryHolder {
             val redisTtlSeconds = config.getLong("kurrency.cache.redis.ttl-seconds", 1800L)
 
             val redisConfig = DefaultJedisClientConfig.builder()
-                .user(if (redisUser.isBlank()) null else redisUser)
-                .password(if (redisPassword.isBlank()) null else redisPassword)
+                .user(redisUser.ifBlank { null })
+                .password(redisPassword.ifBlank { null })
                 .database(redisDatabase)
                 .build()
 
             val redisCache = gg.aquatic.kurrency.cache.RedisCurrencyCache(
-                jedis = UnifiedJedis(HostAndPort(redisHost, redisPort), redisConfig),
+                jedis = RedisClient.builder()
+                    .hostAndPort(HostAndPort(redisHost, redisPort))
+                    .clientConfig(redisConfig)
+                    .build(),
                 dbHandler = dbHandler,
                 ttlSeconds = redisTtlSeconds
             )
