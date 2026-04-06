@@ -42,7 +42,6 @@ import gg.aquatic.stacked.initializeStacked
 import gg.aquatic.statistik.initializeStatistik
 import gg.aquatic.waves.input.impl.ChatInput
 import gg.aquatic.waves.input.initializeInput
-import gg.aquatic.waves.testing.data.TestingEditor
 import gg.aquatic.waves.util.action.BossbarAction
 import gg.aquatic.waves.util.action.GiveItemAction
 import gg.aquatic.waves.util.action.MenuNextPageAction
@@ -100,8 +99,6 @@ object Waves : JavaPlugin(), BootstrapHolder, RegistryHolder {
         initializeInput(mapOf("chat" to ChatInput))
         initializeStatistik(emptyMap())
         HologramHandler.initialize()
-
-        TestingEditor.initialize()
 
         locale = KLocale.paper {}
         initializeKurrency(

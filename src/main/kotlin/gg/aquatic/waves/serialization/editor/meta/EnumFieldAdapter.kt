@@ -1,7 +1,6 @@
 package gg.aquatic.waves.serialization.editor.meta
 
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonPrimitive
+import com.charleskorn.kaml.YamlNode
 import org.bukkit.Material
 
 data class EnumFieldConfig(
@@ -11,10 +10,10 @@ data class EnumFieldConfig(
 ) : BaseTextInputFieldAdapter.Config
 
 object EnumFieldAdapter : BaseTextInputFieldAdapter<EnumFieldConfig>() {
-    override suspend fun parse(raw: String, context: EditorFieldContext, config: EnumFieldConfig): Result<JsonElement> {
+    override suspend fun parse(raw: String, context: EditorFieldContext, config: EnumFieldConfig): Result<YamlNode> {
         val allowed = config.values()
         val match = allowed.firstOrNull { it.equals(raw, ignoreCase = true) }
             ?: return Result.failure(IllegalArgumentException("Allowed: ${allowed.joinToString(", ")}"))
-        return Result.success(JsonPrimitive(match))
+        return Result.success(yamlScalar(match))
     }
 }

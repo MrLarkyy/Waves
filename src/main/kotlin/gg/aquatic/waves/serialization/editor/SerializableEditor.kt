@@ -1,12 +1,16 @@
 package gg.aquatic.waves.serialization.editor
 
+import com.charleskorn.kaml.Yaml
+import com.charleskorn.kaml.YamlList
+import com.charleskorn.kaml.YamlMap
+import com.charleskorn.kaml.YamlNode
+import com.charleskorn.kaml.YamlNull
 import gg.aquatic.common.coroutine.BukkitCtx
 import gg.aquatic.kmenu.KMenu
 import gg.aquatic.kmenu.inventory.ButtonType
 import gg.aquatic.kmenu.inventory.InventoryType
 import gg.aquatic.kmenu.menu.createMenu
 import gg.aquatic.stacked.stackedItem
-import gg.aquatic.waves.editor.EditorContext
 import gg.aquatic.waves.input.impl.ChatInput
 import gg.aquatic.waves.serialization.editor.meta.*
 import kotlinx.coroutines.launch
@@ -14,7 +18,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.json.*
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -24,24 +27,19 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 @OptIn(ExperimentalSerializationApi::class)
 object SerializableEditor {
 
-    private val defaultJson = Json {
-        prettyPrint = true
-        prettyPrintIndent = "  "
-        encodeDefaults = true
-        ignoreUnknownKeys = true
-    }
+    private val defaultYaml = Yaml()
 
     fun <T> startEditing(
         player: Player,
         title: Component,
         serializer: KSerializer<T>,
-        json: Json = defaultJson,
+        yaml: Yaml = defaultYaml,
         schema: EditorSchema<T>? = null,
         loadFresh: () -> T,
         onSave: (T) -> Unit
     ) {
         val context = EditorContext(player)
-        val document = SerializableEditorDocument(json, serializer, loadFresh())
+        val document = SerializableEditorDocument(yaml, serializer, loadFresh())
 
         KMenu.scope.launch {
             context.navigate {
@@ -108,19 +106,19 @@ object SerializableEditor {
         } else {
             descriptor
         }
-        val normalized = if (current == JsonNull && isContainer(resolvedDescriptor)) {
-            defaultElement(document.json, resolvedDescriptor, useNullForNullable = false)
+        val normalized = if (current is YamlNull && isContainer(resolvedDescriptor)) {
+            defaultYamlElement(resolvedDescriptor, useNullForNullable = false)
         } else {
             current
         }
 
-        if (current == JsonNull && normalized != JsonNull) {
+        if (current is YamlNull && normalized !is YamlNull) {
             document.set(path, normalized)
         }
 
         return NodeEditorState(
             resolvedDescriptor = resolvedDescriptor,
-            entries = nodeEntries(path, resolvedDescriptor, normalized, document.root(), schema, document.json)
+            entries = nodeEntries(path, resolvedDescriptor, normalized, document.root(), schema)
         )
     }
 
@@ -147,8 +145,8 @@ object SerializableEditor {
             }
 
             NodeKind.BOOLEAN -> {
-                val currentValue = document.get(entry.path).jsonPrimitive.booleanOrNull ?: false
-                document.set(entry.path, JsonPrimitive(!currentValue))
+                val currentValue = document.get(entry.path).booleanOrNull ?: false
+                document.set(entry.path, yamlScalar(!currentValue))
                 context.refresh()
             }
 
@@ -177,7 +175,7 @@ object SerializableEditor {
             }
 
             entry.descriptor.isNullable -> {
-                document.set(entry.path, JsonNull)
+                document.set(entry.path, yamlNull())
                 context.refresh()
                 true
             }
@@ -286,9 +284,9 @@ object SerializableEditor {
         val created = if (containerMeta?.newValueFactory != null) {
             containerMeta.newValueFactory.create(player, fieldContext) ?: return
         } else {
-            defaultElement(document.json, resolvedDescriptor.getElementDescriptor(0), useNullForNullable = false)
+            defaultYamlElement(resolvedDescriptor.getElementDescriptor(0), useNullForNullable = false)
         }
-        if (created is JsonArray && resolvedDescriptor.getElementDescriptor(0).kind != StructureKind.LIST) {
+        if (created is YamlList && resolvedDescriptor.getElementDescriptor(0).kind != StructureKind.LIST) {
             document.addAllToList(path, created)
         } else {
             document.addToList(path, created)
@@ -299,8 +297,8 @@ object SerializableEditor {
         label: String,
         path: List<PathSegment>,
         descriptor: SerialDescriptor,
-        value: JsonElement,
-        root: JsonElement
+        value: YamlNode,
+        root: YamlNode
     ) = EditorFieldContext(
         label = label,
         path = path.toSchemaPath(),
@@ -347,10 +345,10 @@ object SerializableEditor {
     private suspend fun selectEnumValue(
         player: Player,
         entry: EditorEntry
-    ): JsonElement? {
+    ): YamlNode? {
         val allowed = (0 until entry.descriptor.elementsCount)
             .map { entry.descriptor.getElementName(it) }
-        val current = entry.element.jsonPrimitive.contentOrNull
+        val current = entry.element.stringContentOrNull
         val entrySlots = (0..44).toList()
         val inventoryType = when {
             allowed.size <= 9 -> InventoryType.GENERIC9X3
@@ -374,7 +372,7 @@ object SerializableEditor {
                                     )
                                 }.getItem()
                                 onClick {
-                                    continuation.resume(JsonPrimitive(value))
+                                    continuation.resume(yamlScalar(value))
                                 }
                             }
                         }
@@ -386,7 +384,7 @@ object SerializableEditor {
                                     lore += Component.text("Set this value to null")
                                 }.getItem()
                                 onClick {
-                                    continuation.resume(JsonNull)
+                                    continuation.resume(yamlNull())
                                 }
                             }
                         }
@@ -446,7 +444,7 @@ object SerializableEditor {
         document.putToMap(
             path = path,
             key = key,
-            value = defaultElement(document.json, descriptor.getElementDescriptor(1), useNullForNullable = false)
+            value = defaultYamlElement(descriptor.getElementDescriptor(1), useNullForNullable = false)
         )
     }
 
@@ -467,25 +465,25 @@ object SerializableEditor {
         }
     }
 
-    private fun parsePrimitive(raw: String, descriptor: SerialDescriptor): JsonElement? {
+    private fun parsePrimitive(raw: String, descriptor: SerialDescriptor): YamlNode? {
         if (descriptor.isNullable && raw.equals("null", ignoreCase = true)) {
-            return JsonNull
+            return yamlNull()
         }
 
         return when {
-            descriptor.kind == PrimitiveKind.STRING -> JsonPrimitive(raw)
-            descriptor.kind == PrimitiveKind.BOOLEAN -> raw.toBooleanStrictOrNull()?.let(::JsonPrimitive)
-            descriptor.kind == PrimitiveKind.INT -> raw.toIntOrNull()?.let(::JsonPrimitive)
-            descriptor.kind == PrimitiveKind.LONG -> raw.toLongOrNull()?.let(::JsonPrimitive)
-            descriptor.kind == PrimitiveKind.FLOAT -> raw.toFloatOrNull()?.let(::JsonPrimitive)
-            descriptor.kind == PrimitiveKind.DOUBLE -> raw.toDoubleOrNull()?.let(::JsonPrimitive)
-            descriptor.kind == PrimitiveKind.BYTE -> raw.toByteOrNull()?.let { JsonPrimitive(it.toInt()) }
-            descriptor.kind == PrimitiveKind.SHORT -> raw.toShortOrNull()?.let { JsonPrimitive(it.toInt()) }
+            descriptor.kind == PrimitiveKind.STRING -> yamlScalar(raw)
+            descriptor.kind == PrimitiveKind.BOOLEAN -> raw.toBooleanStrictOrNull()?.let(::yamlScalar)
+            descriptor.kind == PrimitiveKind.INT -> NumberFieldSupport.parseNode(raw, "Invalid integer.", String::toIntOrNull)
+            descriptor.kind == PrimitiveKind.LONG -> NumberFieldSupport.parseNode(raw, "Invalid long.", String::toLongOrNull)
+            descriptor.kind == PrimitiveKind.FLOAT -> NumberFieldSupport.parseNode(raw, "Invalid float.", String::toFloatOrNull)
+            descriptor.kind == PrimitiveKind.DOUBLE -> NumberFieldSupport.parseNode(raw, "Invalid number.", String::toDoubleOrNull)
+            descriptor.kind == PrimitiveKind.BYTE -> NumberFieldSupport.parseNode(raw, "Invalid byte.", String::toByteOrNull)
+            descriptor.kind == PrimitiveKind.SHORT -> NumberFieldSupport.parseNode(raw, "Invalid short.", String::toShortOrNull)
             descriptor.kind == SerialKind.ENUM -> {
                 val match = (0 until descriptor.elementsCount)
                     .map { descriptor.getElementName(it) }
                     .firstOrNull { it.equals(raw, ignoreCase = true) }
-                match?.let(::JsonPrimitive)
+                match?.let(::yamlScalar)
             }
 
             else -> null
@@ -495,10 +493,9 @@ object SerializableEditor {
     private fun <T> nodeEntries(
         basePath: List<PathSegment>,
         descriptor: SerialDescriptor,
-        element: JsonElement,
-        root: JsonElement,
-        schema: EditorSchema<T>?,
-        json: Json
+        element: YamlNode,
+        root: YamlNode,
+        schema: EditorSchema<T>?
     ): List<EditorEntry> {
         if (descriptor.kind is PolymorphicKind) {
             val resolved = schema?.resolveDescriptor(
@@ -517,17 +514,17 @@ object SerializableEditor {
                     root = root
                 )
             ) ?: descriptor
-            return nodeEntries(basePath, resolved, element, root, schema, json)
+            return nodeEntries(basePath, resolved, element, root, schema)
         }
 
         return when (descriptor.kind) {
             StructureKind.CLASS,
             StructureKind.OBJECT -> {
-                val obj = element as? JsonObject ?: JsonObject(emptyMap())
+                val obj = element as? YamlMap ?: yamlMap(emptyMap())
                 (0 until descriptor.elementsCount).map { index ->
                     val name = descriptor.getElementName(index)
                     val childDescriptor = descriptor.getElementDescriptor(index)
-                    val childElement = obj[name] ?: defaultElement(json, childDescriptor)
+                    val childElement = obj.get<YamlNode>(name) ?: defaultYamlElement(childDescriptor)
                     val absolutePath = basePath + PathSegment.Key(name)
                     val fieldContext = EditorFieldContext(
                         label = prettify(name),
@@ -554,9 +551,9 @@ object SerializableEditor {
             }
 
             StructureKind.LIST -> {
-                val array = element as? JsonArray ?: JsonArray(emptyList())
+                val array = element as? YamlList ?: yamlList(emptyList())
                 val childDescriptor = descriptor.getElementDescriptor(0)
-                array.mapIndexed { index, child ->
+                array.items.mapIndexed { index, child ->
                     val absolutePath = basePath + PathSegment.Index(index)
                     createEntry(
                         label = "#$index",
@@ -580,19 +577,19 @@ object SerializableEditor {
             }
 
             StructureKind.MAP -> {
-                val obj = element as? JsonObject ?: JsonObject(emptyMap())
+                val obj = element as? YamlMap ?: yamlMap(emptyMap())
                 val childDescriptor = descriptor.getElementDescriptor(1)
-                obj.entries.sortedBy { it.key }.map { (key, child) ->
-                    val absolutePath = basePath + PathSegment.Key(key)
+                obj.entries.entries.sortedBy { it.key.content }.map { (key, child) ->
+                    val absolutePath = basePath + PathSegment.Key(key.content)
                     createEntry(
-                        label = key,
+                        label = key.content,
                         descriptor = childDescriptor,
                         element = child,
                         path = absolutePath,
                         removable = true,
                         meta = schema?.resolve(
                             EditorFieldContext(
-                                label = key,
+                                label = key.content,
                                 path = absolutePath.toSchemaPath(),
                                 pathSegments = absolutePath.toSchemaSegments(),
                                 description = emptyList(),
@@ -612,7 +609,7 @@ object SerializableEditor {
     private fun createEntry(
         label: String,
         descriptor: SerialDescriptor,
-        element: JsonElement,
+        element: YamlNode,
         path: List<PathSegment>,
         removable: Boolean,
         meta: FieldMeta?
@@ -648,13 +645,13 @@ object SerializableEditor {
 
     private fun defaultEntryIcon(entry: EditorEntry) = when (entry.kind) {
         NodeKind.OBJECT -> buildEntryIcon(entry, entry.meta?.iconMaterial ?: objectMaterial(entry)) {
-            if (entry.element == JsonNull) {
+            if (entry.element is YamlNull) {
                 lore += EditorItemStyling.valueLine("State: ", "unset")
             }
             polymorphicType(entry.element)?.let { type ->
                 lore += EditorItemStyling.valueLine("Type: ", prettify(type))
             }
-            lore += EditorItemStyling.hint(if (entry.element == JsonNull) "Click to create" else "Open object")
+            lore += EditorItemStyling.hint(if (entry.element is YamlNull) "Click to create" else "Open object")
             appendClearHint(entry)
         }
 
@@ -672,7 +669,7 @@ object SerializableEditor {
 
         NodeKind.BOOLEAN -> buildEntryIcon(
             entry,
-            entry.meta?.iconMaterial ?: if (entry.element.jsonPrimitive.booleanOrNull == true) Material.LIME_DYE else Material.GRAY_DYE
+            entry.meta?.iconMaterial ?: if (entry.element.booleanOrNull == true) Material.LIME_DYE else Material.GRAY_DYE
         ) {
             lore += EditorItemStyling.valueLine("Value: ", summary(entry.element))
             lore += EditorItemStyling.hint("Click to toggle")
@@ -716,13 +713,8 @@ object SerializableEditor {
         }
     }
 
-    private fun summary(element: JsonElement): String {
-        return when (element) {
-            JsonNull -> "null"
-            is JsonObject -> "${element.size} entries"
-            is JsonArray -> "${element.size} items"
-            is JsonPrimitive -> element.contentOrNull ?: element.toString()
-        }.take(80)
+    private fun summary(element: YamlNode): String {
+        return element.displayString().take(80)
     }
 
     private fun isContainer(descriptor: SerialDescriptor): Boolean {
@@ -731,40 +723,6 @@ object SerializableEditor {
             descriptor.kind == StructureKind.LIST ||
             descriptor.kind == StructureKind.MAP ||
             descriptor.kind is PolymorphicKind
-    }
-
-    private fun defaultElement(json: Json, descriptor: SerialDescriptor, useNullForNullable: Boolean = true): JsonElement {
-        if (descriptor.isNullable && useNullForNullable) return JsonNull
-
-        return when {
-            descriptor.kind is PolymorphicKind -> {
-                JsonObject(emptyMap())
-            }
-
-            descriptor.kind == StructureKind.CLASS || descriptor.kind == StructureKind.OBJECT -> JsonObject(
-                buildMap {
-                    repeat(descriptor.elementsCount) { index ->
-                        put(
-                            descriptor.getElementName(index),
-                            defaultElement(json, descriptor.getElementDescriptor(index))
-                        )
-                    }
-                }
-            )
-
-            descriptor.kind == StructureKind.LIST -> JsonArray(emptyList())
-            descriptor.kind == StructureKind.MAP -> JsonObject(emptyMap())
-            descriptor.kind == PrimitiveKind.STRING -> JsonPrimitive("")
-            descriptor.kind == PrimitiveKind.BOOLEAN -> JsonPrimitive(false)
-            descriptor.kind == PrimitiveKind.INT -> JsonPrimitive(0)
-            descriptor.kind == PrimitiveKind.LONG -> JsonPrimitive(0L)
-            descriptor.kind == PrimitiveKind.FLOAT -> JsonPrimitive(0f)
-            descriptor.kind == PrimitiveKind.DOUBLE -> JsonPrimitive(0.0)
-            descriptor.kind == PrimitiveKind.BYTE -> JsonPrimitive(0)
-            descriptor.kind == PrimitiveKind.SHORT -> JsonPrimitive(0)
-            descriptor.kind == SerialKind.ENUM -> JsonPrimitive(descriptor.getElementName(0))
-            else -> JsonPrimitive("")
-        }
     }
 
     private fun prettify(raw: String): String {
@@ -847,11 +805,10 @@ object SerializableEditor {
         }
     }
 
-    private fun polymorphicType(element: JsonElement): String? {
-        return (element as? JsonObject)
-            ?.get("type")
-            ?.let { it as? JsonPrimitive }
-            ?.contentOrNull
+    private fun polymorphicType(element: YamlNode): String? {
+        return (element as? YamlMap)
+            ?.get<YamlNode>("type")
+            ?.stringContentOrNull
     }
 
     private fun titleString(component: Component): String {
@@ -861,7 +818,7 @@ object SerializableEditor {
     private data class EditorEntry(
         val label: String,
         val descriptor: SerialDescriptor,
-        val element: JsonElement,
+        val element: YamlNode,
         val path: List<PathSegment>,
         val removable: Boolean,
         val kind: NodeKind,
@@ -889,34 +846,34 @@ object SerializableEditor {
     }
 
     private class SerializableEditorDocument<T>(
-        val json: Json,
+        val yaml: Yaml,
         private val serializer: KSerializer<T>,
         value: T
     ) {
-        private var root: JsonElement = json.encodeToJsonElement(serializer, value)
+        private var root: YamlNode = yaml.parseToYamlNode(yaml.encodeToString(serializer, value))
 
-        fun root(): JsonElement = root
+        fun root(): YamlNode = root
 
-        fun replaceRoot(value: JsonElement) {
+        fun replaceRoot(value: YamlNode) {
             root = value
         }
 
         fun decode(): T {
-            return json.decodeFromJsonElement(serializer, root)
+            return yaml.decodeFromYamlNode(serializer, root)
         }
 
-        fun get(path: List<PathSegment>): JsonElement {
+        fun get(path: List<PathSegment>): YamlNode {
             var current = root
             for (segment in path) {
                 current = when (segment) {
-                    is PathSegment.Key -> (current as? JsonObject)?.get(segment.value) ?: JsonNull
-                    is PathSegment.Index -> (current as? JsonArray)?.getOrNull(segment.value) ?: JsonNull
+                    is PathSegment.Key -> current.getMapValue(segment.value) ?: yamlNull()
+                    is PathSegment.Index -> current.getListValue(segment.value) ?: yamlNull()
                 }
             }
             return current
         }
 
-        fun set(path: List<PathSegment>, value: JsonElement) {
+        fun set(path: List<PathSegment>, value: YamlNode) {
             root = update(root, path, value)
         }
 
@@ -924,78 +881,81 @@ object SerializableEditor {
             root = removeAt(root, path)
         }
 
-        fun addToList(path: List<PathSegment>, value: JsonElement) {
-            val current = get(path) as? JsonArray ?: JsonArray(emptyList())
-            set(path, JsonArray(current + value))
+        fun addToList(path: List<PathSegment>, value: YamlNode) {
+            val current = get(path) as? YamlList ?: yamlList(emptyList())
+            set(path, yamlList(current.items + value))
         }
 
-        fun addAllToList(path: List<PathSegment>, values: JsonArray) {
-            val current = get(path) as? JsonArray ?: JsonArray(emptyList())
-            set(path, JsonArray(current + values))
+        fun addAllToList(path: List<PathSegment>, values: YamlList) {
+            val current = get(path) as? YamlList ?: yamlList(emptyList())
+            set(path, yamlList(current.items + values.items))
         }
 
-        fun putToMap(path: List<PathSegment>, key: String, value: JsonElement) {
-            val current = get(path) as? JsonObject ?: JsonObject(emptyMap())
-            set(path, JsonObject(current.toMutableMap().apply { put(key, value) }))
+        fun putToMap(path: List<PathSegment>, key: String, value: YamlNode) {
+            val current = get(path) as? YamlMap ?: yamlMap(emptyMap())
+            val mutable = current.entries.entries.associate { it.key.content to it.value }.toMutableMap()
+            mutable[key] = value
+            set(path, yamlMap(mutable))
         }
 
-        private fun update(current: JsonElement, path: List<PathSegment>, value: JsonElement, depth: Int = 0): JsonElement {
+        private fun update(current: YamlNode, path: List<PathSegment>, value: YamlNode, depth: Int = 0): YamlNode {
             if (depth >= path.size) return value
 
             return when (val segment = path[depth]) {
                 is PathSegment.Key -> {
-                    val obj = current as? JsonObject ?: JsonObject(emptyMap())
-                    val mutable = obj.toMutableMap()
-                    mutable[segment.value] = update(mutable[segment.value] ?: JsonNull, path, value, depth + 1)
-                    JsonObject(mutable)
+                    val obj = current as? YamlMap ?: yamlMap(emptyMap())
+                    val mutable = obj.entries.entries.associate { it.key.content to it.value }.toMutableMap()
+                    mutable[segment.value] = update(mutable[segment.value] ?: yamlNull(), path, value, depth + 1)
+                    yamlMap(mutable)
                 }
 
                 is PathSegment.Index -> {
-                    val arr = (current as? JsonArray)?.toMutableList() ?: mutableListOf()
+                    val arr = (current as? YamlList)?.items?.toMutableList() ?: mutableListOf()
                     while (arr.size <= segment.value) {
-                        arr += JsonNull
+                        arr += yamlNull()
                     }
                     arr[segment.value] = update(arr[segment.value], path, value, depth + 1)
-                    JsonArray(arr)
+                    yamlList(arr)
                 }
             }
         }
 
-        private fun removeAt(current: JsonElement, path: List<PathSegment>, depth: Int = 0): JsonElement {
+        private fun removeAt(current: YamlNode, path: List<PathSegment>, depth: Int = 0): YamlNode {
             if (depth >= path.size) return current
 
             return when (val segment = path[depth]) {
                 is PathSegment.Key -> {
-                    val obj = current as? JsonObject ?: return current
+                    val obj = current as? YamlMap ?: return current
+                    val currentEntries = obj.entries.entries.associate { it.key.content to it.value }
                     if (depth == path.lastIndex) {
-                        JsonObject(obj.toMutableMap().apply { remove(segment.value) })
+                        yamlMap(currentEntries.toMutableMap().apply { remove(segment.value) })
                     } else {
-                        val mutable = obj.toMutableMap()
+                        val mutable = currentEntries.toMutableMap()
                         val existing = mutable[segment.value] ?: return current
                         mutable[segment.value] = removeAt(existing, path, depth + 1)
-                        JsonObject(mutable)
+                        yamlMap(mutable)
                     }
                 }
 
                 is PathSegment.Index -> {
-                    val arr = current as? JsonArray ?: return current
-                    val mutable = arr.toMutableList()
+                    val arr = current as? YamlList ?: return current
+                    val mutable = arr.items.toMutableList()
                     if (segment.value !in mutable.indices) return current
                     if (depth == path.lastIndex) {
                         mutable.removeAt(segment.value)
                     } else {
                         mutable[segment.value] = removeAt(mutable[segment.value], path, depth + 1)
                     }
-                    JsonArray(mutable)
+                    yamlList(mutable)
                 }
             }
         }
     }
 
-    private val EditorEntry.rootElement: JsonElement
+    private val EditorEntry.rootElement: YamlNode
         get() = element
 
-    private fun EditorEntry.toFieldContext(root: JsonElement): EditorFieldContext {
+    private fun EditorEntry.toFieldContext(root: YamlNode): EditorFieldContext {
         return EditorFieldContext(
             label = label,
             path = path.toSchemaPath(),

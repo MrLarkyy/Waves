@@ -1,9 +1,8 @@
 package gg.aquatic.waves.serialization.editor.meta
 
+import com.charleskorn.kaml.YamlNode
 import gg.aquatic.stacked.ItemEncoder
 import gg.aquatic.stacked.StackedItem
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonPrimitive
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
@@ -38,10 +37,10 @@ object MaterialLikeFieldAdapter : BaseTextInputFieldAdapter<MaterialLikeFieldCon
         return Result.success("base64:$encoded")
     }
 
-    override suspend fun parse(raw: String, context: EditorFieldContext, config: MaterialLikeFieldConfig): Result<JsonElement> {
+    override suspend fun parse(raw: String, context: EditorFieldContext, config: MaterialLikeFieldConfig): Result<YamlNode> {
         val normalized = validateMaterialLike(raw)
             ?: return Result.failure(IllegalArgumentException("Invalid material or factory item id."))
-        return Result.success(JsonPrimitive(normalized))
+        return Result.success(yamlScalar(normalized))
     }
 
     private fun ItemStack.ensureSingleItem(): ItemStack = clone().apply { amount = 1 }

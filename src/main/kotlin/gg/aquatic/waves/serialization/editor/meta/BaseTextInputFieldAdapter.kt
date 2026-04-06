@@ -4,7 +4,7 @@ import gg.aquatic.common.coroutine.BukkitCtx
 import gg.aquatic.stacked.stackedItem
 import gg.aquatic.waves.input.impl.ChatInput
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.JsonElement
+import com.charleskorn.kaml.YamlNode
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
@@ -19,7 +19,7 @@ abstract class BaseTextInputFieldAdapter<C : BaseTextInputFieldAdapter.Config> :
     }
 
     final override fun createItem(context: EditorFieldContext, config: C, defaultItem: () -> ItemStack): ItemStack {
-        val rawValue = context.value.toString().trim('"')
+        val rawValue = context.value.displayString()
         return stackedItem(config.iconMaterial) {
             displayName = EditorItemStyling.title(context.label)
             if (context.description.isNotEmpty()) {
@@ -64,5 +64,5 @@ abstract class BaseTextInputFieldAdapter<C : BaseTextInputFieldAdapter.Config> :
         config: C
     ): Result<String> = Result.success(raw)
 
-    protected abstract suspend fun parse(raw: String, context: EditorFieldContext, config: C): Result<JsonElement>
+    protected abstract suspend fun parse(raw: String, context: EditorFieldContext, config: C): Result<YamlNode>
 }

@@ -1,7 +1,6 @@
 package gg.aquatic.waves.serialization.editor.meta
 
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonPrimitive
+import com.charleskorn.kaml.YamlNode
 import org.bukkit.Color
 import org.bukkit.Material
 
@@ -11,11 +10,11 @@ data class ColorFieldConfig(
 ) : BaseTextInputFieldAdapter.Config
 
 object ColorFieldAdapter : BaseTextInputFieldAdapter<ColorFieldConfig>() {
-    override suspend fun parse(raw: String, context: EditorFieldContext, config: ColorFieldConfig): Result<JsonElement> {
+    override suspend fun parse(raw: String, context: EditorFieldContext, config: ColorFieldConfig): Result<YamlNode> {
         return if (parseColor(raw) == null) {
             Result.failure(IllegalArgumentException("Invalid color."))
         } else {
-            Result.success(JsonPrimitive(raw.trim()))
+            Result.success(yamlScalar(raw.trim()))
         }
     }
 

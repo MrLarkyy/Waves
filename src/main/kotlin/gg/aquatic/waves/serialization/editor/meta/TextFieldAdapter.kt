@@ -1,7 +1,6 @@
 package gg.aquatic.waves.serialization.editor.meta
 
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonPrimitive
+import com.charleskorn.kaml.YamlNode
 import org.bukkit.Material
 
 data class TextFieldConfig(
@@ -12,8 +11,8 @@ data class TextFieldConfig(
 ) : BaseTextInputFieldAdapter.Config
 
 object TextFieldAdapter : BaseTextInputFieldAdapter<TextFieldConfig>() {
-    override suspend fun parse(raw: String, context: EditorFieldContext, config: TextFieldConfig): Result<JsonElement> {
+    override suspend fun parse(raw: String, context: EditorFieldContext, config: TextFieldConfig): Result<YamlNode> {
         return config.validator(raw)?.let { Result.failure(IllegalArgumentException(it)) }
-            ?: Result.success(JsonPrimitive(raw))
+            ?: Result.success(yamlScalar(raw))
     }
 }

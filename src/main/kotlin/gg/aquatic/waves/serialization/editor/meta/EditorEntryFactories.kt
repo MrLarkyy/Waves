@@ -1,16 +1,16 @@
 package gg.aquatic.waves.serialization.editor.meta
 
+import com.charleskorn.kaml.YamlNode
 import gg.aquatic.common.coroutine.BukkitCtx
 import gg.aquatic.waves.input.impl.ChatInput
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.*
 
 object EditorEntryFactories {
 
     fun text(
         prompt: String,
         validator: suspend (String) -> String? = { null },
-        transform: suspend (String) -> JsonElement = { JsonPrimitive(it) }
+        transform: suspend (String) -> YamlNode = { yamlScalar(it) }
     ): EntryFactory {
         return EntryFactory { player, _ ->
             withContext(BukkitCtx.ofEntity(player)) {
@@ -50,8 +50,9 @@ object EditorEntryFactories {
 
         val values = parseIntegerBatch(input)
         val filteredValues = if (unique) {
-            val existing = (context.value as? JsonArray)
-                ?.mapNotNull { element -> element.jsonPrimitive.intOrNull }
+            val existing = (context.value as? com.charleskorn.kaml.YamlList)
+                ?.items
+                ?.mapNotNull { element -> element.intOrNull }
                 ?.toHashSet()
                 ?: hashSetOf()
             values.filter { value -> existing.add(value) }
@@ -61,8 +62,8 @@ object EditorEntryFactories {
 
         when (filteredValues.size) {
             0 -> null
-            1 -> JsonPrimitive(filteredValues.single())
-            else -> JsonArray(filteredValues.map(::JsonPrimitive))
+            1 -> yamlScalar(filteredValues.single().toString())
+            else -> yamlList(filteredValues.map { yamlScalar(it.toString()) })
         }
     }
 
@@ -78,7 +79,7 @@ object EditorEntryFactories {
             if (max != null && parsed > max) return@text "Value must be at most $max."
             null
         },
-        transform = { JsonPrimitive(it.toFloat()) }
+        transform = { yamlScalar(it.toFloat().toString()) }
     )
 
     fun boolean(prompt: String): EntryFactory = text(
@@ -86,12 +87,12 @@ object EditorEntryFactories {
         validator = {
             if (it.equals("true", true) || it.equals("false", true)) null else "Invalid boolean."
         },
-        transform = { JsonPrimitive(it.toBooleanStrict()) }
+        transform = { yamlScalar(it.toBooleanStrict().toString()) }
     )
 
     fun map(
         keyPrompt: String,
-        valueFactory: suspend (String) -> JsonElement,
+        valueFactory: suspend (String) -> YamlNode,
         keyValidator: suspend (String) -> String? = { null }
     ): MapEntryFactory {
         return MapEntryFactory { player, _ ->

@@ -1,8 +1,8 @@
 package gg.aquatic.waves.serialization.editor.meta
 
+import com.charleskorn.kaml.YamlNode
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.json.JsonElement
 import gg.aquatic.kmenu.inventory.ButtonType
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
@@ -13,23 +13,23 @@ data class EditorFieldContext(
     val pathSegments: List<String>,
     val description: List<String>,
     val descriptor: SerialDescriptor,
-    val value: JsonElement,
-    val root: JsonElement,
+    val value: YamlNode,
+    val root: YamlNode,
 )
 
 sealed interface FieldEditResult {
     data object NoChange : FieldEditResult
     data object PassThrough : FieldEditResult
-    data class Updated(val value: JsonElement) : FieldEditResult
-    data class UpdatedRoot(val value: JsonElement) : FieldEditResult
+    data class Updated(val value: YamlNode) : FieldEditResult
+    data class UpdatedRoot(val value: YamlNode) : FieldEditResult
 }
 
 fun interface EntryFactory {
-    suspend fun create(player: org.bukkit.entity.Player, context: EditorFieldContext): JsonElement?
+    suspend fun create(player: org.bukkit.entity.Player, context: EditorFieldContext): YamlNode?
 }
 
 fun interface MapEntryFactory {
-    suspend fun create(player: org.bukkit.entity.Player, context: EditorFieldContext): Pair<String, JsonElement>?
+    suspend fun create(player: org.bukkit.entity.Player, context: EditorFieldContext): Pair<String, YamlNode>?
 }
 
 interface EditorFieldAdapter {

@@ -108,6 +108,7 @@ dependencies {
     implementation("gg.aquatic:Dispatch:26.0.5")
     implementation("gg.aquatic:Dispatch-bukkit:26.0.5")
     implementation("gg.aquatic:QuickMiniMessage:26.0.3")
+    runtimeDownload("com.charleskorn.kaml:kaml:0.104.0")
 
     runtimeDownload("com.github.ben-manes.caffeine:caffeine:3.2.3")
     runtimeDownload("org.reflections:reflections:0.10.2")
@@ -175,7 +176,7 @@ val regularJar = tasks.register<ShadowJar>("regularJar") {
     archiveClassifier.set("")
     includedDependencies.setFrom(project.provider {
         val workspacePath = rootDir.absoluteFile.normalize().toPath()
-        buildList<java.io.File> {
+        buildList {
             configurations.get().forEach { configuration ->
                 configuration.resolvedConfiguration.resolvedArtifacts.forEach { artifact ->
                     val artifactPath = artifact.file.absoluteFile.normalize().toPath()
