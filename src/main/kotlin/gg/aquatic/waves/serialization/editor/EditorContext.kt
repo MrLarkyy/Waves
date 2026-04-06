@@ -12,9 +12,13 @@ class EditorContext(
 ) {
     internal val path = Stack<suspend () -> Unit>()
     private val navMutex = Mutex()
+    private var suppressedCloseEvents = 0
 
     suspend fun navigate(openLogic: suspend () -> Unit) {
         navMutex.withLock {
+            if (path.isNotEmpty()) {
+                suppressedCloseEvents++
+            }
             path.push(openLogic)
         }
         openLogic()
@@ -23,6 +27,7 @@ class EditorContext(
     suspend fun goBack() {
         val previous = navMutex.withLock {
             if (path.size > 1) {
+                suppressedCloseEvents++
                 path.pop()
                 path.peek()
             } else {
@@ -41,8 +46,24 @@ class EditorContext(
 
     suspend fun refresh() {
         val current = navMutex.withLock {
-            if (path.isNotEmpty()) path.peek() else null
+            if (path.isNotEmpty()) {
+                suppressedCloseEvents++
+                path.peek()
+            } else {
+                null
+            }
         }
         current?.invoke()
+    }
+
+    suspend fun shouldIgnoreClosedMenu(): Boolean {
+        return navMutex.withLock {
+            if (suppressedCloseEvents > 0) {
+                suppressedCloseEvents--
+                true
+            } else {
+                false
+            }
+        }
     }
 }
