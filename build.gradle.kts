@@ -50,6 +50,7 @@ dependencyResolution {
     repo("https://jitpack.io")
     relocate("kotlin", "gg.aquatic.waves.libs.kotlin")
     relocate("kotlinx", "gg.aquatic.waves.libs.kotlinx")
+    relocate("org.jetbrains.kotlin", "gg.aquatic.waves.libs.kotlin")
     relocate("org.jetbrains.exposed", "gg.aquatic.waves.libs.exposed")
     relocate("com.zaxxer.hikari", "gg.aquatic.waves.libs.hikari")
     relocate("org.bstats", "gg.aquatic.waves.libs.bstats")
@@ -132,6 +133,7 @@ dependencies {
     runtimeDownload("redis.clients:jedis:7.4.1")
     runtimeDownload("com.zaxxer:HikariCP:7.0.2")
     runtimeDownload("org.xerial:sqlite-jdbc:3.51.3.0")
+    runtimeDownload("org.mariadb.jdbc:mariadb-java-client:3.5.8")
 
     runtimeDownload("org.jetbrains.kotlin:kotlin-stdlib:2.3.20")
     runtimeDownload("org.jetbrains.kotlin:kotlin-reflect:2.3.20")
