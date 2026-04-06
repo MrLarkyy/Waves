@@ -90,6 +90,7 @@ object SerializableEditor {
                     descriptor = serializer.descriptor,
                     label = titleString(title),
                     schema = schema,
+                    onReturn = { complete(null) },
                     onClosed = {
                         if (!context.shouldIgnoreClosedMenu()) {
                             complete(null)
@@ -110,6 +111,7 @@ object SerializableEditor {
         descriptor: SerialDescriptor,
         label: String,
         schema: EditorSchema<T>?,
+        onReturn: (suspend () -> Unit)? = null,
         onClosed: (suspend () -> Unit)? = null,
         onSave: suspend () -> Unit
     ) {
@@ -123,6 +125,7 @@ object SerializableEditor {
                 descriptor = passthrough.descriptor,
                 label = passthrough.label,
                 schema = schema,
+                onReturn = onReturn,
                 onClosed = onClosed,
                 onSave = onSave
             )
@@ -150,7 +153,18 @@ object SerializableEditor {
                 }
             }
 
-            addEditorControls(context, document, path, label, descriptor, editorState.resolvedDescriptor, schema, onSave)
+            addEditorControls(
+                context,
+                document,
+                path,
+                label,
+                descriptor,
+                editorState.resolvedDescriptor,
+                schema,
+                onSave,
+                onReturn,
+                hasCloseHandler = onClosed != null
+            )
         }.open(context.player)
     }
 
@@ -173,7 +187,7 @@ object SerializableEditor {
 
         when (entry.kind) {
             NodeKind.OBJECT, NodeKind.LIST, NodeKind.MAP -> context.navigate {
-                openNodeEditor(context, title, document, entry.path, entry.descriptor, entry.label, schema, onClosed = null, onSave)
+                openNodeEditor(context, title, document, entry.path, entry.descriptor, entry.label, schema, onReturn = null, onClosed = null, onSave)
             }
 
             NodeKind.BOOLEAN -> {
@@ -257,7 +271,9 @@ object SerializableEditor {
         descriptor: SerialDescriptor,
         resolvedDescriptor: SerialDescriptor,
         schema: EditorSchema<T>?,
-        onSave: suspend () -> Unit
+        onSave: suspend () -> Unit,
+        onReturn: (suspend () -> Unit)?,
+        hasCloseHandler: Boolean,
     ) {
         button("save", 45) {
             item = stackedItem(Material.LIME_DYE) {
@@ -272,6 +288,24 @@ object SerializableEditor {
                     displayName = Component.text("Back")
                 }.getItem()
                 onClick { context.goBack() }
+            }
+        } else if (onReturn != null) {
+            button("return", 46) {
+                item = stackedItem(Material.ARROW) {
+                    displayName = Component.text("Return")
+                }.getItem()
+                onClick { onReturn() }
+            }
+        } else if (hasCloseHandler) {
+            button("close", 46) {
+                item = stackedItem(Material.BARRIER) {
+                    displayName = Component.text("Close")
+                }.getItem()
+                onClick {
+                    withContext(BukkitCtx.ofEntity(context.player)) {
+                        context.player.closeInventory()
+                    }
+                }
             }
         }
 

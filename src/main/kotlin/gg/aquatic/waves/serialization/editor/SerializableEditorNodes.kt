@@ -16,6 +16,7 @@ import gg.aquatic.waves.serialization.editor.meta.booleanOrNull
 import gg.aquatic.waves.serialization.editor.meta.defaultYamlElement
 import gg.aquatic.waves.serialization.editor.meta.displayString
 import gg.aquatic.waves.serialization.editor.meta.stringContentOrNull
+import gg.aquatic.waves.serialization.editor.meta.yamlFieldKey
 import gg.aquatic.waves.serialization.editor.meta.yamlList
 import gg.aquatic.waves.serialization.editor.meta.yamlMap
 import org.bukkit.Material
@@ -135,7 +136,7 @@ internal fun <T> nodeEntries(
             (0 until descriptor.elementsCount).map { index ->
                 val name = descriptor.getElementName(index)
                 val childDescriptor = descriptor.getElementDescriptor(index)
-                val childElement = obj.get<YamlNode>(name) ?: defaultYamlElement(childDescriptor)
+                val childElement = obj.getSerializedFieldValue(name) ?: defaultYamlElement(childDescriptor)
                 val absolutePath = basePath + PathSegment.Key(name)
                 val fieldContext = EditorFieldContext(
                     label = prettify(name),
@@ -154,6 +155,7 @@ internal fun <T> nodeEntries(
                     label = meta?.displayName ?: prettify(name),
                     descriptor = childDescriptor,
                     element = childElement,
+                    root = root,
                     path = absolutePath,
                     removable = false,
                     meta = meta
@@ -170,6 +172,7 @@ internal fun <T> nodeEntries(
                     label = "#$index",
                     descriptor = childDescriptor,
                     element = child,
+                    root = root,
                     path = absolutePath,
                     removable = true,
                     meta = schema?.resolve(
@@ -196,6 +199,7 @@ internal fun <T> nodeEntries(
                     label = key.content,
                     descriptor = childDescriptor,
                     element = child,
+                    root = root,
                     path = absolutePath,
                     removable = true,
                     meta = schema?.resolve(
@@ -221,6 +225,7 @@ internal fun createEntry(
     label: String,
     descriptor: SerialDescriptor,
     element: YamlNode,
+    root: YamlNode,
     path: List<PathSegment>,
     removable: Boolean,
     meta: FieldMeta?
@@ -229,6 +234,7 @@ internal fun createEntry(
         label = label,
         descriptor = descriptor,
         element = element,
+        root = root,
         path = path,
         removable = removable,
         kind = classify(descriptor),
@@ -251,7 +257,7 @@ internal fun classify(descriptor: SerialDescriptor): NodeKind {
 }
 
 internal fun entryIcon(entry: EditorEntry) = entry.meta?.adapter?.createItem(
-    entry.toFieldContext(entry.rootElement),
+    entry.toFieldContext(entry.root),
 ) { defaultEntryIcon(entry) } ?: defaultEntryIcon(entry)
 
 internal fun defaultEntryIcon(entry: EditorEntry) = when (entry.kind) {
@@ -420,4 +426,8 @@ internal fun polymorphicType(element: YamlNode): String? {
     return (element as? YamlMap)
         ?.get<YamlNode>("type")
         ?.stringContentOrNull
+}
+
+private fun YamlMap.getSerializedFieldValue(name: String): YamlNode? {
+    return get<YamlNode>(name) ?: get<YamlNode>(yamlFieldKey(name))
 }

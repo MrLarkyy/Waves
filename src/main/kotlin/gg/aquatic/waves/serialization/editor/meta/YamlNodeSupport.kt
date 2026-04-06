@@ -14,6 +14,19 @@ import kotlinx.serialization.descriptors.StructureKind
 
 private val rootYamlPath = YamlPath.root
 
+fun yamlFieldKey(name: String): String {
+    return buildString(name.length + 4) {
+        name.forEachIndexed { index, char ->
+            if (char.isUpperCase()) {
+                if (index > 0) append('-')
+                append(char.lowercaseChar())
+            } else {
+                append(char)
+            }
+        }
+    }
+}
+
 fun yamlScalar(content: Any?): YamlScalar = YamlScalar(content?.toString() ?: "", rootYamlPath)
 
 fun yamlNull(): YamlNull = YamlNull(rootYamlPath)
@@ -66,7 +79,7 @@ fun defaultYamlElement(descriptor: SerialDescriptor, useNullForNullable: Boolean
             buildMap {
                 repeat(descriptor.elementsCount) { index ->
                     put(
-                        descriptor.getElementName(index),
+                        yamlFieldKey(descriptor.getElementName(index)),
                         defaultYamlElement(descriptor.getElementDescriptor(index))
                     )
                 }

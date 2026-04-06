@@ -8,6 +8,7 @@ import gg.aquatic.waves.serialization.editor.meta.EditorFieldContext
 import gg.aquatic.waves.serialization.editor.meta.FieldMeta
 import gg.aquatic.waves.serialization.editor.meta.getListValue
 import gg.aquatic.waves.serialization.editor.meta.getMapValue
+import gg.aquatic.waves.serialization.editor.meta.yamlFieldKey
 import gg.aquatic.waves.serialization.editor.meta.yamlList
 import gg.aquatic.waves.serialization.editor.meta.yamlMap
 import gg.aquatic.waves.serialization.editor.meta.yamlNull
@@ -18,6 +19,7 @@ internal data class EditorEntry(
     val label: String,
     val descriptor: SerialDescriptor,
     val element: YamlNode,
+    val root: YamlNode,
     val path: List<PathSegment>,
     val removable: Boolean,
     val kind: NodeKind,
@@ -65,7 +67,7 @@ internal class SerializableEditorDocument<T>(
         var current = root
         for (segment in path) {
             current = when (segment) {
-                is PathSegment.Key -> current.getMapValue(segment.value) ?: yamlNull()
+                is PathSegment.Key -> current.resolveMapValue(segment.value) ?: yamlNull()
                 is PathSegment.Index -> current.getListValue(segment.value) ?: yamlNull()
             }
         }
@@ -104,7 +106,8 @@ internal class SerializableEditorDocument<T>(
             is PathSegment.Key -> {
                 val obj = current as? YamlMap ?: yamlMap(emptyMap())
                 val mutable = obj.entries.entries.associate { it.key.content to it.value }.toMutableMap()
-                mutable[segment.value] = update(mutable[segment.value] ?: yamlNull(), path, value, depth + 1)
+                val yamlKey = obj.resolveYamlKey(segment.value)
+                mutable[yamlKey] = update(mutable[yamlKey] ?: yamlNull(), path, value, depth + 1)
                 yamlMap(mutable)
             }
 
@@ -126,12 +129,13 @@ internal class SerializableEditorDocument<T>(
             is PathSegment.Key -> {
                 val obj = current as? YamlMap ?: return current
                 val currentEntries = obj.entries.entries.associate { it.key.content to it.value }
+                val yamlKey = obj.resolveYamlKey(segment.value)
                 if (depth == path.lastIndex) {
-                    yamlMap(currentEntries.toMutableMap().apply { remove(segment.value) })
+                    yamlMap(currentEntries.toMutableMap().apply { remove(yamlKey) })
                 } else {
                     val mutable = currentEntries.toMutableMap()
-                    val existing = mutable[segment.value] ?: return current
-                    mutable[segment.value] = removeAt(existing, path, depth + 1)
+                    val existing = mutable[yamlKey] ?: return current
+                    mutable[yamlKey] = removeAt(existing, path, depth + 1)
                     yamlMap(mutable)
                 }
             }
@@ -151,8 +155,24 @@ internal class SerializableEditorDocument<T>(
     }
 }
 
-internal val EditorEntry.rootElement: YamlNode
-    get() = element
+private fun YamlNode.resolveMapValue(key: String): YamlNode? {
+    val map = this as? YamlMap ?: return null
+    val yamlKey = map.resolveYamlKey(key)
+    return map.getMapValue(yamlKey)
+}
+
+private fun YamlMap.resolveYamlKey(key: String): String {
+    if (entries.keys.any { it.content == key }) {
+        return key
+    }
+
+    val kebab = yamlFieldKey(key)
+    if (kebab != key && entries.keys.any { it.content == kebab }) {
+        return kebab
+    }
+
+    return kebab
+}
 
 internal fun EditorEntry.toFieldContext(root: YamlNode): EditorFieldContext {
     return EditorFieldContext(
