@@ -18,7 +18,7 @@ bukkitKObjects {
 }
 
 group = "gg.aquatic.waves"
-version = "26.0.52"
+version = "26.0.54"
 
 tasks {
     runServer {
@@ -50,6 +50,7 @@ dependencyResolution {
     repo("https://jitpack.io")
     relocate("kotlin", "gg.aquatic.waves.libs.kotlin")
     relocate("kotlinx", "gg.aquatic.waves.libs.kotlinx")
+    relocate("org.jetbrains.exposed", "gg.aquatic.waves.libs.exposed")
     relocate("com.zaxxer.hikari", "gg.aquatic.waves.libs.hikari")
     relocate("org.bstats", "gg.aquatic.waves.libs.bstats")
 }
@@ -92,7 +93,7 @@ dependencies {
     implementation("gg.aquatic:Pakket:26.1.10")
     implementation("gg.aquatic.execute:Execute:26.0.2")
     implementation("gg.aquatic.kommand:kommand-paper:26.1.0")
-    implementation("gg.aquatic:Common:26.0.16")
+    implementation("gg.aquatic:Common:26.0.17")
     implementation("gg.aquatic:Kurrency:26.0.7")
     implementation("gg.aquatic:KLocale:26.0.2")
     implementation("gg.aquatic:KLocale-Paper:26.0.2")
