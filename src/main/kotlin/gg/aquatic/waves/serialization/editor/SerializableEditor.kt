@@ -18,6 +18,8 @@ import kotlinx.serialization.json.*
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import org.bukkit.entity.Player
+import kotlin.coroutines.resume
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 @OptIn(ExperimentalSerializationApi::class)
 object SerializableEditor {
@@ -150,8 +152,13 @@ object SerializableEditor {
                 context.refresh()
             }
 
-            NodeKind.STRING, NodeKind.NUMBER, NodeKind.ENUM -> {
+            NodeKind.STRING, NodeKind.NUMBER -> {
                 editPrimitiveValue(context.player, document, entry)
+                context.refresh()
+            }
+
+            NodeKind.ENUM -> {
+                editEnumValue(context.player, document, entry)
                 context.refresh()
             }
         }
@@ -326,6 +333,80 @@ object SerializableEditor {
         }
 
         document.set(entry.path, parsed)
+    }
+
+    private suspend fun <T> editEnumValue(
+        player: Player,
+        document: SerializableEditorDocument<T>,
+        entry: EditorEntry
+    ) {
+        val selected = selectEnumValue(player, entry) ?: return
+        document.set(entry.path, selected)
+    }
+
+    private suspend fun selectEnumValue(
+        player: Player,
+        entry: EditorEntry
+    ): JsonElement? {
+        val allowed = (0 until entry.descriptor.elementsCount)
+            .map { entry.descriptor.getElementName(it) }
+        val current = entry.element.jsonPrimitive.contentOrNull
+        val entrySlots = (0..44).toList()
+        val inventoryType = when {
+            allowed.size <= 9 -> InventoryType.GENERIC9X3
+            allowed.size <= 18 -> InventoryType.GENERIC9X4
+            allowed.size <= 27 -> InventoryType.GENERIC9X5
+            else -> InventoryType.GENERIC9X6
+        }
+
+        return withContext(BukkitCtx.ofEntity(player)) {
+            suspendCancellableCoroutine { continuation ->
+                KMenu.scope.launch {
+                    player.createMenu(Component.text(entry.label.take(32)), inventoryType) {
+                        allowed.take(entrySlots.size).forEachIndexed { index, value ->
+                            button("enum_$index", entrySlots[index]) {
+                                item = stackedItem(
+                                    if (value == current) Material.LIME_DYE else Material.COMPARATOR
+                                ) {
+                                    displayName = Component.text(value)
+                                    lore += Component.text(
+                                        if (value == current) "Current value" else "Click to select"
+                                    )
+                                }.getItem()
+                                onClick {
+                                    continuation.resume(JsonPrimitive(value))
+                                }
+                            }
+                        }
+
+                        if (entry.descriptor.isNullable) {
+                            button("enum_clear", 49) {
+                                item = stackedItem(Material.BARRIER) {
+                                    displayName = Component.text("Clear")
+                                    lore += Component.text("Set this value to null")
+                                }.getItem()
+                                onClick {
+                                    continuation.resume(JsonNull)
+                                }
+                            }
+                        }
+
+                        button("enum_cancel", if (inventoryType == InventoryType.GENERIC9X6) 53 else when (inventoryType) {
+                            InventoryType.GENERIC9X5 -> 44
+                            InventoryType.GENERIC9X4 -> 35
+                            else -> 26
+                        }) {
+                            item = stackedItem(Material.ARROW) {
+                                displayName = Component.text("Cancel")
+                            }.getItem()
+                            onClick {
+                                continuation.resume(null)
+                            }
+                        }
+                    }.open(player)
+                }
+            }
+        }
     }
 
     private suspend fun <T> addMapEntry(
