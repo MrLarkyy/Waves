@@ -48,7 +48,8 @@ object SerializableEditor {
                     path = emptyList(),
                     descriptor = serializer.descriptor,
                     label = titleString(title),
-                    schema = schema
+                    schema = schema,
+                    showSaveButton = true
                 ) {
                     val decoded = runCatching { document.decode() }
                     decoded.onSuccess {
@@ -80,6 +81,8 @@ object SerializableEditor {
             continuation.resume(result)
         }
 
+        fun decodeDraft(): T? = runCatching { document.decode() }.getOrNull()
+
         KMenu.scope.launch {
             context.navigate {
                 openNodeEditor(
@@ -90,14 +93,15 @@ object SerializableEditor {
                     descriptor = serializer.descriptor,
                     label = titleString(title),
                     schema = schema,
-                    onReturn = { complete(null) },
+                    onReturn = { complete(decodeDraft()) },
                     onClosed = {
                         if (!context.shouldIgnoreClosedMenu()) {
-                            complete(null)
+                            complete(decodeDraft())
                         }
-                    }
+                    },
+                    showSaveButton = false
                 ) {
-                    complete(runCatching { document.decode() }.getOrNull())
+                    complete(decodeDraft())
                 }
             }
         }
@@ -113,6 +117,7 @@ object SerializableEditor {
         schema: EditorSchema<T>?,
         onReturn: (suspend () -> Unit)? = null,
         onClosed: (suspend () -> Unit)? = null,
+        showSaveButton: Boolean,
         onSave: suspend () -> Unit
     ) {
         val editorState = prepareNodeEditorState(document, path, descriptor, label, schema)
@@ -128,6 +133,7 @@ object SerializableEditor {
                 schema = schema,
                 onReturn = onReturn,
                 onClosed = onClosed,
+                showSaveButton = showSaveButton,
                 onSave = onSave
             )
             return
@@ -149,7 +155,7 @@ object SerializableEditor {
                 button("entry_${index}_${entry.label}", entrySlots[index]) {
                     item = entryIcon(entry)
                     onClick { event ->
-                        handleEntryClick(context, title, document, entry, schema, onSave, event.buttonType)
+                        handleEntryClick(context, title, document, entry, schema, onSave, event.buttonType, showSaveButton)
                     }
                 }
             }
@@ -164,7 +170,8 @@ object SerializableEditor {
                 schema,
                 onSave,
                 onReturn,
-                hasCloseHandler = onClosed != null
+                hasCloseHandler = onClosed != null,
+                showSaveButton = showSaveButton
             )
         }.open(context.player)
     }
@@ -177,6 +184,8 @@ object SerializableEditor {
         schema: EditorSchema<T>?,
         onSave: suspend () -> Unit,
         buttonType: ButtonType
+        ,
+        showSaveButton: Boolean
     ) {
         if (buttonType == ButtonType.DROP && handleDropAction(document, entry, context)) {
             return
@@ -188,7 +197,19 @@ object SerializableEditor {
 
         when (entry.kind) {
             NodeKind.OBJECT, NodeKind.LIST, NodeKind.MAP -> context.navigate {
-                openNodeEditor(context, title, document, entry.path, entry.descriptor, entry.label, schema, onReturn = null, onClosed = null, onSave)
+                openNodeEditor(
+                    context,
+                    title,
+                    document,
+                    entry.path,
+                    entry.descriptor,
+                    entry.label,
+                    schema,
+                    onReturn = null,
+                    onClosed = null,
+                    showSaveButton = showSaveButton,
+                    onSave = onSave
+                )
             }
 
             NodeKind.BOOLEAN -> {
@@ -275,34 +296,41 @@ object SerializableEditor {
         onSave: suspend () -> Unit,
         onReturn: (suspend () -> Unit)?,
         hasCloseHandler: Boolean,
+        showSaveButton: Boolean,
     ) {
-        button("save", 45) {
-            item = stackedItem(Material.LIME_DYE) {
-                displayName = Component.text("Save")
-            }.getItem()
-            onClick { onSave() }
+        val returnSlot = if (showSaveButton) 46 else 45
+        val addEntrySlot = if (showSaveButton) 47 else 46
+
+        if (showSaveButton) {
+            button("save", 45) {
+                item = stackedItem(Material.LIME_DYE) {
+                    displayName = Component.text("Save")
+                }.getItem()
+                onClick { onSave() }
+            }
         }
 
         if (path.isNotEmpty()) {
-            button("back", 46) {
+            button("back", returnSlot) {
                 item = stackedItem(Material.ARROW) {
                     displayName = Component.text("Back")
                 }.getItem()
                 onClick { context.goBack() }
             }
         } else if (onReturn != null) {
-            button("return", 46) {
+            button("return", returnSlot) {
                 item = stackedItem(Material.ARROW) {
                     displayName = Component.text("Return")
                 }.getItem()
                 onClick { onReturn() }
             }
         } else if (hasCloseHandler) {
-            button("close", 46) {
+            button("close", returnSlot) {
                 item = stackedItem(Material.BARRIER) {
                     displayName = Component.text("Close")
                 }.getItem()
                 onClick {
+                    EditorCloseGuard.suppress(context.player)
                     withContext(BukkitCtx.ofEntity(context.player)) {
                         context.player.closeInventory()
                     }
@@ -311,7 +339,7 @@ object SerializableEditor {
         }
 
         if (resolvedDescriptor.kind == StructureKind.LIST) {
-            button("add_list", 47) {
+            button("add_list", addEntrySlot) {
                 item = addEntryItem()
                 onClick {
                     addListEntry(context.player, document, path, label, descriptor, resolvedDescriptor, schema)
@@ -321,7 +349,7 @@ object SerializableEditor {
         }
 
         if (resolvedDescriptor.kind == StructureKind.MAP) {
-            button("add_map", 47) {
+            button("add_map", addEntrySlot) {
                 item = addEntryItem()
                 onClick {
                     addMapEntry(context.player, document, path, resolvedDescriptor, schema, label)
@@ -386,6 +414,7 @@ object SerializableEditor {
             return
         }
 
+        EditorCloseGuard.suppress(player)
         withContext(BukkitCtx.ofEntity(player)) {
             player.closeInventory()
         }

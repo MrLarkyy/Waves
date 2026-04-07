@@ -3,6 +3,7 @@ package gg.aquatic.waves.serialization.editor.meta
 import gg.aquatic.common.coroutine.BukkitCtx
 import gg.aquatic.stacked.stackedItem
 import gg.aquatic.waves.input.impl.ChatInput
+import gg.aquatic.waves.serialization.editor.EditorCloseGuard
 import kotlinx.coroutines.withContext
 import com.charleskorn.kaml.YamlNode
 import org.bukkit.Material
@@ -32,6 +33,7 @@ abstract class BaseTextInputFieldAdapter<C : BaseTextInputFieldAdapter.Config> :
     }
 
     final override suspend fun edit(player: Player, context: EditorFieldContext, config: C): FieldEditResult {
+        EditorCloseGuard.suppress(player)
         withContext(BukkitCtx.ofEntity(player)) {
             player.closeInventory()
         }

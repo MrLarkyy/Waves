@@ -20,6 +20,7 @@ internal suspend fun <T> editPrimitiveValue(
     document: SerializableEditorDocument<T>,
     entry: EditorEntry
 ) {
+    EditorCloseGuard.suppress(player)
     withContext(BukkitCtx.ofEntity(player)) {
         player.closeInventory()
     }

@@ -3,6 +3,7 @@ package gg.aquatic.waves.serialization.editor.meta
 import com.charleskorn.kaml.YamlNode
 import gg.aquatic.common.coroutine.BukkitCtx
 import gg.aquatic.waves.input.impl.ChatInput
+import gg.aquatic.waves.serialization.editor.EditorCloseGuard
 import kotlinx.coroutines.withContext
 
 object EditorEntryFactories {
@@ -13,6 +14,7 @@ object EditorEntryFactories {
         transform: suspend (String) -> YamlNode = { yamlScalar(it) }
     ): EntryFactory {
         return EntryFactory { player, _ ->
+            EditorCloseGuard.suppress(player)
             withContext(BukkitCtx.ofEntity(player)) {
                 player.closeInventory()
             }
@@ -33,6 +35,7 @@ object EditorEntryFactories {
         max: Int? = null,
         unique: Boolean = false,
     ): EntryFactory = EntryFactory { player, context ->
+        EditorCloseGuard.suppress(player)
         withContext(BukkitCtx.ofEntity(player)) {
             player.closeInventory()
         }
@@ -96,6 +99,7 @@ object EditorEntryFactories {
         keyValidator: suspend (String) -> String? = { null }
     ): MapEntryFactory {
         return MapEntryFactory { player, _ ->
+            EditorCloseGuard.suppress(player)
             withContext(BukkitCtx.ofEntity(player)) {
                 player.closeInventory()
             }

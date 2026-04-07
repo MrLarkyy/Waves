@@ -56,13 +56,19 @@ class EditorContext(
         current?.invoke()
     }
 
+    suspend fun suppressNextCloseEvent() {
+        navMutex.withLock {
+            suppressedCloseEvents++
+        }
+    }
+
     suspend fun shouldIgnoreClosedMenu(): Boolean {
         return navMutex.withLock {
             if (suppressedCloseEvents > 0) {
                 suppressedCloseEvents--
                 true
             } else {
-                false
+                EditorCloseGuard.consume(player)
             }
         }
     }
