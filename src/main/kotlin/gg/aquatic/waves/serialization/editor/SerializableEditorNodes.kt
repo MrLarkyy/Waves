@@ -35,11 +35,8 @@ internal fun <T> prepareNodeEditorState(
 ): NodeEditorState {
     val current = document.get(path)
     val currentContext = buildFieldContext(label, path, descriptor, current, document.root())
-    val resolvedDescriptor = if (descriptor.kind is PolymorphicKind) {
-        schema?.resolveDescriptor(currentContext) ?: descriptor
-    } else {
-        descriptor
-    }
+    val resolvedDescriptor = schema?.resolveDescriptor(currentContext)
+        ?: descriptor
     val normalized = if (current is YamlNull && isContainer(resolvedDescriptor)) {
         defaultYamlElement(resolvedDescriptor, useNullForNullable = false)
     } else {
@@ -59,9 +56,16 @@ internal fun <T> prepareNodeEditorState(
 internal fun passthroughEntry(
     path: List<PathSegment>,
     descriptor: SerialDescriptor,
-    entries: List<EditorEntry>
+    entries: List<EditorEntry>,
+    element: YamlNode,
 ): EditorEntry? {
     if (descriptor.kind != StructureKind.CLASS && descriptor.kind != StructureKind.OBJECT) {
+        return null
+    }
+
+    // Polymorphic nodes like reward/click actions should keep their explicit root menu.
+    // Auto-skipping them makes navigation feel broken and duplicates back-stack depth.
+    if (polymorphicType(element) != null) {
         return null
     }
 
@@ -109,23 +113,24 @@ internal fun <T> nodeEntries(
     root: YamlNode,
     schema: EditorSchema<T>?
 ): List<EditorEntry> {
-    if (descriptor.kind is PolymorphicKind) {
-        val resolved = schema?.resolveDescriptor(
-            EditorFieldContext(
-                label = basePath.lastOrNull()?.let {
-                    when (it) {
-                        is PathSegment.Key -> it.value
-                        is PathSegment.Index -> "#${it.value}"
-                    }
-                } ?: "root",
-                path = basePath.toSchemaPath(),
-                pathSegments = basePath.toSchemaSegments(),
-                description = emptyList(),
-                descriptor = descriptor,
-                value = element,
-                root = root
-            )
-        ) ?: descriptor
+    val resolved = schema?.resolveDescriptor(
+        EditorFieldContext(
+            label = basePath.lastOrNull()?.let {
+                when (it) {
+                    is PathSegment.Key -> it.value
+                    is PathSegment.Index -> "#${it.value}"
+                }
+            } ?: "root",
+            path = basePath.toSchemaPath(),
+            pathSegments = basePath.toSchemaSegments(),
+            description = emptyList(),
+            descriptor = descriptor,
+            value = element,
+            root = root
+        )
+    )
+
+    if (resolved != null && resolved != descriptor) {
         return nodeEntries(basePath, resolved, element, root, schema)
     }
 

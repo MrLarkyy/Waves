@@ -116,7 +116,8 @@ object SerializableEditor {
         onSave: suspend () -> Unit
     ) {
         val editorState = prepareNodeEditorState(document, path, descriptor, label, schema)
-        passthroughEntry(path, editorState.resolvedDescriptor, editorState.entries)?.let { passthrough ->
+        val currentNode = document.get(path)
+        passthroughEntry(path, editorState.resolvedDescriptor, editorState.entries, currentNode)?.let { passthrough ->
             openNodeEditor(
                 context = context,
                 title = title,

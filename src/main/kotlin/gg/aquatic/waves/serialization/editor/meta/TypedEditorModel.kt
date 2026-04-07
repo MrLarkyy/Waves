@@ -130,7 +130,7 @@ abstract class BaseTypedSchemaBuilder<T>(
             newValueFactory = newValueFactory
         )
         block?.let {
-            TypedNestedSchemaBuilder<V>(delegate, prefix + property.name + "*", visibility).apply(it)
+            TypedNestedSchemaBuilder<V>(delegate, prefix + listOf(property.name, "*"), visibility).apply(it)
         }
     }
 
@@ -158,7 +158,7 @@ abstract class BaseTypedSchemaBuilder<T>(
             mapKeyPrompt = mapKeyPrompt
         )
         block?.let {
-            TypedNestedSchemaBuilder<V>(delegate, prefix + property.name + "*", visibility).apply(it)
+            TypedNestedSchemaBuilder<V>(delegate, prefix + listOf(property.name, "*"), visibility).apply(it)
         }
     }
 
