@@ -6,8 +6,10 @@ import gg.aquatic.common.coroutine.BukkitCtx
 import gg.aquatic.kmenu.KMenu
 import gg.aquatic.kmenu.inventory.ButtonType
 import gg.aquatic.kmenu.inventory.InventoryType
+import gg.aquatic.kmenu.inventory.PacketInventory
 import gg.aquatic.kmenu.menu.PrivateMenu
 import gg.aquatic.kmenu.menu.createMenu
+import gg.aquatic.kmenu.packetInventory
 import gg.aquatic.stacked.stackedItem
 import gg.aquatic.waves.input.impl.ChatInput
 import gg.aquatic.waves.serialization.editor.meta.*
@@ -24,6 +26,14 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 
 @OptIn(ExperimentalSerializationApi::class)
 object SerializableEditor {
+    private const val SEARCH_PREFIX = "Search: "
+
+    private data class SearchResult(
+        val entry: EditorEntry,
+        val location: String,
+        val tags: List<String>,
+        val searchText: String
+    )
 
     private val defaultYaml = Yaml()
 
@@ -162,11 +172,13 @@ object SerializableEditor {
 
             addEditorControls(
                 context,
+                title,
                 document,
                 path,
                 label,
                 descriptor,
                 editorState.resolvedDescriptor,
+                editorState.entries,
                 schema,
                 onSave,
                 onReturn,
@@ -183,8 +195,7 @@ object SerializableEditor {
         entry: EditorEntry,
         schema: EditorSchema<T>?,
         onSave: suspend () -> Unit,
-        buttonType: ButtonType
-        ,
+        buttonType: ButtonType,
         showSaveButton: Boolean
     ) {
         if (buttonType == ButtonType.DROP && handleDropAction(document, entry, context)) {
@@ -287,11 +298,13 @@ object SerializableEditor {
 
     private fun <T> gg.aquatic.kmenu.menu.PrivateMenuBuilder.addEditorControls(
         context: EditorContext,
+        title: Component,
         document: SerializableEditorDocument<T>,
         path: List<PathSegment>,
         label: String,
         descriptor: SerialDescriptor,
         resolvedDescriptor: SerialDescriptor,
+        entries: List<EditorEntry>,
         schema: EditorSchema<T>?,
         onSave: suspend () -> Unit,
         onReturn: (suspend () -> Unit)?,
@@ -355,6 +368,27 @@ object SerializableEditor {
                     addMapEntry(context.player, document, path, resolvedDescriptor, schema, label)
                     context.refresh()
                 }
+            }
+        }
+
+        button("search", if (showSaveButton) 48 else 47) {
+            item = stackedItem(Material.COMPASS) {
+                displayName = Component.text("Search")
+                lore += Component.text("Search options in this menu")
+            }.getItem()
+            onClick {
+                openSearchMenu(
+                    context = context,
+                    title = title,
+                    document = document,
+                    path = path,
+                    label = label,
+                    descriptor = descriptor,
+                    schema = schema,
+                    entries = entries,
+                    onSave = onSave,
+                    showSaveButton = showSaveButton
+                )
             }
         }
     }
@@ -431,5 +465,244 @@ object SerializableEditor {
     }
     private fun titleString(component: Component): String {
         return component.toString()
+    }
+
+    private suspend fun <T> openSearchMenu(
+        context: EditorContext,
+        title: Component,
+        document: SerializableEditorDocument<T>,
+        path: List<PathSegment>,
+        label: String,
+        descriptor: SerialDescriptor,
+        schema: EditorSchema<T>?,
+        entries: List<EditorEntry>,
+        onSave: suspend () -> Unit,
+        showSaveButton: Boolean
+    ) {
+        EditorCloseGuard.suppress(context.player)
+
+        val resultSlots = (3..29).toList()
+        val currentResults = MutableList<SearchResult?>(resultSlots.size) { null }
+        var suppressReturnRefresh = false
+        val searchIndex = buildGlobalSearchIndex(document, schema)
+
+        suspend fun renderResults(inventory: PacketInventory, query: String) {
+            val filtered = filterSearchEntries(searchIndex, query).take(resultSlots.size)
+
+            filtered.forEachIndexed { index, entry ->
+                currentResults[index] = entry
+            }
+            for (index in filtered.size until resultSlots.size) {
+                currentResults[index] = null
+            }
+
+            inventory.setItem(1, stackedItem(Material.PAPER) {
+                displayName = Component.text("Type to filter")
+                lore += Component.text("Searches the editor index")
+            }.getItem())
+            inventory.setItem(2, stackedItem(Material.COMPASS) {
+                displayName = Component.text("Matches: ${filtered.size}")
+                lore += Component.text("Top ${filtered.size} result(s)")
+            }.getItem())
+
+            resultSlots.forEachIndexed { index, slot ->
+                inventory.setItem(slot, currentResults[index]?.let(::searchResultIcon))
+            }
+            inventory.setItem(30, stackedItem(Material.BARRIER) {
+                displayName = Component.text("Clear")
+                lore += Component.text("Reset search query")
+            }.getItem())
+            inventory.setItem(31, stackedItem(Material.ARROW) {
+                displayName = Component.text("Return")
+                lore += Component.text("Back to editor")
+            }.getItem())
+
+            if (filtered.isEmpty()) {
+                inventory.setItem(13, stackedItem(Material.GRAY_DYE) {
+                    displayName = Component.text("No matching options")
+                    lore += Component.text("Try a different query")
+                }.getItem())
+            }
+        }
+
+        context.player.createMenu(Component.text("Search"), InventoryType.ANVIL.onRename { _, name, inventory ->
+            KMenu.scope.launch {
+                val normalizedInput = normalizeSearchInput(name)
+                if (normalizedInput != name) {
+                    inventory.anvilInput = normalizedInput
+                    inventory.setItem(0, searchInputItem(), update = false)
+                }
+                renderResults(inventory, parseSearchQuery(normalizedInput))
+            }
+        }) {
+            menuFactory = { customTitle, customType, customPlayer, cancelInteractions ->
+                object : PrivateMenu(customTitle, customType, customPlayer, cancelInteractions) {
+                    override suspend fun onClosed(player: Player) {
+                        if (!suppressReturnRefresh) {
+                            context.refresh()
+                        }
+                    }
+                }
+            }
+
+            button("search_input", 0) {
+                item = searchInputItem()
+            }
+
+            resultSlots.forEachIndexed { index, slot ->
+                button("search_result_$index", slot) {
+                    item = stackedItem(Material.AIR) {}.getItem()
+                    onClick { event ->
+                        val entry = currentResults[index] ?: return@onClick
+                        suppressReturnRefresh = true
+                        handleEntryClick(
+                            context = context,
+                            title = title,
+                            document = document,
+                            entry = entry.entry,
+                            schema = schema,
+                            onSave = onSave,
+                            buttonType = event.buttonType,
+                            showSaveButton = showSaveButton
+                        )
+                    }
+                }
+            }
+
+            button("search_clear", 30) {
+                item = stackedItem(Material.BARRIER) {
+                    displayName = Component.text("Clear")
+                }.getItem()
+                onClick {
+                    val inventory = context.player.packetInventory() ?: return@onClick
+                    inventory.anvilInput = SEARCH_PREFIX
+                    inventory.setItem(0, searchInputItem())
+                    renderResults(inventory, "")
+                }
+            }
+
+            button("search_return", 31) {
+                item = stackedItem(Material.ARROW) {
+                    displayName = Component.text("Return")
+                }.getItem()
+                onClick {
+                    withContext(BukkitCtx.ofEntity(context.player)) {
+                        context.player.closeInventory()
+                    }
+                }
+            }
+        }.also {
+            it.anvilInput = SEARCH_PREFIX
+            it.setItem(0, searchInputItem(), update = false)
+            renderResults(it, "")
+        }.open(context.player)
+    }
+
+    private fun filterSearchEntries(entries: List<SearchResult>, query: String): List<SearchResult> {
+        val normalized = query.trim().lowercase()
+        if (normalized.isBlank()) {
+            return entries
+        }
+
+        val parts = normalized.split(' ').filter { it.isNotBlank() }
+        return entries.filter { result -> parts.all(result.searchText::contains) }
+    }
+
+    private fun <T> buildGlobalSearchIndex(
+        document: SerializableEditorDocument<T>,
+        schema: EditorSchema<T>?
+    ): List<SearchResult> {
+        val results = linkedMapOf<String, SearchResult>()
+
+        fun visit(path: List<PathSegment>, descriptor: SerialDescriptor, label: String) {
+            val state = prepareNodeEditorState(document, path, descriptor, label, schema)
+            for (entry in state.entries) {
+                val meta = entry.meta
+                if (meta?.searchable != false) {
+                    val location = entry.path
+                        .filterIsInstance<PathSegment.Key>()
+                        .joinToString(" > ") { prettify(it.value) }
+                        .ifBlank { "Root" }
+                    val tags = buildSearchTags(entry)
+                    val searchText = buildString {
+                        append(entry.label.lowercase())
+                        append(' ')
+                        append(location.lowercase())
+                        append(' ')
+                        append(tags.joinToString(" ").lowercase())
+                        if (meta?.description?.isNotEmpty() == true) {
+                            append(' ')
+                            append(meta.description.joinToString(" ").lowercase())
+                        }
+                    }
+                    results.putIfAbsent(
+                        "${entry.path.toSchemaPath()}::${entry.label}",
+                        SearchResult(entry, location, tags, searchText)
+                    )
+                }
+
+                if (entry.kind == NodeKind.OBJECT) {
+                    visit(entry.path, entry.descriptor, entry.label)
+                }
+            }
+        }
+
+        visit(emptyList(), document.rootDescriptor(), "root")
+        return results.values.toList()
+    }
+
+    private fun buildSearchTags(entry: EditorEntry): List<String> {
+        val derived = buildSet {
+            add(entry.label)
+            entry.path.forEach { segment ->
+                if (segment is PathSegment.Key) {
+                    add(segment.value)
+                    add(prettify(segment.value))
+                }
+            }
+        }
+
+        return (derived + entry.meta?.searchTags.orEmpty())
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .distinct()
+    }
+
+    private fun searchResultIcon(result: SearchResult) = stackedItem(
+        result.entry.meta?.iconMaterial ?: when (result.entry.kind) {
+            NodeKind.OBJECT -> objectMaterial(result.entry)
+            NodeKind.LIST -> listMaterial(result.entry)
+            NodeKind.MAP -> mapMaterial(result.entry)
+            NodeKind.BOOLEAN -> Material.COMPARATOR
+            NodeKind.STRING -> stringMaterial(result.entry)
+            NodeKind.NUMBER -> numberMaterial(result.entry)
+            NodeKind.ENUM -> enumMaterial(result.entry)
+        }
+    ) {
+        displayName = EditorItemStyling.title(result.entry.label)
+        lore += EditorItemStyling.valueLine("Location: ", result.location)
+        if (result.tags.isNotEmpty()) {
+            lore += EditorItemStyling.valueLine("Tags: ", result.tags.joinToString(", "))
+        }
+        if (result.entry.meta?.description?.isNotEmpty() == true) {
+            lore += EditorItemStyling.section("Description")
+            lore += result.entry.meta.description.map(EditorItemStyling::hint)
+        }
+    }.getItem()
+
+    private fun searchInputItem() = stackedItem(Material.NAME_TAG) {
+        displayName = Component.text(SEARCH_PREFIX)
+    }.getItem()
+
+    private fun normalizeSearchInput(input: String): String {
+        return when {
+            input.startsWith(SEARCH_PREFIX) -> input
+            input.isBlank() -> SEARCH_PREFIX
+            else -> SEARCH_PREFIX + input.removePrefix(SEARCH_PREFIX)
+        }
+    }
+
+    private fun parseSearchQuery(input: String): String {
+        return normalizeSearchInput(input).substringAfter(SEARCH_PREFIX).trim()
     }
 }

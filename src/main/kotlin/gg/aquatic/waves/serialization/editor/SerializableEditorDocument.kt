@@ -55,6 +55,8 @@ internal class SerializableEditorDocument<T>(
 
     fun root(): YamlNode = root
 
+    fun rootDescriptor(): SerialDescriptor = serializer.descriptor
+
     fun replaceRoot(value: YamlNode) {
         root = value
     }
