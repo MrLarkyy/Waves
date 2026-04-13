@@ -116,6 +116,10 @@ object SerializableEditor {
         )
     }
 
+    suspend fun suppressActiveContextClose(player: Player) {
+        ActiveEditorContextRegistry.get(player)?.suppressNextCloseEvent()
+    }
+
 
     private suspend fun <T> editValueWithContext(
         context: EditorContext,
