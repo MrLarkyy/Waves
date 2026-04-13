@@ -56,6 +56,14 @@ class EditorContext(
         current?.invoke()
     }
 
+    suspend fun dismissCurrent() {
+        navMutex.withLock {
+            if (path.isNotEmpty()) {
+                path.pop()
+            }
+        }
+    }
+
     suspend fun suppressNextCloseEvent() {
         navMutex.withLock {
             suppressedCloseEvents++

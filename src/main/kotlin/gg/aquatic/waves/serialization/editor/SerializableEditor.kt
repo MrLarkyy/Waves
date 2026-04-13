@@ -80,15 +80,61 @@ object SerializableEditor {
         yaml: Yaml = defaultYaml,
         schema: EditorSchema<T>? = null,
         loadFresh: () -> T
+    ): T? = editValueWithContext(
+        context = EditorContext(player),
+        title = title,
+        serializer = serializer,
+        yaml = yaml,
+        schema = schema,
+        loadFresh = loadFresh,
+    )
+
+    suspend fun <T> editValueInActiveContext(
+        player: Player,
+        title: Component,
+        serializer: KSerializer<T>,
+        yaml: Yaml = defaultYaml,
+        schema: EditorSchema<T>? = null,
+        loadFresh: () -> T
+    ): T? {
+        val activeContext = ActiveEditorContextRegistry.get(player) ?: return editValue(
+            player = player,
+            title = title,
+            serializer = serializer,
+            yaml = yaml,
+            schema = schema,
+            loadFresh = loadFresh,
+        )
+
+        return editValueWithContext(
+            context = activeContext,
+            title = title,
+            serializer = serializer,
+            yaml = yaml,
+            schema = schema,
+            loadFresh = loadFresh,
+        )
+    }
+
+
+    private suspend fun <T> editValueWithContext(
+        context: EditorContext,
+        title: Component,
+        serializer: KSerializer<T>,
+        yaml: Yaml,
+        schema: EditorSchema<T>?,
+        loadFresh: () -> T
     ): T? = suspendCancellableCoroutine { continuation ->
-        val context = EditorContext(player)
         val document = SerializableEditorDocument(yaml, serializer, loadFresh())
         var completed = false
 
         fun complete(result: T?) {
             if (completed || !continuation.isActive) return
             completed = true
-            continuation.resume(result)
+            KMenu.scope.launch {
+                context.dismissCurrent()
+                continuation.resume(result)
+            }
         }
 
         fun decodeDraft(): T? = runCatching { document.decode() }.getOrNull()
@@ -274,7 +320,8 @@ object SerializableEditor {
             return false
         }
 
-        return when (val result = adapter.edit(context.player, entry.toFieldContext(document.root()), buttonType)) {
+        return ActiveEditorContextRegistry.withContext(context.player, context) {
+            when (val result = adapter.edit(context.player, entry.toFieldContext(document.root()), buttonType)) {
             is FieldEditResult.Updated -> {
                 document.set(entry.path, result.value)
                 context.refresh()
@@ -293,6 +340,7 @@ object SerializableEditor {
             }
 
             FieldEditResult.PassThrough -> false
+            }
         }
     }
 
