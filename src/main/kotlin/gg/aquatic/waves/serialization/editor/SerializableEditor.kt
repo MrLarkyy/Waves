@@ -120,6 +120,10 @@ object SerializableEditor {
         ActiveEditorContextRegistry.get(player)?.suppressNextCloseEvent()
     }
 
+    fun suppressEditorClose(player: Player) {
+        EditorCloseGuard.suppress(player)
+    }
+
 
     private suspend fun <T> editValueWithContext(
         context: EditorContext,

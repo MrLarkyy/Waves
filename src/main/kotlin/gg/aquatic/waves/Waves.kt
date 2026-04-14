@@ -49,6 +49,7 @@ import gg.aquatic.waves.util.action.MenuPreviousPageAction
 import gg.aquatic.waves.util.action.MessageAction
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 import redis.clients.jedis.DefaultJedisClientConfig
 import redis.clients.jedis.HostAndPort
@@ -75,12 +76,6 @@ object Waves : JavaPlugin(), BootstrapHolder, RegistryHolder {
         initializeCommon(this, mmResolver)
         initializeBlokk(this, createBlockFactories())
 
-        event<PlayerJoinEvent> {
-            Pakket.handler.injectPacketListener(it.player)
-        }
-        event<PlayerQuitEvent> {
-            Pakket.handler.unregisterPacketListener(it.player)
-        }
         initializeStacked(this, SingleThreadedContext("stacked").scope, mmResolver, createItemFactories())
         initializeKMenu(SingleThreadedContext("kmenu").scope)
         initializeExecute(this, mmResolver)
@@ -110,6 +105,18 @@ object Waves : JavaPlugin(), BootstrapHolder, RegistryHolder {
             cache = { _, dbHandler -> createCurrencyCache(dbHandler) }
         )
         registriesInject()
+    }
+
+    private fun intializePakket() {
+        event<PlayerJoinEvent> {
+            Pakket.handler.injectPacketListener(it.player)
+        }
+        event<PlayerQuitEvent> {
+            Pakket.handler.unregisterPacketListener(it.player)
+        }
+        Bukkit.getOnlinePlayers().forEach { player ->
+            Pakket.handler.injectPacketListener(player)
+        }
     }
 
     private fun createCurrencyCache(dbHandler: gg.aquatic.kurrency.db.CurrencyDBHandler): CurrencyCache {
