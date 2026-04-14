@@ -133,7 +133,7 @@ dependencies {
     runtimeDownload("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
     runtimeDownload("redis.clients:jedis:7.4.1")
     runtimeDownload("com.zaxxer:HikariCP:7.0.2")
-    runtimeDownload("org.xerial:sqlite-jdbc:3.51.3.0")
+    runtimeDownload("org.xerial:sqlite-jdbc:3.53.0.0")
     runtimeDownload("org.mariadb.jdbc:mariadb-java-client:3.5.8")
 
     runtimeDownload("org.jetbrains.kotlin:kotlin-stdlib:2.3.20")
