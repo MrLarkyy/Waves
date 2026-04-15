@@ -94,6 +94,7 @@ object Waves : JavaPlugin(), BootstrapHolder, RegistryHolder {
         initializeInput(mapOf("chat" to ChatInput))
         initializeStatistik(emptyMap())
         HologramHandler.initialize()
+        intializePakket()
 
         locale = KLocale.paper {}
         initializeKurrency(
