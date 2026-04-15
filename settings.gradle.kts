@@ -1,5 +1,6 @@
 pluginManagement {
     repositories {
+        mavenLocal()
         maven { url = uri("https://repo.nekroplex.com/releases") }
         gradlePluginPortal()
     }

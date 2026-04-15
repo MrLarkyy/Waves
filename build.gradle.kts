@@ -5,7 +5,7 @@ plugins {
     kotlin("jvm") version "2.3.20"
     kotlin("plugin.serialization") version "2.3.20"
     id("com.gradleup.shadow") version "9.4.1"
-    id("io.github.revxrsal.bukkitkobjects") version "0.0.5"
+    id("io.github.revxrsal.bukkitkobjects") version "0.1.1"
     id("gg.aquatic.runtime") version "26.0.11"
     id("co.uzzu.dotenv.gradle") version "4.0.0"
     java
@@ -59,7 +59,7 @@ dependencyResolution {
 tasks.withType(AbstractRun::class) {
     javaLauncher = javaToolchains.launcherFor {
         vendor = JvmVendorSpec.JETBRAINS
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
     jvmArgs("-XX:+AllowEnhancedClassRedefinition")
 }
@@ -165,7 +165,7 @@ tasks.test {
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
 }
 
 val regularJar = tasks.register<ShadowJar>("regularJar") {
