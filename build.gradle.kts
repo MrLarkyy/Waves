@@ -112,7 +112,7 @@ dependencies {
 
     runtimeDownload("com.github.ben-manes.caffeine:caffeine:3.2.3")
     runtimeDownload("org.reflections:reflections:0.10.2")
-    compileOnly("net.kyori:adventure-text-minimessage:4.26.1")
+    compileOnly("net.kyori:adventure-text-minimessage:5.0.1")
     compileOnly("net.kyori:adventure-text-serializer-gson:4.26.1")
     compileOnly("net.kyori:adventure-text-serializer-plain:4.26.1")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
@@ -125,7 +125,7 @@ dependencies {
     testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     testImplementation("com.h2database:h2:2.4.240")
     testImplementation("net.kyori:adventure-text-serializer-gson:4.26.1")
-    testImplementation("net.kyori:adventure-text-minimessage:4.26.1")
+    testImplementation("net.kyori:adventure-text-minimessage:5.0.1")
 
     // DB
     runtimeDownload("org.jetbrains.exposed:exposed-core:$exposedVersion")
