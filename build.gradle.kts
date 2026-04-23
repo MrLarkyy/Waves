@@ -136,7 +136,7 @@ dependencies {
     runtimeDownload("org.xerial:sqlite-jdbc:3.53.0.0")
     runtimeDownload("org.mariadb.jdbc:mariadb-java-client:3.5.8")
 
-    runtimeDownload("org.jetbrains.kotlin:kotlin-stdlib:2.3.20")
+    runtimeDownload("org.jetbrains.kotlin:kotlin-stdlib:2.3.21")
     runtimeDownload("org.jetbrains.kotlin:kotlin-reflect:2.3.20")
     runtimeDownload("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     runtimeDownload("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
