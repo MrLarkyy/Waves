@@ -8,6 +8,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import kotlin.coroutines.resume
@@ -51,9 +53,10 @@ object EditorSelectionMenus {
                             item = stackedItem(
                                 if (value == current) Material.LIME_DYE else Material.COMPARATOR
                             ) {
-                                displayName = Component.text(value)
-                                lore += Component.text(
-                                    if (value == current) "Current value" else "Click to select"
+                                displayName = EditorItemStyling.title(value)
+                                lore += EditorItemStyling.section("Actions")
+                                lore += EditorItemStyling.wrappedActions(
+                                    listOf(if (value == current) "Current value" else "Left click to select")
                                 )
                             }.getItem()
                             onClick { complete(value) }
@@ -63,8 +66,9 @@ object EditorSelectionMenus {
                     if (nullable) {
                         button("option_clear", 49) {
                             item = stackedItem(Material.BARRIER) {
-                                displayName = Component.text("Clear")
-                                lore += Component.text("Set this value to null")
+                                displayName = EditorItemStyling.title("Clear")
+                                lore += EditorItemStyling.section("Actions")
+                                lore += EditorItemStyling.wrappedActions(listOf("Left click to set this value to null"))
                             }.getItem()
                             onClick { complete(null) }
                         }
@@ -72,7 +76,10 @@ object EditorSelectionMenus {
 
                     button("option_cancel", cancelSlot(inventoryType)) {
                         item = stackedItem(Material.ARROW) {
-                            displayName = Component.text("Cancel")
+                            displayName = Component.text("Cancel", NamedTextColor.WHITE)
+                                .decoration(TextDecoration.ITALIC, false)
+                            lore += EditorItemStyling.section("Actions")
+                            lore += EditorItemStyling.wrappedActions(listOf("Left click to keep the current value"))
                         }.getItem()
                         onClick { complete(current) }
                     }

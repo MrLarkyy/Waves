@@ -4,6 +4,7 @@ import gg.aquatic.common.coroutine.BukkitCtx
 import gg.aquatic.stacked.stackedItem
 import gg.aquatic.waves.input.impl.ChatInput
 import gg.aquatic.waves.serialization.editor.EditorCloseGuard
+import gg.aquatic.waves.serialization.editor.appendLoreSpacer
 import kotlinx.coroutines.withContext
 import com.charleskorn.kaml.YamlNode
 import org.bukkit.Material
@@ -24,11 +25,27 @@ abstract class BaseTextInputFieldAdapter<C : BaseTextInputFieldAdapter.Config> :
         return stackedItem(config.iconMaterial) {
             displayName = EditorItemStyling.title(context.label)
             if (context.description.isNotEmpty()) {
+                appendLoreSpacer()
                 lore += EditorItemStyling.section("Description")
-                lore += context.description.map(EditorItemStyling::hint)
+                lore += EditorItemStyling.wrappedHints(context.description)
             }
-            lore += EditorItemStyling.valueLine("Value: ", EditorItemStyling.rawValue(rawValue))
-            lore += EditorItemStyling.formattedPreview(rawValue, force = config.showFormattedPreview)
+            appendLoreSpacer()
+            lore += EditorItemStyling.wrappedValueLines("Value: ", EditorItemStyling.rawValue(rawValue))
+            val preview = EditorItemStyling.formattedPreview(rawValue, force = config.showFormattedPreview)
+            if (preview.isNotEmpty()) {
+                appendLoreSpacer()
+                lore += preview
+            }
+            appendLoreSpacer()
+            lore += EditorItemStyling.section("Actions")
+            lore += EditorItemStyling.wrappedActions(
+                buildList {
+                    add("Left click to edit")
+                    if (context.descriptor.isNullable) {
+                        add("Press Q to clear value")
+                    }
+                }
+            )
         }.getItem()
     }
 

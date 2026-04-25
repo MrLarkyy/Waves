@@ -19,6 +19,7 @@ import gg.aquatic.waves.serialization.editor.meta.stringContentOrNull
 import gg.aquatic.waves.serialization.editor.meta.yamlFieldKey
 import gg.aquatic.waves.serialization.editor.meta.yamlList
 import gg.aquatic.waves.serialization.editor.meta.yamlMap
+import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -268,47 +269,62 @@ internal fun entryIcon(entry: EditorEntry) = entry.meta?.adapter?.createItem(
 internal fun defaultEntryIcon(entry: EditorEntry) = when (entry.kind) {
     NodeKind.OBJECT -> buildEntryIcon(entry, entry.meta?.iconMaterial ?: objectMaterial(entry)) {
         if (entry.element is YamlNull) {
-            lore += EditorItemStyling.valueLine("State: ", "unset")
+            appendLoreSpacer()
+            lore += EditorItemStyling.wrappedValueLines("State: ", "unset")
         }
         polymorphicType(entry.element)?.let { type ->
-            lore += EditorItemStyling.valueLine("Type: ", prettify(type))
+            appendLoreSpacer()
+            lore += EditorItemStyling.wrappedValueLines("Type: ", prettify(type))
         }
-        lore += EditorItemStyling.hint(if (entry.element is YamlNull) "Click to create" else "Open object")
-        appendClearHint(entry)
+        appendActionHints(
+            if (entry.element is YamlNull) "Left click to create value" else "Left click to open object",
+            entry
+        )
     }
 
     NodeKind.LIST -> buildEntryIcon(entry, entry.meta?.iconMaterial ?: listMaterial(entry)) {
-        lore += EditorItemStyling.hint("Open list")
-        lore += EditorItemStyling.valueLine("Summary: ", summary(entry.element))
-        appendClearHint(entry)
+        appendLoreSpacer()
+        lore += EditorItemStyling.wrappedValueLines("Summary: ", summary(entry.element))
+        appendActionHints("Left click to open list", entry)
     }
 
     NodeKind.MAP -> buildEntryIcon(entry, entry.meta?.iconMaterial ?: mapMaterial(entry)) {
-        lore += EditorItemStyling.hint("Open map")
-        lore += EditorItemStyling.valueLine("Summary: ", summary(entry.element))
-        appendClearHint(entry)
+        appendLoreSpacer()
+        lore += EditorItemStyling.wrappedValueLines("Summary: ", summary(entry.element))
+        appendActionHints("Left click to open map", entry)
     }
 
     NodeKind.BOOLEAN -> buildEntryIcon(
         entry,
         entry.meta?.iconMaterial ?: if (entry.element.booleanOrNull == true) Material.LIME_DYE else Material.GRAY_DYE
     ) {
-        lore += EditorItemStyling.valueLine("Value: ", summary(entry.element))
-        lore += EditorItemStyling.hint("Click to toggle")
+        appendLoreSpacer()
+        lore += EditorItemStyling.wrappedValueLines("Value: ", summary(entry.element))
+        appendActionHints("Left click to toggle", entry)
     }
 
     NodeKind.STRING -> buildEntryIcon(entry, entry.meta?.iconMaterial ?: stringMaterial(entry)) {
         val raw = summary(entry.element)
-        lore += EditorItemStyling.valueLine("Value: ", raw)
-        lore += EditorItemStyling.formattedPreview(raw)
+        appendLoreSpacer()
+        lore += EditorItemStyling.wrappedValueLines("Value: ", raw)
+        val preview = EditorItemStyling.formattedPreview(raw)
+        if (preview.isNotEmpty()) {
+            appendLoreSpacer()
+            lore += preview
+        }
+        appendActionHints("Left click to edit", entry)
     }
 
     NodeKind.NUMBER -> buildEntryIcon(entry, entry.meta?.iconMaterial ?: numberMaterial(entry)) {
-        lore += EditorItemStyling.valueLine("Value: ", summary(entry.element))
+        appendLoreSpacer()
+        lore += EditorItemStyling.wrappedValueLines("Value: ", summary(entry.element))
+        appendActionHints("Left click to edit", entry)
     }
 
     NodeKind.ENUM -> buildEntryIcon(entry, entry.meta?.iconMaterial ?: enumMaterial(entry)) {
-        lore += EditorItemStyling.valueLine("Value: ", summary(entry.element))
+        appendLoreSpacer()
+        lore += EditorItemStyling.wrappedValueLines("Value: ", summary(entry.element))
+        appendActionHints("Left click to edit", entry)
     }
 }
 
@@ -324,14 +340,36 @@ internal fun buildEntryIcon(
 
 internal fun StackedItemBuilder.appendDescription(entry: EditorEntry) {
     if (entry.meta?.description?.isNotEmpty() == true) {
+        if (lore.isNotEmpty()) {
+            lore += Component.empty()
+        }
         lore += EditorItemStyling.section("Description")
-        lore += entry.meta.description.map(EditorItemStyling::hint)
+        lore += EditorItemStyling.wrappedHints(entry.meta.description)
     }
 }
 
-internal fun StackedItemBuilder.appendClearHint(entry: EditorEntry) {
-    if (entry.descriptor.isNullable) {
-        lore += EditorItemStyling.hint("Press Q to clear")
+internal fun StackedItemBuilder.appendLoreSpacer() {
+    if (lore.isNotEmpty() && lore.lastOrNull() != Component.empty()) {
+        lore += Component.empty()
+    }
+}
+
+internal fun StackedItemBuilder.appendActionHints(primary: String, entry: EditorEntry) {
+    val actions = buildList {
+        add(primary)
+        if (entry.descriptor.isNullable) {
+            add("Press Q to clear value")
+        }
+        if (entry.removable) {
+            add("Press Q to delete entry")
+        }
+    }
+    if (actions.isNotEmpty()) {
+        if (lore.isNotEmpty()) {
+            lore += Component.empty()
+        }
+        lore += EditorItemStyling.section("Actions")
+        lore += EditorItemStyling.wrappedActions(actions)
     }
 }
 
